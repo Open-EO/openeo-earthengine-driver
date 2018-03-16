@@ -1,0 +1,3 @@
+[submodule "earthengine-api"]
+	path = earthengine-api
+	url = https://github.com/google/earthengine-api.git
