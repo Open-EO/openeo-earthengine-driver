@@ -1,44 +1,82 @@
-const { eeAuthenticator } = require('./openeo/gee.js');
-const restify = require('restify');
-const corsMiddleware = require('restify-cors-middleware');
-const fileCache = require('node-file-cache');
-const { initData } = require('./openeo/data');
+const Capabilities = require('./openeo/capabilities');
+const Users = require('./openeo/users');
 
-const cors = corsMiddleware({
-	origins: ['*']
-});
+var geeServer = {
 
-const cache = fileCache.create({
-	file: './storage/cache.json'
-});
+	endpoints: {
+		capabilities: Capabilities,
+		data: require('./openeo/data'),
+		processes: require('./openeo/processes'),
+		jobs: require('./openeo/jobs'),
+		users: Users,
+	},
 
-const port = process.env.PORT || 8080;
+	server: null,
+	serverPort: 8080,
 
-const server = restify.createServer();
-server.use(restify.plugins.queryParser());
-server.use(restify.plugins.bodyParser());
-server.pre(cors.preflight);
-server.use(cors.actual);
-server.use((req, res, next) => {
-	req.cache = cache;
-	req.serverUrl = server.url;
-	next();
-});
+	init() {
+		console.log('Initializing openEO Google Earth Engine driver...');
+		const { eeAuthenticator } = require('./openeo/gee.js');
+		eeAuthenticator.withConsole(() => {
+			console.log("GEE Authentication succeeded.");
+			this.startServer();
+		}, (error) => {
+			console.log("GEE Authentication failed: " + error);
+			process.exit(1);
+		});
+	},
 
-const routes = require('./openeo/routes');
+	initEndpoints() {
+		var initFuncs = [];
+		for(var i in this.endpoints) {
+			initFuncs.push(this.endpoints[i].init())
+		}
+		return Promise.all(initFuncs);
+	},
 
-eeAuthenticator.withConsole(() => {
-	console.log("Authentication succeeded.");
-	initData(cache).then(() => {
-		console.log("INFO: Data sets loaded. Server is starting...");
-		routes(server).listen(port, () =>
-			console.log('%s listening at %s', server.name, server.url)
-		);
-	}).catch((error) => {
-		console.log(error);
-		process.exit(2);
-	});
-}, (error) => {
-	console.log("Authentication failed: " + error);
-	process.exit(1);
-});
+	addEndpoint(method, path, callback) {
+		Capabilities.addEndpoint(method, path);
+		var serverPath = path.replace(/\{([\w]+)\}/g, ":$1");
+		this.server[method](serverPath, callback);
+	},
+
+	startServer() {
+		const corsMiddleware = require('restify-cors-middleware');
+		const cors = corsMiddleware({
+			origins: ['*'],
+			allowHeaders: ['Authorization'],
+			credentials: true
+		});
+		
+		const restify = require('restify');
+		this.server = restify.createServer();
+		this.server.use(restify.plugins.queryParser());
+		this.server.use(restify.plugins.bodyParser());
+		this.server.use(restify.plugins.authorizationParser());
+		this.server.pre(cors.preflight);
+		this.server.use(cors.actual);
+		this.server.use(Users.checkAuthToken.bind(Users));
+		this.server.use((req, res, next) => {
+			req.serverUrl = this.server.url;
+			next();
+		});
+
+		this.initEndpoints().then(() => {
+			// Add routes
+			for(var i in this.endpoints) {
+				this.endpoints[i].routes(this);
+			}
+			// Start server on port ...
+			const port = process.env.PORT || this.serverPort;
+			this.server.listen(port, () =>
+				console.log('%s listening at %s', this.server.name, this.server.url)
+			);
+		}).catch((error) => {
+			console.log(error);
+			process.exit(2);
+		});
+	}
+
+};
+
+geeServer.init();

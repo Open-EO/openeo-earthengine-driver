@@ -23,7 +23,7 @@
     "axios": "^0.18.0",
     "google-closure-library": "^20180204.0.0",
     "googleapis": "^27.0.0",
-    "node-file-cache": "^1.0.2",
+    "nedb": "^1.8.0",
     "restify": "^6.3.4",
     "restify-cors-middleware": "^1.1.0",
     "xmlhttprequest": "^1.8.0"

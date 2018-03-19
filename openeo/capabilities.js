@@ -1,61 +1,67 @@
-const outputFormats = {
-	PNG: {},
-	JPEG: {}
-};
+var Capabilities = {
 
-function getCapabilities(req, res, next) {
-	res.json([
-		'/capabilities/services',
-		'/capabilities/output_formats',
-		'/data',
-		'/data/{product_id}',
-		'/processes',
-		'/processes/{process_id}',
-		'/execute',
-		'/users/{user_id}/credits'
-	]);
-	return next();
-}
+	outputFormats: {
+		PNG: {},
+		JPEG: {}
+	},
 
-function getServices(req, res, next) {
-	res.json([]);
-	return next();
-}
+	services: {
+		wms: {}
+	},
 
-function isValidOutputFormat(format) {
-	return (typeof outputFormats[format.toUpperCase()] === 'object') ? true : false;
-}
+	endpoints: [],
 
-function getDefaultOutputFormat() {
-	return "JPEG";
-}
+	init() {
+		return new Promise((resolve, reject) => resolve());
+	},
 
-function translateOutputFormat(format) {
-	format = format.toLowerCase();
-	switch(format) {
-		case 'jpeg':
-			return 'jpg';
-		default:
-			return format;
+	routes(server) {
+		server.addEndpoint('get', '/capabilities', this.getCapabilities.bind(this));
+		server.addEndpoint('get', '/capabilities/services', this.getServices.bind(this));
+		server.addEndpoint('get', '/capabilities/output_formats', this.getOutputFormats.bind(this));
+	},
+
+	addEndpoint(method, path) {
+		this.endpoints.push(path);
+	},
+
+	getCapabilities(req, res, next) {
+		res.json(this.endpoints);
+		return next();
+	},
+
+	getServices(req, res, next) {
+		res.json(Object.keys(this.services));
+		return next();
+	},
+
+	isValidOutputFormat(format) {
+		return (typeof this.outputFormats[format.toUpperCase()] === 'object') ? true : false;
+	},
+
+	getDefaultOutputFormat() {
+		return "JPEG";
+	},
+
+	translateOutputFormat(format) {
+		format = format.toLowerCase();
+		switch(format) {
+			case 'jpeg':
+				return 'jpg';
+			default:
+				return format;
+		}
+	},
+
+	getOutputFormats(req, res, next) {
+
+		res.json({
+			default: this.getDefaultOutputFormat(),
+			formats: this.outputFormats
+		});
+		return next();
 	}
-}
-
-function getOutputFormats(req, res, next) {
-
-	res.json({
-		default: getDefaultOutputFormat(),
-		formats: outputFormats
-	});
-	return next();
-}
-
-
-module.exports = {
-	getCapabilities,
-	getServices,
-	getOutputFormats,
-	getDefaultOutputFormat,
-	isValidOutputFormat,
-	translateOutputFormat
 };
+
+module.exports = Capabilities;
 

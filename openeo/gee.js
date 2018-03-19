@@ -5,7 +5,7 @@ const axios = require('axios');
 const path = require('path');
 require("google-closure-library");
 const { google } = require('googleapis');
-const { encodeQueryParams } = require('./utils');
+const Utils = require('./utils');
 global.XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest; // Make XMLHttpRequest available in node for the ee client
 
 // include GEE sources
@@ -55,7 +55,7 @@ const eeAuthenticator = {
 				'client_id': this.authInfo.client_id
 			};
 
-			var uri = 'https://accounts.google.com/o/oauth2/auth?' + encodeQueryParams(params);
+			var uri = 'https://accounts.google.com/o/oauth2/auth?' + Utils.encodeQueryParams(params);
 
 			console.log("Visit the following URL to get an authorization code:");
 			console.log(uri);
@@ -84,7 +84,7 @@ const eeAuthenticator = {
 						'Content-Type': 'application/x-www-form-urlencoded'
 					}
 				};
-				axios.post('https://accounts.google.com/o/oauth2/token', encodeQueryParams(params), options)
+				axios.post('https://accounts.google.com/o/oauth2/token', Utils.encodeQueryParams(params), options)
 					.then(res => {
 						if (!res.data.refresh_token) {
 							throw "No refresh token found in response.";
