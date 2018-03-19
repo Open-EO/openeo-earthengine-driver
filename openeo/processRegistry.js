@@ -130,16 +130,22 @@ ProcessRegistry.processes = {
 
 	stretch_colors: {
 		process_id: "stretch_colors",
-		description: "Color stretching for NDVI.",
+		description: "Color stretching",
 		args: {
 			imagery: {
 				description: "image or image collection"
+			},
+			min: {
+				description: "minimum value"
+			},
+			max: {
+				description: "maximum value"
 			}
 		},
 		eeCode(args) {
 			return toImage(args.imagery).visualize({
-				min: -1,
-				max: 1,
+				min: args.min,
+				max: args.max,
 				palette: ['000000', 'FFFFFF']
 			});
 		}
