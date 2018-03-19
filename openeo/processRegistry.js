@@ -126,7 +126,25 @@ ProcessRegistry.processes = {
 		eeCode(args) {
 			return toImageCollection(args.imagery).min();
 		}
+	},
+
+	stretch_colors: {
+		process_id: "stretch_colors",
+		description: "Color stretching for NDVI.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			}
+		},
+		eeCode(args) {
+			return toImage(args.imagery).visualize({
+				min: -1,
+				max: 1,
+				palette: ['000000', 'FFFFFF']
+			});
+		}
 	}
+
 };
 
 function toImage(obj) {

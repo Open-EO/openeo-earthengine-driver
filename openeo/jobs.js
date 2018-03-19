@@ -21,12 +21,17 @@ function postExecute(req, res, next) {
 	try {
 		global.downloadRegion = null; // This is a hack. Search for all occurances and remove them.
 		var obj = ProcessRegistry.parseProcessGraph(req.body.process_graph);
-		// Replace getThumbURL with getDownloadURL
 		var image = ProcessRegistry.toImage(obj);
-		var url = image.clip(global.downloadRegion).getThumbURL({
+		// Download image
+		if (global.downloadRegion === null) {
+			global.downloadRegion = image.geometry();
+		}
+		var bounds = global.downloadRegion.bounds().getInfo();
+		// Replace getThumbURL with getDownloadURL
+		var url = image.getThumbURL({
 			format: translateOutputFormat(format),
-			dimensions: '1024',
-			region: image.geometry().getInfo()
+			dimensions: '512',
+			region: bounds
 		});
 		console.log("Downloading " + url);
 		axios({
@@ -34,10 +39,9 @@ function postExecute(req, res, next) {
 			url: url,
 			responseType: 'stream'
 		}).then(stream => {
-			var fs = require("fs");
-			stream.data.pipe(fs.createWriteStream("../image.jpg"));
-			res.send(200);
-//			stream.data.pipe(res);
+			var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
+			res.header('Content-Type', contentType);
+			stream.data.pipe(res);
 		}).catch(() => {
 			res.send(500);
 		});
