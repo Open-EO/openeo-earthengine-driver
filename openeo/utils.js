@@ -4,7 +4,7 @@ const crypto = require("crypto");
 var Utils = {
 
 	toISODate(timestamp) {
-		return timestamp; // ToDo
+		return (new Date(timestamp)).toISOString().substr(0, 10);
 	},
 	
 	encodeQueryParams(data) {
@@ -42,6 +42,10 @@ var Utils = {
 
 	getTimestamp() {
 		return Math.floor(Date.now() / 1000);
+	},
+
+	getISODateTime() {
+		return (new Date(this.getTimestamp())).toISOString().replace('.000', '');
 	}
 
 };

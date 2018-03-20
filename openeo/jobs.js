@@ -15,39 +15,104 @@ var Jobs = {
 
 	routes(server) {
 		server.addEndpoint('post', '/execute', this.postExecute.bind(this));
+		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
+		server.addEndpoint('get', '/jobs/{job_id}/download', this.getJobDownload.bind(this));
+		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
+	},
+
+	getUserJobs(req, res, next) {
+		var query = {
+			user_id: req.user._id
+		};
+		this.db.find(query, {}, (err, jobs) => {
+			if (err) {
+				res.send(500, err);
+				return next();
+			}
+			else {
+				jobs = jobs.map(job => {
+					return this.makeJobResponse(job);
+				});
+				res.json(jobs);
+				return next();
+			}
+		});
+	},
+
+	getJobDownload(req, res, next) {
+		var query = {
+			_id: req.params.job_id,
+			user_id: req.user._id
+		};
+		// ToDo: Check whether a job is canceled.
+		this.db.findOne(query, {}, (err, job) => {
+			if (err) {
+				res.send(500, err);
+				return next();
+			}
+			else if (job === null) {
+				res.send(404);
+				return next();
+			}
+
+			try {
+				var url = this.execute(job.process_graph, job.output);
+				res.send([url]);
+			} catch (e) {
+				if (e === 406) {
+					res.send(406);
+				}
+				else {
+					res.send(400, e);
+				}
+			}
+			return next();
+		});
+	},
+
+	postJob(req, res, next) {
+		if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
+			res.send(400, "No process_graph specified.");
+			return next();
+		}
+		try {
+			ProcessRegistry.parseProcessGraph(req.body.process_graph, false);
+		} catch (e) {
+			res.send(400, e); // Invalid process graph
+			return next();
+		}
+
+		var data = {
+			process_graph: req.body.process_graph,
+			status: "submitted",
+			submitted: Utils.getISODateTime(),
+			updated: Utils.getISODateTime(),
+			user_id: req.user._id,
+			consumed_credits: 0
+		};
+		if (typeof req.body.output === 'object' && typeof req.body.output.format === 'string') {
+			data.output = req.body.output;
+		}
+		this.db.insert(data, (err, job) => {
+			if (err) {
+				res.send(500, err);
+				return next();
+			}
+			else {
+				res.json(this.makeJobResponse(job));
+				return next();
+			}
+		});
 	},
 
 	postExecute(req, res, next) {
-		if (typeof req.body.process_graph !== 'object') {
+		if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
 			res.send(400, "No process_graph specified.");
 			return next();
 		}
 	
-		var format = Capabilities.getDefaultOutputFormat();
-		if (typeof req.body.output.format === 'string') {
-			if (Capabilities.isValidOutputFormat(req.body.output.format)) {
-				format = req.body.output.format;
-			} else {
-				res.send(406, "Output format is not supported.");
-				return next();
-			}
-		}
-	
 		try {
-			global.downloadRegion = null; // This is a hack. Search for all occurances and remove them.
-			var obj = ProcessRegistry.parseProcessGraph(req.body.process_graph);
-			var image = ProcessRegistry.toImage(obj);
-			// Download image
-			if (global.downloadRegion === null) {
-				global.downloadRegion = image.geometry();
-			}
-			var bounds = global.downloadRegion.bounds().getInfo();
-			// Replace getThumbURL with getDownloadURL
-			var url = image.getThumbURL({
-				format: Capabilities.translateOutputFormat(format),
-				dimensions: '512',
-				region: bounds
-			});
+			var url = this.execute(req.body.process_graph, req.body.output);
 			console.log("Downloading " + url);
 			axios({
 				method: 'get',
@@ -61,10 +126,55 @@ var Jobs = {
 				res.send(500);
 			});
 		} catch (e) {
-			console.log(e);
-			res.send(400, e);
+			if (e === 406) {
+				res.send(406);
+			}
+			else {
+				res.send(400, e);
+			}
 		}
 		next();
+	},
+
+	makeJobResponse(job) {
+		return {
+			job_id: job._id,
+			status: job.status,
+			submitted: job.submitted,
+			updated: job.updated,
+			user_id: job.user_id,
+			consumed_credits: job.consumed_credits
+		};
+	},
+
+	execute(processGraph, output) {
+		// Check output format
+		var format = Capabilities.getDefaultOutputFormat();
+		if (typeof output === 'object' && typeof output.format === 'string') {
+			if (Capabilities.isValidOutputFormat(output.format)) {
+				format = output.format;
+			} else {
+				throw 406;
+			}
+		}
+
+		// Execute graph
+		global.downloadRegion = null; // This is a hack. Search for all occurances and remove them.
+		var obj = ProcessRegistry.parseProcessGraph(processGraph);
+		var image = ProcessRegistry.toImage(obj);
+
+		// Download image
+		if (global.downloadRegion === null) {
+			global.downloadRegion = image.geometry();
+		}
+		var bounds = global.downloadRegion.bounds().getInfo();
+		// Replace getThumbURL with getDownloadURL
+		var url = image.getThumbURL({
+			format: Capabilities.translateOutputFormat(format),
+			dimensions: '512',
+			region: bounds
+		});
+		return url;
 	}
 
 };
