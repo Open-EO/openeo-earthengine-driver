@@ -3,6 +3,8 @@ const Capabilities = require('./capabilities');
 const ProcessRegistry = require('./processRegistry');
 const Utils = require('./utils');
 
+const CANCELED_STATE = 'canceled';
+
 var Jobs = {
 
 	db: null,
@@ -17,6 +19,7 @@ var Jobs = {
 		server.addEndpoint('post', '/execute', this.postExecute.bind(this));
 		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/download', this.getJobDownload.bind(this));
+		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
 	},
 
@@ -39,12 +42,32 @@ var Jobs = {
 		});
 	},
 
+	patchJobCancel(req, res, next) {
+		var query = {
+			_id: req.params.job_id,
+			user_id: req.user._id
+		};
+		this.db.update(query, { $set: { status: CANCELED_STATE } }, {}, function (err, numChanged) {
+			if (err) {
+				res.send(500, err);
+				return next();
+			}
+			else if (numChanged === 0) {
+				res.send(404);
+				return next();
+			}
+			else {
+				res.send(200);
+				return next();
+			}
+		});
+	},
+
 	getJobDownload(req, res, next) {
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-		// ToDo: Check whether a job is canceled.
 		this.db.findOne(query, {}, (err, job) => {
 			if (err) {
 				res.send(500, err);
@@ -52,6 +75,10 @@ var Jobs = {
 			}
 			else if (job === null) {
 				res.send(404);
+				return next();
+			}
+			else if (job.status.toLowerCase() === CANCELED_STATE) {
+				res.send(410);
 				return next();
 			}
 
