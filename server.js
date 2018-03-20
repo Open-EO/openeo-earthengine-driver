@@ -40,26 +40,16 @@ var geeServer = {
 		this.server[method](serverPath, callback);
 	},
 
-	startServer() {
-		const corsMiddleware = require('restify-cors-middleware');
-		const cors = corsMiddleware({
-			origins: ['*'],
-			allowHeaders: ['Authorization'],
-			credentials: true
-		});
-		
+	startServer() {		
 		const restify = require('restify');
 		this.server = restify.createServer();
+		this.server.pre(this.preflight);
 		this.server.use(restify.plugins.queryParser());
 		this.server.use(restify.plugins.bodyParser());
 		this.server.use(restify.plugins.authorizationParser());
-		this.server.pre(cors.preflight);
-		this.server.use(cors.actual);
+		this.server.use(this.corsHeader);
 		this.server.use(Users.checkAuthToken.bind(Users));
-		this.server.use((req, res, next) => {
-			req.serverUrl = this.server.url;
-			next();
-		});
+		this.server.use(this.bindVars);
 
 		this.initEndpoints().then(() => {
 			// Add routes
@@ -75,6 +65,36 @@ var geeServer = {
 			console.log(error);
 			process.exit(2);
 		});
+	},
+
+	bindVars(req, res, next) {
+		req.serverUrl = this.server.url;
+		next();
+	},
+
+	corsHeader(req, res, next) {
+		if (!req.headers['origin']) {
+			return next();
+		}
+
+		res.setHeader('access-control-allow-origin', req.headers['origin']);
+		res.setHeader('access-control-allow-credentials', 'true');
+		return next();
+	},
+
+	preflight(req, res, next) {
+		if (req.method !== 'OPTIONS') {
+			return next();
+		}
+
+		res.once('header', () => {
+			res.header('access-control-allow-origin', req.headers['origin'])
+			res.header('access-control-allow-credentials', 'true')
+			res.header('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
+			res.header('access-control-allow-headers', 'Authorization, Content-Type');
+		});
+
+		res.send(204);
 	}
 
 };
