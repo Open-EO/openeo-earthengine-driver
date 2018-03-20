@@ -22,11 +22,17 @@ var Users = {
 			return next();
 		}
 
-		this.db.findOne({token: req.authorization.credentials}, (err, user) => {
+		this.db.findOne({ token: req.authorization.credentials }, (err, user) => {
 			if (err || user === null) {
 				res.send(403);
 				return next();
 			}
+
+			// ToDo: Expire token
+
+			// Update token time
+			user.tokenTime = Utils.getTimestamp();
+			this.db.update({ token: req.authorization.credentials }, { $set: { tokenTime: user.tokenTime } }, {});
 
 			req.user = user;
 			return next();
@@ -36,18 +42,28 @@ var Users = {
 	getLogin(req, res, next) {
 		if (req.authorization.scheme == 'Basic') {
 			var query = {
-				_id: req.authorization.basic.username,
-				password: req.authorization.basic.password
+				_id: req.authorization.basic.username
 			};
 			this.db.findOne(query, (err, user) => {
 				if (user === null) {
-					res.send(403);
+					res.send(403, err); // User not found
 					return next();
 				}
 				else {
+					var pw = Utils.hashPassword(req.authorization.basic.password, user.passwordSalt);
+					if (pw.passwordHash !== user.password) {
+						res.send(403); // Password invalid
+						return next();
+					}
+
 					user.token = Utils.generateHash();
+					user.tokenTime = Utils.getTimestamp();
 					req.user = user;
-					this.db.update({ _id: req.authorization.basic.username }, { $set: { token: user.token } }, {}, (err, numReplaced) => {
+					var dataToUpdate = {
+						token: user.token,
+						tokenTime: user.tokenTime
+					};
+					this.db.update({ _id: req.authorization.basic.username }, { $set: dataToUpdate }, {}, (err, numReplaced) => {
 						if (numReplaced === 1) {
 							res.json({
 								user_id: user._id,
@@ -56,7 +72,7 @@ var Users = {
 							return next();
 						}
 						else {
-							res.send(500);
+							res.send(500, err);
 							return next();
 						}
 					});
@@ -64,7 +80,7 @@ var Users = {
 			});
 		}
 		else {
-			res.send(403);
+			res.send(403, "Invalid authentication scheme.");
 			return next();
 		}
 	},
@@ -76,10 +92,12 @@ var Users = {
 		}
 
 		var userData = this.emptyUser(false);
-		userData.password = req.body.password;
+		var pw = Utils.encryptPassword(req.body.password);
+		userData.password = pw.passwordHash;
+		userData.passwordSalt = pw.salt;
 		this.db.insert(userData, (err, user) => {
 			if (err) {
-				res.send(500);
+				res.send(500, err);
 				return next();
 			}
 			else {
@@ -100,7 +118,9 @@ var Users = {
 	emptyUser(withId = true) {
 		var user = {
 			password: null,
+			passwordSalt: null,
 			token: null,
+			tokenExpiry: 0,
 			credits: 0
 		};
 		if (withId) {
