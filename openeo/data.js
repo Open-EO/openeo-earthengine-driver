@@ -90,10 +90,11 @@ var Data = {
 	
 	getData(req, res, next) {
 		var data = Object.values(this.cache).map(e => {
-			delete e.time;
-			delete e.bands;
-			delete e.extent;
-			return e;
+			return {
+				product_id: e.product_id,
+				description: e.description,
+				source: e.source
+			};
 		});
 		res.json(data);
 		return next();

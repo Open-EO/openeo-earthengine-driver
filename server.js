@@ -9,6 +9,7 @@ var geeServer = {
 		processes: require('./openeo/processes'),
 		jobs: require('./openeo/jobs'),
 		users: Users,
+		processGraphs: require('./openeo/processGraphs')
 	},
 
 	server: null,
@@ -37,6 +38,9 @@ var geeServer = {
 	addEndpoint(method, path, callback) {
 		Capabilities.addEndpoint(method, path);
 		var serverPath = path.replace(/\{([\w]+)\}/g, ":$1");
+		if (method === 'delete') {
+			method = 'del';
+		}
 		this.server[method](serverPath, callback);
 	},
 

@@ -10,10 +10,15 @@ var ProcessRegistry = {
 		return null;
 	},
 	
-	parseProcessGraph(obj) {
+	parseProcessGraph(obj, execute = true) {
 		if (obj.hasOwnProperty("product_id")) { // Image Collection
 			// ToDo: Check whether product exists
-			return ee.ImageCollection(obj.product_id);
+			if (execute === true) {
+				return ee.ImageCollection(obj.product_id);
+			}
+			else {
+				return obj;
+			}
 		}
 		else if(obj.hasOwnProperty("process_id")) { // Process
 			var process = this.get(obj.process_id);
@@ -21,9 +26,14 @@ var ProcessRegistry = {
 				throw "Process '" + obj.process_id + "' is not supported.";
 			}
 			for(var a in obj.args) {
-				obj.args[a] = this.parseProcessGraph(obj.args[a]);
+				obj.args[a] = this.parseProcessGraph(obj.args[a], execute);
 			}
-			return process.eeCode(obj.args);
+			if (execute === true) {
+				return process.eeCode(obj.args);
+			}
+			else {
+				return obj;
+			}
 		}
 		else if (obj === null || typeof obj === 'boolean' || Array.isArray(obj) || typeof obj === 'number' || typeof obj === 'string') {
 			// ToDO: Check if array is valid

@@ -13,9 +13,10 @@ var Processes = {
 
 	getProcesses(req, res, next) {
 		var data = Object.values(ProcessRegistry.processes).map(e => {
-			delete e.args;
-			delete e.eeCode;
-			return e;
+			return {
+				process_id: e.process_id,
+				description: e.description
+			};
 		});
 		res.json(data);
 		return next();
@@ -24,8 +25,11 @@ var Processes = {
 	getProcessById(req, res, next) {
 		var process = ProcessRegistry.get(req.params.process_id);
 		if (process !== null) {
-			delete process.eeCode;
-			res.json(process);
+			res.json({
+				process_id: process.process_id,
+				description: process.description,
+				args: process.args
+			});
 		}
 		else {
 			res.send(404);
