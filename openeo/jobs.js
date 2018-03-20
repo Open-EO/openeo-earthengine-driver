@@ -63,6 +63,32 @@ var Jobs = {
 		});
 	},
 
+	findJob(query) {
+		return new Promise((resolve, reject) => {
+			this.db.findOne(query, {}, (err, job) => {
+				if (err || job === null) {
+					reject();
+				}
+				else {
+					resolve(job);
+				}
+			});
+		});
+	},
+
+	findJobById(job_id) {
+		return this.findJob({
+			_id: job_id
+		});
+	},
+
+	findJobForUserById(job_id, user_id) {
+		return this.findJob({
+			_id: job_id,
+			user_id: user_id
+		});
+	},
+
 	getJobDownload(req, res, next) {
 		var query = {
 			_id: req.params.job_id,
@@ -149,8 +175,11 @@ var Jobs = {
 				var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
 				res.header('Content-Type', contentType);
 				stream.data.pipe(res);
-			}).catch(() => {
+				return next();
+			}).catch((e) => {
+				console.log(e);
 				res.send(500);
+				next();
 			});
 		} catch (e) {
 			if (e === 406) {
@@ -159,8 +188,8 @@ var Jobs = {
 			else {
 				res.send(400, e);
 			}
+			return next();
 		}
-		next();
 	},
 
 	makeJobResponse(job) {
@@ -195,7 +224,7 @@ var Jobs = {
 			global.downloadRegion = image.geometry();
 		}
 		var bounds = global.downloadRegion.bounds().getInfo();
-		// Replace getThumbURL with getDownloadURL
+		// ToDo: Replace getThumbURL with getDownloadURL
 		var url = image.getThumbURL({
 			format: Capabilities.translateOutputFormat(format),
 			dimensions: '512',

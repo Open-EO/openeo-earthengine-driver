@@ -6,7 +6,7 @@ var Capabilities = {
 	},
 
 	services: {
-		wms: {}
+		xyz: {}
 	},
 
 	endpoints: [],
@@ -37,6 +37,10 @@ var Capabilities = {
 
 	isValidOutputFormat(format) {
 		return (typeof this.outputFormats[format.toUpperCase()] === 'object') ? true : false;
+	},
+
+	isValidServiceType(service_type) {
+		return (typeof this.services[service_type.toLowerCase()] === 'object') ? true : false;
 	},
 
 	getDefaultOutputFormat() {

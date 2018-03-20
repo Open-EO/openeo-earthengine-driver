@@ -45,7 +45,7 @@ var Utils = {
 	},
 
 	getISODateTime() {
-		return (new Date(this.getTimestamp())).toISOString().replace('.000', '');
+		return (new Date()).toISOString().replace('.000', '');
 	}
 
 };

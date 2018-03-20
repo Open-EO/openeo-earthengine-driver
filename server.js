@@ -1,5 +1,6 @@
 const Capabilities = require('./openeo/capabilities');
 const Users = require('./openeo/users');
+const Services = require('./openeo/services');
 
 var geeServer = {
 
@@ -8,6 +9,7 @@ var geeServer = {
 		data: require('./openeo/data'),
 		processes: require('./openeo/processes'),
 		jobs: require('./openeo/jobs'),
+		services: Services,
 		users: Users,
 		processGraphs: require('./openeo/processGraphs')
 	},
@@ -53,7 +55,6 @@ var geeServer = {
 		this.server.use(restify.plugins.authorizationParser());
 		this.server.use(this.corsHeader);
 		this.server.use(Users.checkAuthToken.bind(Users));
-		this.server.use(this.bindVars);
 
 		this.initEndpoints().then(() => {
 			// Add routes
@@ -62,18 +63,15 @@ var geeServer = {
 			}
 			// Start server on port ...
 			const port = process.env.PORT || this.serverPort;
-			this.server.listen(port, () =>
-				console.log('%s listening at %s', this.server.name, this.server.url)
-			);
+			this.server.listen(port, () => {
+				var serverUrl = this.server.url.replace('[::]', '127.0.0.1');
+				Services.serverUrl = serverUrl;
+				console.log('%s listening at %s', this.server.name, serverUrl)
+			});
 		}).catch((error) => {
 			console.log(error);
 			process.exit(2);
 		});
-	},
-
-	bindVars(req, res, next) {
-		req.serverUrl = this.server.url;
-		next();
 	},
 
 	corsHeader(req, res, next) {

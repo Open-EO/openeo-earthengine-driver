@@ -67,8 +67,9 @@ ProcessRegistry.processes = {
 			}
 		},
 		eeCode(args) {
-			// Parent needs to be an Image
-			return toImage(args.imagery).normalizedDifference([args.nir, args.red]);
+			return toImageCollection(args.imagery).map(function(image) {
+				return image.normalizedDifference([args.nir, args.red]);
+			});
 		}
 	},
 
