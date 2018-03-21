@@ -126,6 +126,19 @@ ProcessRegistry.processes = {
 		}
 	},
 
+	max_time: {
+		process_id: "max_time",
+		description: "Finds the maximum value of time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			}
+		},
+		eeCode(args) {
+			return toImageCollection(args.imagery).max();
+		}
+	},
+
 	min_time: {
 		process_id: "min_time",
 		description: "Finds the minimum value of time series for all bands of the input dataset.",
