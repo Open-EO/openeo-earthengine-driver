@@ -65,3 +65,26 @@ OpenEO.Editor.ProcessGraph = OpenEO.ImageCollection.create("COPERNICUS/S2")
 	.process("stretch_colors", {min: -1, max: 1}, "imagery");
 ```
 
+This translates into the following [Google Earth Engine Playground]{https://code.earthengine.google.com/} Script:
+```
+// create image collection
+var img = ee.ImageCollection('COPERNICUS/S2');
+
+// filter_bbox
+var geom = ee.Geometry.Rectangle([9,12,9.1,12.1], "EPSG:4326");
+img = img.filterBounds(geom);
+
+// filter_daterange
+img = img.filterDate("2017-01-01", "2017-01-31");
+
+// ndvi
+img = img.map(function(image) {
+  return image.normalizedDifference(['B4', 'B8']);
+});
+
+// min_time
+img = ee.ImageCollection(img).min(); // toImageCollection
+
+// stretch_color and mapping
+Map.addLayer(img, {min: -1, max: 1, palette: ['black', 'white']});
+```
