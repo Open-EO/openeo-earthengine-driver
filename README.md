@@ -65,7 +65,7 @@ OpenEO.Editor.ProcessGraph = OpenEO.ImageCollection.create("COPERNICUS/S2")
 	.process("stretch_colors", {min: -1, max: 1}, "imagery");
 ```
 
-This translates into the following [Google Earth Engine Playground]{https://code.earthengine.google.com/} Script:
+This translates into the following [Google Earth Engine Playground](https://code.earthengine.google.com/) Script:
 ```
 // create image collection
 var img = ee.ImageCollection('COPERNICUS/S2');
