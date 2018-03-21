@@ -83,7 +83,7 @@ img = img.map(function(image) {
 });
 
 // min_time
-img = ee.ImageCollection(img).min(); // toImageCollection
+img = img.min();
 
 // stretch_color and mapping
 Map.addLayer(img, {min: -1, max: 1, palette: ['black', 'white']});
