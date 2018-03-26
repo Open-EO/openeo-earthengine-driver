@@ -3,7 +3,7 @@ Back-end driver for [Google Earth Engine](https://earthengine.google.com/) (proo
 
 To start the server run `npm install` to install the dependencies and  `npm run start` to start the server. When running the server for the first time you will be asked to allow the server access to Google Earth Engine with your Google account. The server will explain the steps you need to take to authenticate.
 
-Afterwards you can use the [openEO Core API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
+Afterwards you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 
 Currently, use case 1 of the proof of concept is supported. An exemplary process graph looks like this: 
 

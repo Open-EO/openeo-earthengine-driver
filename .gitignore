@@ -1,5 +1,4 @@
 /node_modules/
-/storage/cache.json
 /storage/gee-token
 /storage/*.db
 /nbproject/

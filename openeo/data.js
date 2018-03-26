@@ -3,92 +3,36 @@ const Utils = require('./utils');
 
 var Data = {
 
-	cache: null,
+	cache: [],
 
 	init() {
-		this.cache = {
-			'COPERNICUS/S2': {
-				product_id: 'COPERNICUS/S2',
-				description: "Sentinel-2 MSI: MultiSpectral Instrument, Level-1C",
-				source: "European Union/ESA/Copernicus",
-				extent: {
-					srs: "EPSG:4326",
-					left: -180,
-					right: 180,
-					bottom: -90,
-					top: 90
-				},
-				time: {
-					from: "2015-06-23",
-					to: "2018-03-14"
-				},
-				bands: []
+		var datasets = require('../storage/datasets.json');
+		for(var i in datasets) {
+			var data = datasets[i];
+			var source = [];
+			if (data.provider) {
+				source.push(data.provider);
 			}
-		};
-		console.log("INFO: Data sets loaded.");
+			if (data.provider_url) {
+				source.push(data.provider_url);
+			}
+			this.cache[data.id] = {
+				product_id: data.id,
+				description: data.title,
+				source: source.join(', ')
+			};
+		}
+		console.log("INFO: Added " + Utils.size(this.cache) + " datasets to cache.");
 		return new Promise((resolve, reject) => resolve());
-	
-	/*	return Promise.all([
-			this.loadDataByName("Copernicus"),
-			this.loadDataByName("Landsat")
-		]).then(data => {
-			console.log("INFO: Added " + Utils.size(this.cache) + " datasets to cache.");
-			return data;
-		}); */
-
 	},
 
 	routes(server) {
 		server.addEndpoint('get', '/data', this.getData.bind(this));
 		server.addEndpoint('get', '/data/{product_id}', this.getDataById.bind(this));
 	},
-
-	loadDataByName(name) {
-		var options = {
-			headers: {}
-		};
-		var authToken = ee.data.getAuthToken();
-		if (goog.isDefAndNotNull(authToken)) {
-			options.headers['Authorization'] = authToken;
-		}
-		return axios.get('https://code.earthengine.google.com/rasters', {q: name}, options)
-			.then((res) => {
-				if (!Array.isArray(res.data.data)) {
-					throw "Invalid response; no data found";
-				}
-				
-				for(var i in res.data.data) {
-					this.cache[res.data.data[i].id] = this.translateData(res.data.data[i]);
-				}
-	
-				return res;
-			})
-			.catch((error) => {
-				throw "Could not load raster for '" + name + "' data from Google: " + error;
-			});
-	},
-	
-	translateData(gData) {
-		return {
-			product_id: gData.id,
-			description: gData.title,
-			source: gData.provider,
-			extent: { // Extent is unknown, this is placeholder data
-				srs: "EPSG:4326",
-				left: -180,
-				right: 180,
-				bottom: -90,
-				top: 90
-			},
-			time: {
-				from: Utils.toISODate(gData.date_range[0]),
-				to: Utils.toISODate(gData.date_range[1])
-			},
-			bands: [] // Bands are in the description, maybe parse HTML?
-		};
-	},
 	
 	getData(req, res, next) {
+		// Remove unused data
 		var data = Object.values(this.cache).map(e => {
 			return {
 				product_id: e.product_id,
@@ -103,12 +47,53 @@ var Data = {
 	
 	getDataById(req, res, next) {
 		if (typeof this.cache[req.params.product_id] !== 'undefined') {
-			res.json(this.cache[req.params.product_id]);
+			var data = this.cache[req.params.product_id];
+			if (typeof data.extent !== 'object') { // Allow caching
+				this.gatherExtendedInfo(req.params.product_id);
+			}
+			res.json(data);
 		}
 		else {
 			res.send(404);
 		}
 		return next();
+	},
+
+	gatherExtendedInfo(id) {
+		var images = ee.ImageCollection(id);
+
+		// Get date range
+		var dates = images.get('date_range');
+		if (Array.isArray(dates) && dates.length == 2) {
+			this.cache[id].time = {
+				from: Utils.toISODate(dates[0]),
+				to: Utils.toISODate(dates[1])
+			};
+		}
+
+		// Get bands (assuming all images contain the same bands)
+		var metadata = images.first().getInfo();
+		var bands = [];
+		if (Array.isArray(metadata.bands)) {
+			for(var i in metadata.bands) {
+				var band = metadata.bands[i];
+				bands.push({
+					band_id: band.id
+				});
+			}
+		}
+		this.cache[id].bands = bands;
+
+		// No extent information found, assume it is global...
+		this.cache[id].extent = {
+			srs: "EPSG:4326",
+			left: -180,
+			right: 180,
+			bottom: -90,
+			top: 90
+		};
+
+		console.log("INFO: Loaded additional data set information for '" + id + "'.");
 	}
 
 };
