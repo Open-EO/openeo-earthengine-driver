@@ -1,5 +1,5 @@
 /node_modules/
-/storage/gee-token
+/storage/gee-oauth-token
 /storage/*.db
 /nbproject/
 /package-lock.json

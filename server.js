@@ -20,7 +20,7 @@ var geeServer = {
 	init() {
 		console.log('Initializing openEO Google Earth Engine driver...');
 		const { eeAuthenticator } = require('./openeo/gee.js');
-		eeAuthenticator.withConsole(() => {
+		eeAuthenticator.authenticate(() => {
 			console.log("GEE Authentication succeeded.");
 			this.startServer();
 		}, (error) => {

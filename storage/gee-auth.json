@@ -1,5 +1,11 @@
 {
-  "client_id": "",
-  "client_secret": "",
-  "redirect_uri": "urn:ietf:wg:oauth:2.0:oob"
+  "method": "OAuth",
+  "OAuth": {
+	"clientId": "",
+	"clientSecret": "",
+	"redirectUri": "urn:ietf:wg:oauth:2.0:oob"
+  },
+  "ServiceAccount": {
+    "privateKeyFile": ""
+  }
 }

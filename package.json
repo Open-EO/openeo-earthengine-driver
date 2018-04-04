@@ -20,12 +20,12 @@
     "nodemon": "^1.17.2"
   },
   "dependencies": {
+    "@google/earthengine": "^0.1.136-prerelease",
     "axios": "^0.18.0",
     "google-closure-library": "^20180204.0.0",
     "googleapis": "^27.0.0",
     "nedb": "^1.8.0",
-    "restify": "^6.3.4",
-    "xmlhttprequest": "^1.8.0"
+    "restify": "^6.3.4"
   },
   "nodemonConfig": {
     "ignore": [
