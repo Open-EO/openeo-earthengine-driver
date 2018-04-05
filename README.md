@@ -1,7 +1,19 @@
 # openeo-earthengine-driver
 Back-end driver for [Google Earth Engine](https://earthengine.google.com/) (proof of concept).
 
-To start the server run `npm install` to install the dependencies and  `npm run start` to start the server. When running the server for the first time you will be asked to allow the server access to Google Earth Engine with your Google account. The server will explain the steps you need to take to authenticate.
+## Configuration / Authentication
+
+The server needs to authenticate with a service account using private key or a user account using OAuth. Both accounts need to have access rights for earth engine. Open the file storage/gee-auth.json and set the method to either `ServiceAccount` or `OAuth`.
+
+For [service accounts](https://developers.google.com/earth-engine/service_account) you need to place your private key file into the storage folder and specify the file name of the private key in the property `privateKeyFile`. 
+
+For OAuth based authentication fill in the `clientId` and the `clientSecret` properties. When running the server for the first time you will be asked to allow the server access to Google Earth Engine with your Google account. The server will explain the steps you need to take to authenticate.
+
+More information about authentication can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
+
+## Usage
+
+To start the server run `npm install` to install the dependencies and  `npm run start` to start the server. 
 
 Afterwards you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 

@@ -15,7 +15,7 @@ const eeAuthenticator = {
 	refreshTokenFile: path.join(__dirname, '../storage/gee-oauth-token'),
 
 	authenticate(onsuccess, onerror) {
-		this.authInfo = JSON.parse(fs.readFileSync(this.authFile, 'utf8'));
+		this.authInfo = require(this.authFile);
 		if (this.authInfo.method == 'OAuth') {
 			this.withOAuthFromConsole(onsuccess, onerror);
 		}
@@ -28,7 +28,7 @@ const eeAuthenticator = {
 	},
 
 	withPrivateKey(onsuccess, onerror) {
-		const privateKey = require(this.authInfo.ServiceAccount.privateKeyFile);
+		const privateKey = require(path.join('../storage/', this.authInfo.ServiceAccount.privateKeyFile));
 		ee.data.authenticateViaPrivateKey(privateKey, onsuccess, onerror);
 	},
 
