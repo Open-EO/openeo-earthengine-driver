@@ -66,25 +66,19 @@ var Services = {
 			
 						// Download image
 						// ToDo: Replace getThumbURL with getDownloadURL
-						var url = image.getThumbURL({
+						image.getThumbURL({
 							format: 'jpeg',
 							dimensions: '256x256',
 							region: rect.bounds().getInfo()
-						});
-	
-						console.log("Downloading " + url);
-						axios({
-							method: 'get',
-							url: url,
-							responseType: 'stream'
-						}).then(stream => {
-							var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
-							res.status(200);
-							res.header('Content-Type', contentType);
-							stream.data.pipe(res);
-						}).catch((e) => {
-							res.send(500);
-							return next();
+						}, url => {
+							if (!url) {
+								console.log('Download URL from Google is empty.');
+								res.send(404);
+							}
+							else {
+								console.log("Downloading " + url);
+								res.redirect(url, next);
+							}
 						});
 					} catch(e) {
 						console.log(e);
