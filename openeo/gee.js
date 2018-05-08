@@ -6,7 +6,7 @@ const path = require('path');
 require("google-closure-library");
 const { google } = require('googleapis');
 const Utils = require('./utils');
-const ee = require('@google/earthengine');
+global.ee = require('@google/earthengine');
 
 const eeAuthenticator = {
 	
