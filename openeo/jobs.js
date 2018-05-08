@@ -18,6 +18,7 @@ var Jobs = {
 	routes(server) {
 		server.addEndpoint('post', '/execute', this.postExecute.bind(this));
 		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
+		server.addEndpoint('get', '/jobs/{job_id}', this.getJob.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/download', this.getJobDownload.bind(this));
 		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
@@ -40,6 +41,19 @@ var Jobs = {
 				return next();
 			}
 		});
+	},
+
+	getJob(req, res, next) {
+		Jobs.findJobForUserById(req.params.job_id, req.user._id)
+			.then(job => {
+				res.json(this.makeJobResponse(job));
+				return next();
+			})
+			.catch((e) => {
+				console.log(e);
+				res.send(404, "Specified Job ID does not exist.");
+				return next();
+			});
 	},
 
 	patchJobCancel(req, res, next) {
