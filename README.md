@@ -95,7 +95,7 @@ img = img.map(function(image) {
 });
 
 // min_time
-img = img.min();
+img = img.reduce('min');
 
 // stretch_color and mapping
 Map.addLayer(img, {min: -1, max: 1, palette: ['black', 'white']});

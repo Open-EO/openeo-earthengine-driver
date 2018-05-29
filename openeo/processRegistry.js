@@ -126,29 +126,116 @@ ProcessRegistry.processes = {
 		}
 	},
 
-	max_time: {
-		process_id: "max_time",
-		description: "Finds the maximum value of time series for all bands of the input dataset.",
+	count_time: {
+		process_id: "count_time",
+		description: "Counts the number of images with a valid mask in a time series for all bands of the input dataset.",
 		args: {
 			imagery: {
 				description: "image or image collection"
 			}
 		},
 		eeCode(args) {
-			return toImageCollection(args.imagery).max();
+			return toImageCollection(args.imagery).reduce('count');
+		}
+	},
+
+
+	max_time: {
+		process_id: "max_time",
+		description: "Finds the maximum value of a time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			}
+		},
+		eeCode(args) {
+			return toImageCollection(args.imagery).reduce('max');
 		}
 	},
 
 	min_time: {
 		process_id: "min_time",
-		description: "Finds the minimum value of time series for all bands of the input dataset.",
+		description: "Finds the minimum value of a time series for all bands of the input dataset.",
 		args: {
 			imagery: {
 				description: "image or image collection"
 			}
 		},
 		eeCode(args) {
-			return toImageCollection(args.imagery).min();
+			return toImageCollection(args.imagery).reduce('min');
+		}
+	},
+
+	mean_time: {
+		process_id: "mean_time",
+		description: "Calculates the mean value of a time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			}
+		},
+		eeCode(args) {
+			return toImageCollection(args.imagery).reduce('mean');
+		}
+	},
+
+	median_time: {
+		process_id: "median_time",
+		description: "Calculates the median value of a time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			}
+		},
+		eeCode(args) {
+			return toImageCollection(args.imagery).reduce('median');
+		}
+	},
+
+	sum_time: {
+		process_id: "sum_time",
+		description: "Calculates the sum of a time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			}
+		},
+		eeCode(args) {
+			return toImageCollection(args.imagery).reduce('sum');
+		}
+	},
+
+	last_time: {
+		process_id: "last_time",
+		description: "Returns the last element of a time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			},
+			null: {
+				description: "Setting this argument to `true` will also include null inputs, otherwise returns the last of its non-null inputs.",
+				default: false
+			}
+		},
+		eeCode(args) {
+			return toImageCollection(args.imagery).reduce(args.null === true ? 'last' : 'lastNonNull');
+		}
+	},
+
+	first_time: {
+		process_id: "first_time",
+		description: "Returns the first element of a time series for all bands of the input dataset.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			},
+			null: {
+				description: "Setting this argument to `true` will also include null inputs, otherwise returns the last of its non-null inputs.",
+				default: false
+			}
+		}, 
+		eeCode(args) {
+			return toImageCollection(args.imagery).reduce(args.null === true ? 'first' : 'firstNonNull');
 		}
 	},
 
