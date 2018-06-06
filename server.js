@@ -8,6 +8,7 @@ var geeServer = {
 		capabilities: Capabilities,
 		data: require('./openeo/data'),
 		processes: require('./openeo/processes'),
+		files: require('./openeo/files'),
 		jobs: require('./openeo/jobs'),
 		services: Services,
 		users: Users,
