@@ -23,7 +23,7 @@ var Files = {
 			res.send(403);
 			return next();
 		}
-		var p = this.getPath(req, '.');
+		var p = this.getPathFromRequest(req, '.');
 		if (!p) {
 			res.send(400);
 			return next();
@@ -32,7 +32,7 @@ var Files = {
 		var files = this.walkSync(path.normalize(p));
 		var data = [];
 		for(var i in files) {
-			var fileName = path.relative(this.getUserFolder(req), files[i]);
+			var fileName = path.relative(this.getUserFolder(req.user._id), files[i]);
 			data.push({
 				"name": fileName,
 				"size": fs.statSync(files[i]).size
@@ -65,7 +65,7 @@ var Files = {
 			res.send(403);
 			return next();
 		}
-		var p = this.getPath(req);
+		var p = this.getPathFromRequest(req);
 		if (!p || (fs.existsSync(p) && fs.statSync(p).isDirectory())) {
 			res.send(400);
 			return next();
@@ -104,15 +104,22 @@ var Files = {
 			res.send(403);
 			return next();
 		}
-		var p = this.getPath(req);
+		var p = this.getPathFromRequest(req);
 		if (!p) {
 			res.send(400);
 			return next();
 		}
 		if (fs.existsSync(p) && fs.statSync(p).isFile()) {
-			fs.unlink(p);
-			res.send(200);
-			return next();
+			fs.unlink(p, (err) => {
+				if (err) {
+					res.send(500, err);
+					return next();
+				}
+				else {
+					res.send(200);
+					return next();
+				}
+			});
 		}
 		else {
 			res.send(404);
@@ -125,7 +132,7 @@ var Files = {
 			res.send(403);
 			return next();
 		}
-		var p = this.getPath(req);
+		var p = this.getPathFromRequest(req);
 		if (!p) {
 			res.send(400);
 			return next();
@@ -148,19 +155,34 @@ var Files = {
 		}
 	},
 
-	getUserFolder(req) {
-		return path.join('./storage/user_files', req.user._id);
+	getUserFolder(user_id) {
+		return path.join('./storage/user_files', user_id);
 	},
 
-	getPath(req, p) {
-		p = (p ? p : req.params.path);
-		let userFolder = this.getUserFolder(req);
+	getPathFromRequest(req, p) {
+		return this.getPath(req.user._id, (p ? p : req.params.path));
+	},
+
+	getPath(user_id, p) {
+		let userFolder = this.getUserFolder(user_id);
 		let userPath = path.normalize(userFolder);
 		let filePath = path.normalize(path.join(userFolder, p));
 		if (filePath.startsWith(userPath)) {
 			return filePath;
 		}
 		return false;
+	},
+
+	getFileContentsSync(user_id, p) {
+		if (!user_id) {
+			return null;
+		}
+		var p = this.getPath(user_id, p);
+		if (!p || !fs.existsSync(p) || !fs.statSync(p).isFile()) {
+			return null;
+		}
+
+		return fs.readFileSync(p);
 	}
 
 };

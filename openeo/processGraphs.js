@@ -45,7 +45,7 @@ var ProcessGraphs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req.body, false);
+			ProcessRegistry.parseProcessGraph(req, req.body, false);
 		} catch (e) {
 			res.send(400, e); // Invalid process graph
 			return next();
@@ -75,7 +75,7 @@ var ProcessGraphs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req.body, false);
+			ProcessRegistry.parseProcessGraph(req, req.body, false);
 		} catch (e) {
 			res.send(400, e); // Invalid process graph
 			return next();

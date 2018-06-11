@@ -1,6 +1,6 @@
 const Capabilities = require('./openeo/capabilities');
 const Users = require('./openeo/users');
-const Services = require('./openeo/services');
+const Utils = require('./openeo/utils');
 
 var geeServer = {
 
@@ -10,7 +10,7 @@ var geeServer = {
 		processes: require('./openeo/processes'),
 		files: require('./openeo/files'),
 		jobs: require('./openeo/jobs'),
-		services: Services,
+		services: require('./openeo/services'),
 		users: Users,
 		processGraphs: require('./openeo/processGraphs')
 	},
@@ -47,7 +47,7 @@ var geeServer = {
 		this.server[method](serverPath, callback);
 	},
 
-	startServer() {		
+	startServer() {
 		const restify = require('restify');
 		this.server = restify.createServer();
 		this.server.pre(this.preflight);
@@ -66,7 +66,7 @@ var geeServer = {
 			const port = process.env.PORT || this.serverPort;
 			this.server.listen(port, () => {
 				var serverUrl = this.server.url.replace('[::]', '127.0.0.1');
-				Services.serverUrl = serverUrl;
+				Utils.serverUrl = serverUrl;
 				console.log('%s listening at %s', this.server.name, serverUrl)
 			});
 		}).catch((error) => {

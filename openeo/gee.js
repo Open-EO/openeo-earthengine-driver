@@ -29,7 +29,11 @@ const eeAuthenticator = {
 
 	withPrivateKey(onsuccess, onerror) {
 		const privateKey = require(path.join('../storage/', this.authInfo.ServiceAccount.privateKeyFile));
-		ee.data.authenticateViaPrivateKey(privateKey, onsuccess, onerror);
+		ee.data.authenticateViaPrivateKey(privateKey, () => { 
+			ee.initialize();
+			if (onsuccess)
+				onsuccess();
+		}, onerror);
 	},
 
 	withOAuthFromConsole(onsuccess, onerror) {
@@ -94,11 +98,15 @@ const eeAuthenticator = {
 		client.setCredentials({refresh_token: refreshToken});
 		client.refreshAccessToken((err, tokens) => {
 			if (err) {
+				if (onerror) {
+					onerror(err);
+				}
 				throw err;
 			}
 			ee.data.authToken_ = 'Bearer ' + tokens.access_token;
 			ee.data.authClientId_ = this.authInfo.OAuth.clientId;
 			ee.data.authScopes_ = [ee.data.AUTH_SCOPE_];
+			ee.data.DEFAULT_API_BASE_URL_ = "https://earthengine.googleapis.com/api";
 			ee.initialize(ee.data.DEFAULT_API_BASE_URL_, null, onsuccess, onerror);
 		});
 	},

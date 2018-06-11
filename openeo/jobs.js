@@ -2,12 +2,16 @@ const axios = require('axios');
 const Capabilities = require('./capabilities');
 const ProcessRegistry = require('./processRegistry');
 const Utils = require('./utils');
+const Files = require('./files');
+const fs = require('fs');
+const path = require('path');
 
 const CANCELED_STATE = 'canceled';
 
 var Jobs = {
 
 	db: null,
+	tempFolder: './storage/temp_files',
 
 	init() {
 		this.db = Utils.loadDB('jobs');
@@ -22,6 +26,30 @@ var Jobs = {
 		server.addEndpoint('get', '/jobs/{job_id}/download', this.getJobDownload.bind(this));
 		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
+		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
+	},
+
+	getTempFile(req, res, next) {
+		var p = path.normalize(path.join(this.tempFolder, req.params.token, req.params.file));
+		if (p && p.startsWith(path.normalize(this.tempFolder)) && fs.existsSync(p) && fs.statSync(p).isFile()) {
+			if (p.endsWith('.json')) {
+				res.header('Content-Type', 'application/json');
+			}
+			var stream = fs.createReadStream(p);
+			stream.pipe(res);
+			stream.on('error', (error) => {
+				res.send(500);
+				return next();
+			});
+			stream.on('close', () => {
+				res.end();
+				return next();
+			});
+		}
+		else {
+			res.send(404);
+			return next();
+		}
 	},
 
 	getUserJobs(req, res, next) {
@@ -123,7 +151,7 @@ var Jobs = {
 			}
 
 			try {
-				var url = this.execute(job.process_graph, job.output);
+				var url = this.execute(req, job.process_graph, job.output);
 				res.send([url]);
 			} catch (e) {
 				if (e === 406) {
@@ -143,7 +171,7 @@ var Jobs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req.body.process_graph, false);
+			ProcessRegistry.parseProcessGraph(req, req.body.process_graph, false);
 		} catch (e) {
 			res.send(400, e); // Invalid process graph
 			return next();
@@ -179,7 +207,7 @@ var Jobs = {
 		}
 	
 		try {
-			var url = this.execute(req.body.process_graph, req.body.output);
+			var url = this.execute(req, req.body.process_graph, req.body.output);
 			console.log("Downloading " + url);
 			axios({
 				method: 'get',
@@ -190,16 +218,17 @@ var Jobs = {
 				res.header('Content-Type', contentType);
 				stream.data.pipe(res);
 				return next();
-			}).catch((e) => {
+			}).catch(e => {
 				console.log(e);
-				res.send(500);
-				next();
+				res.send(500, e);
+				return next();
 			});
 		} catch (e) {
-			if (e === 406) {
-				res.send(406);
+			if (typeof e === 'number') {
+				res.send(e);
 			}
 			else {
+				console.log(e);
 				res.send(400, e);
 			}
 			return next();
@@ -217,7 +246,7 @@ var Jobs = {
 		};
 	},
 
-	execute(processGraph, output) {
+	execute(req, processGraph, output) {
 		// Check output format
 		var format = Capabilities.getDefaultOutputFormat();
 		if (typeof output === 'object' && typeof output.format === 'string') {
@@ -230,21 +259,33 @@ var Jobs = {
 
 		// Execute graph
 		global.downloadRegion = null; // This is a hack. Search for all occurances and remove them.
-		var obj = ProcessRegistry.parseProcessGraph(processGraph);
-		var image = ProcessRegistry.toImage(obj);
+		var obj = ProcessRegistry.parseProcessGraph(req, processGraph);
+		if (obj instanceof ee.Image || obj instanceof ee.ImageCollection) {
+			var image = ProcessRegistry.toImage(obj);
 
-		// Download image
-		if (global.downloadRegion === null) {
-			global.downloadRegion = image.geometry();
+			// Download image
+			if (global.downloadRegion === null) {
+				global.downloadRegion = image.geometry();
+			}
+			var bounds = global.downloadRegion.bounds().getInfo();
+			// ToDo: Replace getThumbURL with getDownloadURL
+			var url = image.getThumbURL({
+				format: Capabilities.translateOutputFormat(format),
+				dimensions: '512',
+				region: bounds
+			});
+			return url;
 		}
-		var bounds = global.downloadRegion.bounds().getInfo();
-		// ToDo: Replace getThumbURL with getDownloadURL
-		var url = image.getThumbURL({
-			format: Capabilities.translateOutputFormat(format),
-			dimensions: '512',
-			region: bounds
-		});
-		return url;
+		else {
+			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + output.format.toLowerCase();
+			var p = path.normalize(path.join(this.tempFolder, fileName));
+			var parent = path.dirname(p);
+			if (!fs.existsSync(parent)) {
+				fs.mkdir(parent);
+			}
+			fs.writeFileSync(p, JSON.stringify(obj));
+			return Utils.serverUrl + "/temp/" + fileName;
+		}
 	}
 
 };

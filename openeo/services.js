@@ -7,7 +7,6 @@ const axios = require('axios');
 var Services = {
 
 	db: null,
-	serverUrl: null,
 
 	init() {
 		this.db = Utils.loadDB('services');
@@ -49,7 +48,7 @@ var Services = {
 		
 					// Execute graph
 					try {
-						var obj = ProcessRegistry.parseProcessGraph(job.process_graph);
+						var obj = ProcessRegistry.parseProcessGraph(req, job.process_graph);
 						var image = ProcessRegistry.toImage(obj);
 
 						// Calculate tile bounds
@@ -81,13 +80,11 @@ var Services = {
 							}
 						});
 					} catch(e) {
-						console.log(e);
 						res.send(500, e);
 						return next();
 					}
 				})
-				.catch((e) => {
-					console.log(e);
+				.catch(e => {
 					res.send(404, "Job does not exist any longer.");
 					return next();
 				});
@@ -114,7 +111,7 @@ var Services = {
 			}
 			else {
 				services = services.map(job => {
-					return this.makeServiceResponse(job);
+					return this.makeServiceResponse(Utils.serverUrl, job);
 				});
 				res.json(services);
 				return next();
@@ -221,8 +218,7 @@ var Services = {
 					}
 				});
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch(e => {
 				res.send(404, "Specified Job ID does not exist.");
 				return next();
 			});
@@ -239,7 +235,7 @@ var Services = {
 	},
 
 	makeServiceUrl(service) {
-		return this.serverUrl + '/' + service.service_type + '/' + service._id;
+		return Utils.serverUrl + '/' + service.service_type + '/' + service._id;
 	}
 	
 };

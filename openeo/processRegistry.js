@@ -1,3 +1,6 @@
+const Files = require('./files');
+const Utils = require('./utils');
+
 var ProcessRegistry = {
 	
 	processes: {},
@@ -10,7 +13,7 @@ var ProcessRegistry = {
 		return null;
 	},
 	
-	parseProcessGraph(obj, execute = true) {
+	parseProcessGraph(req, obj, execute = true) {
 		if (obj.hasOwnProperty("product_id")) { // Image Collection
 			// ToDo: Check whether product exists
 			if (execute === true) {
@@ -26,10 +29,10 @@ var ProcessRegistry = {
 				throw "Process '" + obj.process_id + "' is not supported.";
 			}
 			for(var a in obj.args) {
-				obj.args[a] = this.parseProcessGraph(obj.args[a], execute);
+				obj.args[a] = this.parseProcessGraph(req, obj.args[a], execute);
 			}
 			if (execute === true) {
-				return process.eeCode(obj.args);
+				return process.eeCode(obj.args, req);
 			}
 			else {
 				return obj;
@@ -51,6 +54,77 @@ var ProcessRegistry = {
 };
 
 ProcessRegistry.processes = {
+
+	zonal_statistics: {
+		process_id: "zonal_statistics",
+		description: "Calculates statistics for each zone specified in a file.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			},
+			regions: {
+				description: "GeoJSON file containing polygons. Must specify the path to a user-uploaded file without the user id in the path."
+			},
+			func: {
+				description: "Statistical function to calculate for the specified zones. Allowed values: min, max, mean, median, mode"
+			},
+			scale: {
+				description: "A nominal scale in meters of the projection to work in. Defaults to 1000."
+			}
+		},
+		eeCode(args, req) {
+			let scale = args.scale ? args.scale : 1000;
+			let contents = Files.getFileContentsSync(req.user._id, args.regions);
+			let geojson = JSON.parse(contents);
+			let geometry = Utils.geoJsonToGeometries(geojson);
+
+			let reducer = null;
+			switch(args.func) {
+				case 'min':
+					reducer = ee.Reducer.min();
+					break;
+				case 'max':
+					reducer = ee.Reducer.max();
+					break;
+				case 'mean':
+					reducer = ee.Reducer.mean();
+					break;
+				case 'median':
+					reducer = ee.Reducer.median();
+					break;
+				case 'mode':
+					reducer = ee.Reducer.mode();
+					break;
+				default:
+					throw 400;
+			}
+
+			let geometryInfo = geometry.getInfo();
+			switch(geometryInfo.type) {
+				case 'FeatureCollection':
+					var result = toImage(args.imagery).reduceRegions({
+						reducer: reducer,
+						collection: geometry,
+						scale: scale
+					}).getInfo();
+					var data = [];
+					for(var i in result.features) {
+						data.push(Utils.convertZonalStatistics(result.features[i], args.func));
+					}
+					return data;
+				case 'Feature':
+					var result = toImage(args.imagery).reduceRegion({
+						reducer: reducer,
+						geometry: geometry.geometry(),
+						scale: scale
+					}).getInfo();
+					return [ Utils.convertZonalStatistics(result, args.func) ];
+				default:
+					throw 500;
+			}
+		}
+	},
+
 	// Key must be lowercase!
 	ndvi: {
 		process_id: "NDVI",
@@ -67,9 +141,26 @@ ProcessRegistry.processes = {
 			}
 		},
 		eeCode(args) {
-			return toImageCollection(args.imagery).map(function(image) {
+			return toImageCollection(args.imagery).map((image) => {
 				return image.normalizedDifference([args.nir, args.red]);
 			});
+		}
+	},
+
+	filter_bands: {
+		process_id: "filter_bands",
+		description: "Selects certain bands from a collection.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			},
+			bands: {
+				description: "A single band id as string or multiple band ids as strings contained in an array."
+			}
+		},
+		eeCode(args) {
+			// Select works on both images and image collections => no conversion applied.
+			return args.imagery.select(args.bands);
 		}
 	},
 
@@ -269,8 +360,8 @@ function toImage(obj) {
 		return obj;
 	}
 	else if (obj instanceof ee.ImageCollection) {
-		console.log("WARN: Reducing image collection to the first image");
-		return ee.Image(obj.first());
+		console.log("WARN: Compositing the image collection to a single image.");
+		return obj.mosaic();
 	}
 	return null;
 }
