@@ -1,0 +1,10 @@
+version: '3'
+services:
+    openeo-gee-driver:
+        build: 
+            context: .
+            dockerfile: DOCKERFILE
+        image: openeo-gee:0.2.0
+        container_name: openeo-gee-driver
+        ports:
+            - "8080:8080"
