@@ -28,7 +28,7 @@ var Data = {
 
 	routes(server) {
 		server.addEndpoint('get', '/data', this.getData.bind(this));
-		server.addEndpoint('get', '/data/{product_id}', this.getDataById.bind(this));
+		server.addEndpoint('get', ['/data/{product_id}', '/data/:product_id(.*)'], this.getDataById.bind(this));
 	},
 	
 	getData(req, res, next) {
@@ -46,10 +46,12 @@ var Data = {
 	
 	
 	getDataById(req, res, next) {
-		if (typeof this.cache[req.params.product_id] !== 'undefined') {
-			var data = this.cache[req.params.product_id];
+		console.log(req.params.product_id);
+		var id = req.params.product_id;
+		if (typeof this.cache[id] !== 'undefined') {
+			var data = this.cache[id];
 			if (typeof data.extent !== 'object') { // Allow caching
-				this.gatherExtendedInfo(req.params.product_id);
+				this.gatherExtendedInfo(id);
 			}
 			res.json(data);
 		}

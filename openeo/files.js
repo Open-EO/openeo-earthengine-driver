@@ -12,10 +12,11 @@ var Files = {
 	},
 
 	routes(server) {
+		var pathRoutes = ['/users/{user_id}/files/{path}', '/users/:user_id/files/:path(.*)'];
 		server.addEndpoint('get', '/users/{user_id}/files', this.getFiles.bind(this));
-		server.addEndpoint('get', '/users/{user_id}/files/{path}', this.getFileByPath.bind(this));
-		server.addEndpoint('put', '/users/{user_id}/files/{path}', this.putFileByPath.bind(this));
-		server.addEndpoint('delete', '/users/{user_id}/files/{path}', this.deleteFileByPath.bind(this));
+		server.addEndpoint('get', pathRoutes, this.getFileByPath.bind(this));
+		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
+		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));
 	},
 
 	getFiles(req, res, next) {
@@ -50,7 +51,7 @@ var Files = {
 			files.forEach((file) => {
 				let fullPath = path.join(dir, file);
 				if (fs.statSync(fullPath).isDirectory()) {
-					filelist = walkSync(fullPath, filelist);
+					filelist = this.walkSync(fullPath, filelist);
 				}
 				else {
 					filelist.push(fullPath);

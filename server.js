@@ -39,12 +39,14 @@ var geeServer = {
 	},
 
 	addEndpoint(method, path, callback) {
-		Capabilities.addEndpoint(method, path);
-		var serverPath = path.replace(/\{([\w]+)\}/g, ":$1");
+		if (!Array.isArray(path)) {
+			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
+		}
+		Capabilities.addEndpoint(method, path[0]);
 		if (method === 'delete') {
 			method = 'del';
 		}
-		this.server[method](serverPath, callback);
+		this.server[method](path[1], callback);
 	},
 
 	startServer() {
