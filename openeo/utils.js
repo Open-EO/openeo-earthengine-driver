@@ -74,7 +74,7 @@ var Utils = {
 			case 'GeometryCollection':
 				var geometries = [];
 				for(var i in geojson.geometries) {
-					geometries.push(this.geoJsonToGeometries(geojson.geometries[i]));
+					geometries.push(this.geoJsonToGeometry(geojson.geometries[i]));
 				}
 				geometry = ee.Geometry.MultiGeometry(geometries);
 				break;
@@ -96,12 +96,12 @@ var Utils = {
 				feature = ee.Feature(this.geoJsonToGeometry(geojson));
 				break;
 			case 'Feature':
-				feature = ee.Feature(this.geoJsonToGeometries(geojson.geometry), geojson.properties);
+				feature = ee.Feature(this.geoJsonToGeometry(geojson.geometry), geojson.properties);
 				break;
 			case 'FeatureCollection':
 				var features = [];
 				for(var i in geojson.features) {
-					features.push(this.geoJsonToGeometries(geojson.features[i]));
+					features.push(this.geoJsonToFeatures(geojson.features[i]));
 				}
 				feature = ee.FeatureCollection(features);
 				break;

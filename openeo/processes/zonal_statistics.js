@@ -19,13 +19,13 @@ var zonal_statistics = {
 		}
 	},
 	eeCode(args, req) {
-		let scale = args.scale ? args.scale : 1000;
-		let imagery = args.imagery instanceof ee.Image ? args.imagery : args.imagery.mosaic();
+		var scale = args.scale ? args.scale : 1000;
+		var imagery = args.imagery instanceof ee.Image ? args.imagery : args.imagery.mosaic();
 	
 		// Read and parse GeoJSON file
-		let geojson = null;
+		var geojson = null;
 		if (typeof args.regions === 'string') {
-			let contents = Files.getFileContentsSync(req.user._id, args.regions);
+			var contents = Files.getFileContentsSync(req.user._id, args.regions);
 			geojson = JSON.parse(contents);
 		}
 		else if (typeof args.regions.type === 'string') { // Only a rough check for GeoJSON
@@ -36,10 +36,10 @@ var zonal_statistics = {
 		}
 
 		// Convert GeoJSON to a GEE feature
-		let feature = Utils.geoJsonToFeatures(geojson);
+		var feature = Utils.geoJsonToFeatures(geojson);
 
 		// Get Reducer
-		let reducer = this._createReducerByName(args.func);
+		var reducer = this._createReducerByName(args.func);
 		if (reducer === null) {
 			throw 400;
 		}
@@ -47,7 +47,7 @@ var zonal_statistics = {
 		var data = {
 			results: []
 		};
-		let featureInfo = feature.getInfo();
+		var featureInfo = feature.getInfo();
 		switch(featureInfo.type) {
 			case 'FeatureCollection':
 				var result = imagery.reduceRegions({
@@ -55,13 +55,12 @@ var zonal_statistics = {
 					collection: feature,
 					scale: scale
 				}).getInfo();
-				var data = [];
 				for(var i in result.features) {
 					data.results.push({
 						"geometry": result.features[i].geometry,
 						"totalCount": null,
 						"validCount": null,
-						"value": feature.properties[args.func]
+						"value": result.features[i].properties[args.func]
 					});
 				}
 				break;
@@ -90,7 +89,7 @@ var zonal_statistics = {
 	},
 
 	_createReducerByName(name) {
-		let reducer = null;
+		var reducer = null;
 		switch(name) {
 			case 'min':
 				reducer = ee.Reducer.min();
