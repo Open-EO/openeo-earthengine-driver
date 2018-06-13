@@ -1,5 +1,4 @@
-const Files = require('./files');
-const Utils = require('./utils');
+const zonal_statistics = require('./processes/zonal_statistics');
 
 var ProcessRegistry = {
 	
@@ -55,75 +54,7 @@ var ProcessRegistry = {
 
 ProcessRegistry.processes = {
 
-	zonal_statistics: {
-		process_id: "zonal_statistics",
-		description: "Calculates statistics for each zone specified in a file.",
-		args: {
-			imagery: {
-				description: "image or image collection"
-			},
-			regions: {
-				description: "GeoJSON file containing polygons. Must specify the path to a user-uploaded file without the user id in the path."
-			},
-			func: {
-				description: "Statistical function to calculate for the specified zones. Allowed values: min, max, mean, median, mode"
-			},
-			scale: {
-				description: "A nominal scale in meters of the projection to work in. Defaults to 1000."
-			}
-		},
-		eeCode(args, req) {
-			let scale = args.scale ? args.scale : 1000;
-			let contents = Files.getFileContentsSync(req.user._id, args.regions);
-			let geojson = JSON.parse(contents);
-			let geometry = Utils.geoJsonToGeometries(geojson);
-
-			let reducer = null;
-			switch(args.func) {
-				case 'min':
-					reducer = ee.Reducer.min();
-					break;
-				case 'max':
-					reducer = ee.Reducer.max();
-					break;
-				case 'mean':
-					reducer = ee.Reducer.mean();
-					break;
-				case 'median':
-					reducer = ee.Reducer.median();
-					break;
-				case 'mode':
-					reducer = ee.Reducer.mode();
-					break;
-				default:
-					throw 400;
-			}
-
-			let geometryInfo = geometry.getInfo();
-			switch(geometryInfo.type) {
-				case 'FeatureCollection':
-					var result = toImage(args.imagery).reduceRegions({
-						reducer: reducer,
-						collection: geometry,
-						scale: scale
-					}).getInfo();
-					var data = [];
-					for(var i in result.features) {
-						data.push(Utils.convertZonalStatistics(result.features[i], args.func));
-					}
-					return data;
-				case 'Feature':
-					var result = toImage(args.imagery).reduceRegion({
-						reducer: reducer,
-						geometry: geometry.geometry(),
-						scale: scale
-					}).getInfo();
-					return [ Utils.convertZonalStatistics(result, args.func) ];
-				default:
-					throw 500;
-			}
-		}
-	},
+	zonal_statistics: zonal_statistics,
 
 	// Key must be lowercase!
 	ndvi: {

@@ -50,27 +50,7 @@ var Utils = {
 		return (new Date()).toISOString().replace(/\.\d{3}/, '');
 	},
 
-	convertZonalStatistics(feature, propertyName) {
-		if (feature.type !== 'Feature') {
-			return null;
-		}
-
-		var data = {
-			"geometry": feature.geometry,
-			"results": []
-		};
-
-		data.results.push({
-			"totalCount": null,
-			"validCount": null,
-			"value": feature.properties[propertyName]
-		});
-
-		return data;
-	},
-
-	geoJsonToGeometries(geojson) {
-		// Properties are ignored for non-features
+	geoJsonToGeometry(geojson) {
 		let geometry = null;
 		switch(geojson.type) {
 			case 'Point':
@@ -98,18 +78,35 @@ var Utils = {
 				}
 				geometry = ee.Geometry.MultiGeometry(geometries);
 				break;
+		}
+		return geometry;
+	},
+
+	geoJsonToFeatures(geojson) {
+		// Properties are ignored for non-features
+		let feature = null;
+		switch(geojson.type) {
+			case 'Point':
+			case 'MultiPoint':
+			case 'LineString':
+			case 'MultiLineString':
+			case 'Polygon':
+			case 'MultiPolygon':
+			case 'GeometryCollection':
+				feature = ee.Feature(this.geoJsonToGeometry(geojson));
+				break;
 			case 'Feature':
-				geometry = ee.Feature(this.geoJsonToGeometries(geojson.geometry), geojson.properties);
+				feature = ee.Feature(this.geoJsonToGeometries(geojson.geometry), geojson.properties);
 				break;
 			case 'FeatureCollection':
 				var features = [];
 				for(var i in geojson.features) {
 					features.push(this.geoJsonToGeometries(geojson.features[i]));
 				}
-				geometry = ee.FeatureCollection(features);
+				feature = ee.FeatureCollection(features);
 				break;
 		}
-		return geometry;
+		return feature;
 	}
 
 };
