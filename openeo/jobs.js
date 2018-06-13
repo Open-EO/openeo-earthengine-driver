@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 
 const CANCELED_STATE = 'canceled';
+const FINISHED_STATE = 'finished';
 
 var Jobs = {
 
@@ -24,6 +25,7 @@ var Jobs = {
 		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}', this.getJob.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/download', this.getJobDownload.bind(this));
+		server.addEndpoint('patch', '/jobs/{job_id}/queue', this.patchJobQueue.bind(this));
 		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
@@ -90,6 +92,28 @@ var Jobs = {
 			user_id: req.user._id
 		};
 		this.db.update(query, { $set: { status: CANCELED_STATE } }, {}, function (err, numChanged) {
+			if (err) {
+				res.send(500, err);
+				return next();
+			}
+			else if (numChanged === 0) {
+				res.send(404);
+				return next();
+			}
+			else {
+				res.send(200);
+				return next();
+			}
+		});
+	},
+
+	patchJobQueue(req, res, next) {
+		// ToDo: This doesn't pre-compute data yet
+		var query = {
+			_id: req.params.job_id,
+			user_id: req.user._id
+		};
+		this.db.update(query, { $set: { status: FINISHED_STATE } }, {}, function (err, numChanged) {
 			if (err) {
 				res.send(500, err);
 				return next();
