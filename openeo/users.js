@@ -25,7 +25,7 @@ var Users = {
 		this.db.findOne({ token: req.authorization.credentials }, (err, user) => {
 			if (err || user === null) {
 				res.send(403);
-				return next();
+				return; // token is invalid => finish handling this request, so don't call next!
 			}
 
 			// ToDo: Expire token
