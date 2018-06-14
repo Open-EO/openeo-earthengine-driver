@@ -66,7 +66,7 @@ var Jobs = {
 			}
 			else {
 				jobs = jobs.map(job => {
-					return this.makeJobResponse(job);
+					return this.makeJobResponse(job, false);
 				});
 				res.json(jobs);
 				return next();
@@ -273,8 +273,8 @@ var Jobs = {
 		}
 	},
 
-	makeJobResponse(job) {
-		return {
+	makeJobResponse(job, full = true) {
+		var response = {
 			job_id: job._id,
 			status: job.status,
 			submitted: job.submitted,
@@ -282,6 +282,13 @@ var Jobs = {
 			user_id: job.user_id,
 			consumed_credits: job.consumed_credits
 		};
+		if (full) {
+			response.process_graph = job.process_graph;
+			if (job.output) {
+				response.output = job.output;
+			}
+		}
+		return response;
 	},
 
 	execute(req, processGraph, output) {
