@@ -76,7 +76,7 @@ var Utils = {
 		return feature;
 	},
 
-	mkdirSyncRecursive(targetDir, {isRelativeToScript = false} = {}) {
+	mkdirSyncRecursive(targetDir, isRelativeToScript = false) {
 		const sep = path.sep;
 		const initDir = path.isAbsolute(targetDir) ? sep : '';
 		const baseDir = isRelativeToScript ? __dirname : '.';
@@ -85,13 +85,11 @@ var Utils = {
 			const curDir = path.resolve(baseDir, parentDir, childDir);
 			try {
 				fs.mkdirSync(curDir);
-				console.log(`Directory ${curDir} created!`);
 			} catch (err) {
 				if (err.code !== 'EEXIST') {
 					throw err;
 				}
 			}
-
 			return curDir;
 		}, initDir);
 	}
