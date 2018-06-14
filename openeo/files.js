@@ -6,6 +6,8 @@ const path = require('path');
 // ToDo: Replace sync calls with async calls.
 var Files = {
 
+	folder: './storage/user_files',
+
 	init() {
 		console.log("INFO: Files loaded.");
 		return new Promise((resolve, reject) => resolve());
@@ -78,9 +80,7 @@ var Files = {
 		}
 
 		let parent = path.dirname(p);
-		if (!fs.existsSync(parent)) {
-			fs.mkdirSync(parent);
-		}
+		Utils.mkdirSyncRecursive(parent);
 	
 		var stream = fs.createWriteStream(p);
 		req.on('data', (chunk) => {
@@ -159,7 +159,7 @@ var Files = {
 	},
 
 	getUserFolder(user_id) {
-		return path.join('./storage/user_files', user_id);
+		return path.join(this.folder, user_id);
 	},
 
 	getPathFromRequest(req, p) {

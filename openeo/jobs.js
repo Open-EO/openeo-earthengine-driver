@@ -325,9 +325,7 @@ var Jobs = {
 			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + Capabilities.translateOutputFormat(format);
 			var p = path.normalize(path.join(this.tempFolder, fileName));
 			var parent = path.dirname(p);
-			if (!fs.existsSync(parent)) {
-				fs.mkdirSync(parent);
-			}
+			Utils.mkdirSyncRecursive(parent);
 			fs.writeFileSync(p, JSON.stringify(obj));
 			return Utils.serverUrl + "/temp/" + fileName;
 		}
