@@ -110,8 +110,8 @@ var Services = {
 				return next();
 			}
 			else {
-				services = services.map(job => {
-					return this.makeServiceResponse(Utils.serverUrl, job);
+				services = services.map(service => {
+					return this.makeServiceResponse(service);
 				});
 				res.json(services);
 				return next();
