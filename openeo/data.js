@@ -65,7 +65,7 @@ var Data = {
 		var images = ee.ImageCollection(id);
 
 		// Get date range
-		var dates = images.get('date_range');
+		var dates = images.get('date_range').getInfo();
 		if (Array.isArray(dates) && dates.length == 2) {
 			this.cache[id].time = {
 				from: Utils.toISODate(dates[0]),
