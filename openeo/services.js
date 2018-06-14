@@ -32,6 +32,7 @@ var Services = {
 		};
 		this.db.findOne(query, (err, service) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -80,6 +81,7 @@ var Services = {
 							}
 						});
 					} catch(e) {
+						console.log(e);
 						res.send(500, e);
 						return next();
 					}
@@ -106,6 +108,7 @@ var Services = {
 		};
 		this.db.find(query, {}, (err, services) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -126,6 +129,7 @@ var Services = {
 		};
 		this.db.remove(query, {}, (err, numRemoved) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -150,6 +154,7 @@ var Services = {
 		};
 		this.db.update(query, { $set: { service_args: req.body.service_args } }, {}, function (err, numChanged) {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -171,6 +176,7 @@ var Services = {
 		};
 		this.db.findOne(query, {}, (err, service) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -209,6 +215,7 @@ var Services = {
 				}
 				this.db.insert(data, (err, service) => {
 					if (err) {
+						console.log(err);
 						res.send(500, err);
 						return next();
 					}

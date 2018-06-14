@@ -60,6 +60,7 @@ var Jobs = {
 		};
 		this.db.find(query, {}, (err, jobs) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -93,6 +94,7 @@ var Jobs = {
 		};
 		this.db.update(query, { $set: { status: CANCELED_STATE } }, {}, function (err, numChanged) {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -115,6 +117,7 @@ var Jobs = {
 		};
 		this.db.update(query, { $set: { status: FINISHED_STATE } }, {}, function (err, numChanged) {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -162,6 +165,7 @@ var Jobs = {
 		};
 		this.db.findOne(query, {}, (err, job) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -182,6 +186,7 @@ var Jobs = {
 					res.send(406);
 				}
 				else {
+					console.log(e);
 					res.send(400, e);
 				}
 			}
@@ -197,6 +202,7 @@ var Jobs = {
 		try {
 			ProcessRegistry.parseProcessGraph(req, req.body.process_graph, false);
 		} catch (e) {
+			console.log(e);
 			res.send(400, e); // Invalid process graph
 			return next();
 		}
@@ -214,6 +220,7 @@ var Jobs = {
 		}
 		this.db.insert(data, (err, job) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}

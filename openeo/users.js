@@ -72,6 +72,7 @@ var Users = {
 							return next();
 						}
 						else {
+							console.log(err);
 							res.send(500, err);
 							return next();
 						}
@@ -97,6 +98,7 @@ var Users = {
 		userData.passwordSalt = pw.salt;
 		this.db.insert(userData, (err, user) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}

@@ -113,6 +113,7 @@ var Files = {
 		if (fs.existsSync(p) && fs.statSync(p).isFile()) {
 			fs.unlink(p, (err) => {
 				if (err) {
+					console.log(err);
 					res.send(500, err);
 					return next();
 				}
