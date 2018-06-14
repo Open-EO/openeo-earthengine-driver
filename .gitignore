@@ -5,3 +5,4 @@
 /storage/temp_files/*
 /nbproject/
 /package-lock.json
+/.node-xmlhttprequest-sync-*

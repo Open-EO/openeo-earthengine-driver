@@ -71,7 +71,8 @@ var Files = {
 			res.send(400);
 			return next();
 		}
-		if (req.contentType() !== 'application/octet-stream') {
+		if (req.contentType() === 'application/x-www-form-urlencoded' || req.contentType() ===  'multipart/form-data') {
+			// This is usually not correct and sounds a browser-like upload procedure was used
 			res.send(400);
 			return next();
 		}
