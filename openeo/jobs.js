@@ -178,8 +178,15 @@ var Jobs = {
 				return next();
 			}
 
+			var output = job.output;
+			if (req.query.format && Capabilities.isValidOutputFormat(req.query.format)) {
+				output = {
+					format: req.query.format
+				};
+			}
+
 			try {
-				var url = this.execute(req, job.process_graph, job.output);
+				var url = this.execute(req, job.process_graph, output);
 				res.send([url]);
 			} catch (e) {
 				if (e === 406) {
@@ -291,7 +298,7 @@ var Jobs = {
 		// Execute graph
 		global.downloadRegion = null; // This is a hack. Search for all occurances and remove them.
 		var obj = ProcessRegistry.parseProcessGraph(req, processGraph);
-		if (obj instanceof ee.Image || obj instanceof ee.ImageCollection) {
+		if (format.toLowerCase() !== 'json') {
 			var image = ProcessRegistry.toImage(obj);
 
 			// Download image
@@ -308,11 +315,11 @@ var Jobs = {
 			return url;
 		}
 		else {
-			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + output.format.toLowerCase();
+			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + Capabilities.translateOutputFormat(format);
 			var p = path.normalize(path.join(this.tempFolder, fileName));
 			var parent = path.dirname(p);
 			if (!fs.existsSync(parent)) {
-				fs.mkdir(parent);
+				fs.mkdirSync(parent);
 			}
 			fs.writeFileSync(p, JSON.stringify(obj));
 			return Utils.serverUrl + "/temp/" + fileName;

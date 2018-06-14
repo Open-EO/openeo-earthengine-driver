@@ -78,7 +78,7 @@ var Files = {
 
 		let parent = path.dirname(p);
 		if (!fs.existsSync(parent)) {
-			fs.mkdir(parent);
+			fs.mkdirSync(parent);
 		}
 	
 		var stream = fs.createWriteStream(p);
@@ -93,7 +93,7 @@ var Files = {
 		req.on('error', () => {
 			stream.end();
 			if (fs.existsSync(p)) {
-				fs.unlink(p);
+				fs.unlink(p, () => {});
 			}
 			res.send(500);
 			return next();
