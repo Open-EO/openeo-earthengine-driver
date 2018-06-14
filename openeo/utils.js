@@ -50,40 +50,7 @@ var Utils = {
 		return (new Date()).toISOString().replace(/\.\d{3}/, '');
 	},
 
-	geoJsonToGeometry(geojson) {
-		let geometry = null;
-		switch(geojson.type) {
-			case 'Point':
-				geometry = ee.Geometry.Point(geojson.coordinates);
-				break;
-			case 'MultiPoint':
-				geometry = ee.Geometry.MultiPoint(geojson.coordinates);
-				break;
-			case 'LineString':
-				geometry = ee.Geometry.LineString(geojson.coordinates);
-				break;
-			case 'MultiLineString':
-				geometry = ee.Geometry.MultiLineString(geojson.coordinates);
-				break;
-			case 'Polygon':
-				geometry = ee.Geometry.Polygon(geojson.coordinates);
-				break;
-			case 'MultiPolygon':
-				geometry = ee.Geometry.MultiPolygon(geojson.coordinates);
-				break;
-			case 'GeometryCollection':
-				var geometries = [];
-				for(var i in geojson.geometries) {
-					geometries.push(this.geoJsonToGeometry(geojson.geometries[i]));
-				}
-				geometry = ee.Geometry.MultiGeometry(geometries);
-				break;
-		}
-		return geometry;
-	},
-
-	geoJsonToFeatures(geojson) {
-		// Properties are ignored for non-features
+	geoJsonToFeatureCollection(geojson) {
 		let feature = null;
 		switch(geojson.type) {
 			case 'Point':
@@ -93,15 +60,13 @@ var Utils = {
 			case 'Polygon':
 			case 'MultiPolygon':
 			case 'GeometryCollection':
-				feature = ee.Feature(this.geoJsonToGeometry(geojson));
-				break;
 			case 'Feature':
-				feature = ee.Feature(this.geoJsonToGeometry(geojson.geometry), geojson.properties);
+				feature = ee.FeatureCollection(ee.Feature(geojson));
 				break;
 			case 'FeatureCollection':
 				var features = [];
 				for(var i in geojson.features) {
-					features.push(this.geoJsonToFeatures(geojson.features[i]));
+					features.push(ee.Feature(geojson.features[i]));
 				}
 				feature = ee.FeatureCollection(features);
 				break;
