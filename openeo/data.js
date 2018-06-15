@@ -46,7 +46,6 @@ var Data = {
 	
 	
 	getDataById(req, res, next) {
-		console.log(req.params.product_id);
 		var id = req.params.product_id;
 		if (typeof this.cache[id] !== 'undefined') {
 			var data = this.cache[id];
@@ -94,8 +93,6 @@ var Data = {
 			bottom: -90,
 			top: 90
 		};
-
-		console.log("INFO: Loaded additional data set information for '" + id + "'.");
 	}
 
 };
