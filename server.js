@@ -16,12 +16,12 @@ var geeServer = {
 	},
 
 	server: null,
-	serverPort: 8080,
+	config: require('./storage/config.json'),
 
 	init() {
 		console.log('Initializing openEO Google Earth Engine driver...');
 		const { eeAuthenticator } = require('./openeo/gee.js');
-		eeAuthenticator.authenticate(() => {
+		eeAuthenticator.authenticate(this.config.auth, () => {
 			console.log("GEE Authentication succeeded.");
 			this.startServer();
 		}, (error) => {
@@ -65,11 +65,10 @@ var geeServer = {
 				this.endpoints[i].routes(this);
 			}
 			// Start server on port ...
-			const port = process.env.PORT || this.serverPort;
+			const port = process.env.PORT || this.config.port;
 			this.server.listen(port, () => {
-				var serverUrl = this.server.url.replace('[::]', '127.0.0.1');
-				Utils.serverUrl = serverUrl;
-				console.log('%s listening at %s', this.server.name, serverUrl)
+				Utils.serverUrl = this.server.url.replace('[::]', this.config.hostname);
+				console.log('%s listening at %s', this.server.name, Utils.serverUrl)
 			});
 		}).catch((error) => {
 			console.log(error);

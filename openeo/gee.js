@@ -9,13 +9,12 @@ const Utils = require('./utils');
 global.ee = require('@google/earthengine');
 
 const eeAuthenticator = {
-	
-	authFile: path.join(__dirname, '../storage/gee-auth.json'),
+
 	authInfo: null,
 	refreshTokenFile: path.join(__dirname, '../storage/gee-oauth-token'),
 
-	authenticate(onsuccess, onerror) {
-		this.authInfo = require(this.authFile);
+	authenticate(authInfo, onsuccess, onerror) {
+		this.authInfo = authInfo;
 		if (this.authInfo.method == 'OAuth') {
 			this.withOAuthFromConsole(onsuccess, onerror);
 		}
