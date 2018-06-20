@@ -10,6 +10,6 @@
     },
     "ServiceAccount": {
       "privateKeyFile": "privatekey.json"
-	}
+    }
   }
 }

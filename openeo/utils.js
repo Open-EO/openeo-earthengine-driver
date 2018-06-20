@@ -24,7 +24,9 @@ var Utils = {
 	},
 
 	loadDB(name) {
-		return new Datastore({ filename: './storage/' + name + '.db', autoload: true });
+		var db = new Datastore({ filename: './storage/' + name + '.db', autoload: true });
+		db.persistence.setAutocompactionInterval(60 * 60 * 1000); // Once every hour
+		return db;
 	},
 
 	generateHash(length = 16) {
