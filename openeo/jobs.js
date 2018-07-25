@@ -274,17 +274,12 @@ var Jobs = {
 		}
 	},
 
-<<<<<<< HEAD
 	postJobSubscription(req, res, next) {
 		console.log(this.websocketserver);
 	},
 
-	makeJobResponse(job) {
-		return {
-=======
 	makeJobResponse(job, full = true) {
 		var response = {
->>>>>>> master
 			job_id: job._id,
 			status: job.status,
 			submitted: job.submitted,
