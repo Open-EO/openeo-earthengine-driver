@@ -2,7 +2,8 @@ var Capabilities = {
 
 	outputFormats: {
 		PNG: {},
-		JPEG: {}
+		JPEG: {},
+		JSON: {}
 	},
 
 	services: {
@@ -58,7 +59,6 @@ var Capabilities = {
 	},
 
 	getOutputFormats(req, res, next) {
-
 		res.json({
 			default: this.getDefaultOutputFormat(),
 			formats: this.outputFormats

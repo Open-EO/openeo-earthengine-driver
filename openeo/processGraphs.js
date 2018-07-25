@@ -25,6 +25,7 @@ var ProcessGraphs = {
 		};
 		this.db.find(query, {}, (err, graphs) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -45,8 +46,9 @@ var ProcessGraphs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req.body, false);
+			ProcessRegistry.parseProcessGraph(req, req.body, false);
 		} catch (e) {
+			console.log(e);
 			res.send(400, e); // Invalid process graph
 			return next();
 		}
@@ -57,6 +59,7 @@ var ProcessGraphs = {
 		};
 		this.db.insert(data, (err, graph) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -75,8 +78,9 @@ var ProcessGraphs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req.body, false);
+			ProcessRegistry.parseProcessGraph(req, req.body, false);
 		} catch (e) {
+			console.log(e);
 			res.send(400, e); // Invalid process graph
 			return next();
 		}
@@ -87,6 +91,7 @@ var ProcessGraphs = {
 		};
 		this.db.update(query, req.body, {}, (err, numReplaced) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -108,6 +113,7 @@ var ProcessGraphs = {
 		};
 		this.db.remove(query, {}, (err, numRemoved) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -129,6 +135,7 @@ var ProcessGraphs = {
 		};
 		this.db.findOne(query, {}, (err, pg) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}

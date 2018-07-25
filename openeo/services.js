@@ -7,7 +7,6 @@ const axios = require('axios');
 var Services = {
 
 	db: null,
-	serverUrl: null,
 
 	init() {
 		this.db = Utils.loadDB('services');
@@ -33,6 +32,7 @@ var Services = {
 		};
 		this.db.findOne(query, (err, service) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -49,7 +49,7 @@ var Services = {
 		
 					// Execute graph
 					try {
-						var obj = ProcessRegistry.parseProcessGraph(job.process_graph);
+						var obj = ProcessRegistry.parseProcessGraph(req, job.process_graph);
 						var image = ProcessRegistry.toImage(obj);
 
 						// Calculate tile bounds
@@ -86,8 +86,7 @@ var Services = {
 						return next();
 					}
 				})
-				.catch((e) => {
-					console.log(e);
+				.catch(e => {
 					res.send(404, "Job does not exist any longer.");
 					return next();
 				});
@@ -109,12 +108,13 @@ var Services = {
 		};
 		this.db.find(query, {}, (err, services) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
 			else {
-				services = services.map(job => {
-					return this.makeServiceResponse(job);
+				services = services.map(service => {
+					return this.makeServiceResponse(service);
 				});
 				res.json(services);
 				return next();
@@ -129,6 +129,7 @@ var Services = {
 		};
 		this.db.remove(query, {}, (err, numRemoved) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -153,6 +154,7 @@ var Services = {
 		};
 		this.db.update(query, { $set: { service_args: req.body.service_args } }, {}, function (err, numChanged) {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -174,6 +176,7 @@ var Services = {
 		};
 		this.db.findOne(query, {}, (err, service) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}
@@ -212,6 +215,7 @@ var Services = {
 				}
 				this.db.insert(data, (err, service) => {
 					if (err) {
+						console.log(err);
 						res.send(500, err);
 						return next();
 					}
@@ -221,8 +225,7 @@ var Services = {
 					}
 				});
 			})
-			.catch((e) => {
-				console.log(e);
+			.catch(e => {
 				res.send(404, "Specified Job ID does not exist.");
 				return next();
 			});
@@ -239,7 +242,7 @@ var Services = {
 	},
 
 	makeServiceUrl(service) {
-		return this.serverUrl + '/' + service.service_type + '/' + service._id;
+		return Utils.serverUrl + '/' + service.service_type + '/' + service._id;
 	}
 	
 };

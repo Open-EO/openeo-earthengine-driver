@@ -1,6 +1,6 @@
 const Capabilities = require('./openeo/capabilities');
 const Users = require('./openeo/users');
-const Services = require('./openeo/services');
+const Utils = require('./openeo/utils');
 
 var geeServer = {
 
@@ -8,19 +8,20 @@ var geeServer = {
 		capabilities: Capabilities,
 		data: require('./openeo/data'),
 		processes: require('./openeo/processes'),
+		files: require('./openeo/files'),
 		jobs: require('./openeo/jobs'),
-		services: Services,
+		services: require('./openeo/services'),
 		users: Users,
 		processGraphs: require('./openeo/processGraphs')
 	},
 
 	server: null,
-	serverPort: 8080,
+	config: require('./storage/config.json'),
 
 	init() {
 		console.log('Initializing openEO Google Earth Engine driver...');
 		const { eeAuthenticator } = require('./openeo/gee.js');
-		eeAuthenticator.authenticate(() => {
+		eeAuthenticator.authenticate(this.config.auth, () => {
 			console.log("GEE Authentication succeeded.");
 			this.startServer();
 		}, (error) => {
@@ -38,15 +39,17 @@ var geeServer = {
 	},
 
 	addEndpoint(method, path, callback) {
-		Capabilities.addEndpoint(method, path);
-		var serverPath = path.replace(/\{([\w]+)\}/g, ":$1");
+		if (!Array.isArray(path)) {
+			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
+		}
+		Capabilities.addEndpoint(method, path[0]);
 		if (method === 'delete') {
 			method = 'del';
 		}
-		this.server[method](serverPath, callback);
+		this.server[method](path[1], callback);
 	},
 
-	startServer() {		
+	startServer() {
 		const restify = require('restify');
 		this.server = restify.createServer();
 		this.server.pre(this.preflight);
@@ -65,11 +68,10 @@ var geeServer = {
 				this.endpoints[i].routes(this);
 			}
 			// Start server on port ...
-			const port = process.env.PORT || this.serverPort;
+			const port = process.env.PORT || this.config.port;
 			this.server.listen(port, () => {
-				var serverUrl = this.server.url.replace('[::]', '127.0.0.1');
-				Services.serverUrl = serverUrl;
-				console.log('%s listening at %s', this.server.name, serverUrl)
+				Utils.serverUrl = this.server.url.replace('[::]', this.config.hostname);
+				console.log('%s listening at %s', this.server.name, Utils.serverUrl)
 			});
 		}).catch((error) => {
 			console.log(error);

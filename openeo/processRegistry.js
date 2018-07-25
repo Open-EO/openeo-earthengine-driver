@@ -1,3 +1,5 @@
+const zonal_statistics = require('./processes/zonal_statistics');
+
 var ProcessRegistry = {
 	
 	processes: {},
@@ -10,7 +12,7 @@ var ProcessRegistry = {
 		return null;
 	},
 	
-	parseProcessGraph(obj, execute = true) {
+	parseProcessGraph(req, obj, execute = true) {
 		if (obj.hasOwnProperty("product_id")) { // Image Collection
 			// ToDo: Check whether product exists
 			if (execute === true) {
@@ -26,10 +28,10 @@ var ProcessRegistry = {
 				throw "Process '" + obj.process_id + "' is not supported.";
 			}
 			for(var a in obj.args) {
-				obj.args[a] = this.parseProcessGraph(obj.args[a], execute);
+				obj.args[a] = this.parseProcessGraph(req, obj.args[a], execute);
 			}
 			if (execute === true) {
-				return process.eeCode(obj.args);
+				return process.eeCode(obj.args, req);
 			}
 			else {
 				return obj;
@@ -51,6 +53,9 @@ var ProcessRegistry = {
 };
 
 ProcessRegistry.processes = {
+
+	zonal_statistics: zonal_statistics,
+
 	// Key must be lowercase!
 	ndvi: {
 		process_id: "NDVI",
@@ -67,9 +72,26 @@ ProcessRegistry.processes = {
 			}
 		},
 		eeCode(args) {
-			return toImageCollection(args.imagery).map(function(image) {
+			return toImageCollection(args.imagery).map((image) => {
 				return image.normalizedDifference([args.nir, args.red]);
 			});
+		}
+	},
+
+	filter_bands: {
+		process_id: "filter_bands",
+		description: "Selects certain bands from a collection.",
+		args: {
+			imagery: {
+				description: "image or image collection"
+			},
+			bands: {
+				description: "A single band id as string or multiple band ids as strings contained in an array."
+			}
+		},
+		eeCode(args) {
+			// Select works on both images and image collections => no conversion applied.
+			return args.imagery.select(args.bands);
 		}
 	},
 
@@ -268,9 +290,13 @@ function toImage(obj) {
 	if (obj instanceof ee.Image) {
 		return obj;
 	}
+	else if (obj instanceof ee.ComputedObject) {
+		console.log("WARN: Casting to Image might be unintentional.");
+		return ee.Image(obj);
+	}
 	else if (obj instanceof ee.ImageCollection) {
-		console.log("WARN: Reducing image collection to the first image");
-		return ee.Image(obj.first());
+		console.log("WARN: Compositing the image collection to a single image.");
+		return obj.mosaic();
 	}
 	return null;
 }
@@ -279,7 +305,7 @@ function toImageCollection(obj) {
 	if (obj instanceof ee.ImageCollection) {
 		return obj;
 	}
-	else if (obj instanceof ee.Image) {
+	else if (obj instanceof ee.Image || obj instanceof ee.ComputedObject) {
 		return ee.ImageCollection(obj);
 	}
 	return null;

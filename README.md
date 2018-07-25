@@ -13,7 +13,7 @@ More information about authentication can be found in the [Earth Engine document
 
 ## Usage
 
-To start the server run `npm install` to install the dependencies and  `npm run start` to start the server. 
+After configuration, the server can be started. Run `npm install` to install the dependencies and  `npm run start` to start the server. 
 
 Afterwards you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 

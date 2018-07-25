@@ -25,7 +25,7 @@ var Users = {
 		this.db.findOne({ token: req.authorization.credentials }, (err, user) => {
 			if (err || user === null) {
 				res.send(403);
-				return next();
+				return; // token is invalid => finish handling this request, so don't call next!
 			}
 
 			// ToDo: Expire token
@@ -72,6 +72,7 @@ var Users = {
 							return next();
 						}
 						else {
+							console.log(err);
 							res.send(500, err);
 							return next();
 						}
@@ -97,6 +98,7 @@ var Users = {
 		userData.passwordSalt = pw.salt;
 		this.db.insert(userData, (err, user) => {
 			if (err) {
+				console.log(err);
 				res.send(500, err);
 				return next();
 			}

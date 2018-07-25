@@ -1,5 +1,8 @@
 /node_modules/
 /storage/gee-oauth-token
 /storage/*.db
+/storage/user_files/*
+/storage/temp_files/*
 /nbproject/
 /package-lock.json
+/.node-xmlhttprequest-sync-*
