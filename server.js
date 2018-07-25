@@ -56,6 +56,9 @@ var geeServer = {
 		this.server.use(this.corsHeader);
 		this.server.use(Users.checkAuthToken.bind(Users));
 
+		const WebSocket = require('ws');
+		this.websocketserver = new WebSocket.Server({server: this.server.server});
+
 		this.initEndpoints().then(() => {
 			// Add routes
 			for(var i in this.endpoints) {

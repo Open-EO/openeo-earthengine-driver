@@ -25,7 +25,8 @@
     "google-closure-library": "^20180204.0.0",
     "googleapis": "^27.0.0",
     "nedb": "^1.8.0",
-    "restify": "^6.3.4"
+    "restify": "^6.3.4",
+    "ws": "^5.2.1"
   },
   "nodemonConfig": {
     "ignore": [

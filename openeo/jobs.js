@@ -22,6 +22,7 @@ var Jobs = {
 		server.addEndpoint('get', '/jobs/{job_id}/download', this.getJobDownload.bind(this));
 		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
+		server.addEndpoint('post', '/jobs/{job_id}/subscriptions', this.postJobSubscription.bind(this));
 	},
 
 	getUserJobs(req, res, next) {
@@ -204,6 +205,10 @@ var Jobs = {
 			}
 			return next();
 		}
+	},
+
+	postJobSubscription(req, res, next) {
+		console.log(this.websocketserver);
 	},
 
 	makeJobResponse(job) {
