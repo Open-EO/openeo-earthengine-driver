@@ -51,16 +51,13 @@ var geeServer = {
 
 	startServer() {
 		const restify = require('restify');
-		this.server = restify.createServer();
+		this.server = restify.createServer({handleUpgrades: true});  // handleUpgrades needed for protocol upgrade from HTTP to WebSockets: http://restify.com/docs/home/#upgrade-requests
 		this.server.pre(this.preflight);
 		this.server.use(restify.plugins.queryParser());
 		this.server.use(restify.plugins.bodyParser());
 		this.server.use(restify.plugins.authorizationParser());
 		this.server.use(this.corsHeader);
 		this.server.use(Users.checkAuthToken.bind(Users));
-
-		const WebSocket = require('ws');
-		this.websocketserver = new WebSocket.Server({server: this.server.server});
 
 		this.initEndpoints().then(() => {
 			// Add routes
