@@ -11,6 +11,7 @@ var geeServer = {
 		files: require('./openeo/files'),
 		jobs: require('./openeo/jobs'),
 		services: require('./openeo/services'),
+		subscription: require('./openeo/subscription'),
 		users: Users,
 		processGraphs: require('./openeo/processGraphs')
 	},
