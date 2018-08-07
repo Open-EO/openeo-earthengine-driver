@@ -17,6 +17,11 @@ var Jobs = {
 	init() {
 		this.db = Utils.loadDB('jobs');
 		console.log("INFO: Jobs loaded.");
+
+		const WebSocket = require('ws');
+		this.websocketserver = new WebSocket.Server({noServer: true});
+		console.log('INFO: WebSocket server initiated.');
+
 		return new Promise((resolve, reject) => resolve());
 	},
 
@@ -28,6 +33,8 @@ var Jobs = {
 		server.addEndpoint('patch', '/jobs/{job_id}/queue', this.patchJobQueue.bind(this));
 		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
+		// TODO: According to the openapi.json the following should be a POST and not a GET. However the browsers' WebSocket API defaults to GET and I haven't yet found a way to make it use a POST instead...
+		server.addEndpoint('get', '/jobs/{job_id}/subscriptions', this.postJobSubscription.bind(this));
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
 	},
 
@@ -271,6 +278,22 @@ var Jobs = {
 			}
 			return next();
 		}
+	},
+
+	postJobSubscription(req, res, next) {
+		if (!res.claimUpgrade) {
+			res.send(400, 'In order to subscribe to jobs the connection must be upgradable to WebSockets.');
+			return;
+		}
+		
+		const wss = this.websocketserver;
+		const upgrade = res.claimUpgrade();
+		
+		wss.handleUpgrade(req, upgrade.socket, upgrade.head, function done(ws) {
+			wss.emit('connection', ws, req);
+		});
+		
+		return next(false);
 	},
 
 	makeJobResponse(job, full = true) {

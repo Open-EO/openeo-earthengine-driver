@@ -51,7 +51,7 @@ var geeServer = {
 
 	startServer() {
 		const restify = require('restify');
-		this.server = restify.createServer();
+		this.server = restify.createServer({handleUpgrades: true});  // handleUpgrades needed for protocol upgrade from HTTP to WebSockets: http://restify.com/docs/home/#upgrade-requests
 		this.server.pre(this.preflight);
 		this.server.use(restify.plugins.queryParser());
 		this.server.use(restify.plugins.bodyParser());
