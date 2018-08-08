@@ -18,11 +18,19 @@ var Users = {
 
 	checkAuthToken(req, res, next) {
 		req.user = this.emptyUser();
-		if (req.authorization.scheme !== 'Bearer') {
+		var token = null;
+		var route = req.getRoute();
+		if (req.authorization.scheme === 'Bearer') {
+			token = req.authorization.credentials;
+		}
+		else if (route.path == '/subscription' && typeof req.query.authorization === 'string') {
+			token = req.query.authorization;
+		}
+		else {
 			return next();
 		}
 
-		this.db.findOne({ token: req.authorization.credentials }, (err, user) => {
+		this.db.findOne({ token: token }, (err, user) => {
 			if (err || user === null) {
 				res.send(403);
 				return; // token is invalid => finish handling this request, so don't call next!
@@ -32,7 +40,7 @@ var Users = {
 
 			// Update token time
 			user.tokenTime = Utils.getTimestamp();
-			this.db.update({ token: req.authorization.credentials }, { $set: { tokenTime: user.tokenTime } }, {});
+			this.db.update({ token: token }, { $set: { tokenTime: user.tokenTime } }, {});
 
 			req.user = user;
 			return next();

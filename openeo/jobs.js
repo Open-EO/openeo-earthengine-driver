@@ -11,6 +11,7 @@ const FINISHED_STATE = 'finished';
 var Jobs = {
 
 	db: null,
+	subscriptions: null,
 	tempFolder: './storage/temp_files',
 
 	init() {
@@ -29,6 +30,8 @@ var Jobs = {
 		server.addEndpoint('patch', '/jobs/{job_id}/cancel', this.patchJobCancel.bind(this));
 		server.addEndpoint('get', '/users/{user_id}/jobs', this.getUserJobs.bind(this));
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
+
+		this.subscriptions = server.createSubscriptions(['openeo.jobs.debug']);
 	},
 
 	getTempFile(req, res, next) {
@@ -186,19 +189,42 @@ var Jobs = {
 			}
 
 			try {
+				this.sendDebugNotifiction(req, "Starting to process download request");
 				var url = this.execute(req, job.process_graph, output);
+				this.sendDebugNotifiction(req, "Executed processes, result available at " + url);
 				res.send([url]);
 			} catch (e) {
 				if (e === 406) {
 					res.send(406);
 				}
 				else {
+					this.sendDebugNotifiction(req, e);
 					console.log(e);
 					res.send(400, e);
 				}
 			}
 			return next();
 		});
+	},
+
+	sendDebugNotifiction(req, message, processName = null, processParams = {}) {
+		try {
+			var params = {
+				job_id: req.params.job_id
+			};
+			var payload = {
+				message: message,
+			};
+			if (processName !== null) {
+				payload.process = {
+					name: processName,
+					parameters: processParams
+				};
+			}
+			this.subscriptions.sendMessageIfSubscribed(req.user._id, "openeo.jobs.debug", params, payload);
+		} catch (e) {
+			console.log(e);
+		}
 	},
 
 	postJob(req, res, next) {
@@ -244,8 +270,10 @@ var Jobs = {
 			return next();
 		}
 	
+		this.sendDebugNotifiction(req, "Starting to process request");
 		try {
 			var url = this.execute(req, req.body.process_graph, req.body.output);
+			this.sendDebugNotifiction(req, "Downloading " + url);
 			console.log("Downloading " + url);
 			axios({
 				method: 'get',
@@ -257,6 +285,7 @@ var Jobs = {
 				stream.data.pipe(res);
 				return next();
 			}).catch(e => {
+				this.sendDebugNotifiction(req, e);
 				console.log(e);
 				res.send(500, e);
 				return next();
@@ -266,6 +295,7 @@ var Jobs = {
 				res.send(e);
 			}
 			else {
+				this.sendDebugNotifiction(req, e);
 				console.log(e);
 				res.send(400, e);
 			}

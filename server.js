@@ -1,4 +1,5 @@
 const Capabilities = require('./openeo/capabilities');
+const Subscriptions = require('./openeo/subscription');
 const Users = require('./openeo/users');
 const Utils = require('./openeo/utils');
 
@@ -11,7 +12,7 @@ var geeServer = {
 		files: require('./openeo/files'),
 		jobs: require('./openeo/jobs'),
 		services: require('./openeo/services'),
-		subscription: require('./openeo/subscription'),
+		subscription: Subscriptions,
 		users: Users,
 		processGraphs: require('./openeo/processGraphs')
 	},
@@ -48,6 +49,13 @@ var geeServer = {
 			method = 'del';
 		}
 		this.server[method](path[1], callback);
+	},
+
+	createSubscriptions(topics) {
+		for(let i in topics) {
+			Subscriptions.registerTopic(topics[i]);
+		}
+		return Subscriptions;
 	},
 
 	startServer() {

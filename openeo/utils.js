@@ -2,6 +2,7 @@ const Datastore = require('nedb');
 const crypto = require("crypto");
 const fs = require('fs');
 const path = require('path');
+const objectHash = require('object-hash');
 
 var Utils = {
 
@@ -44,6 +45,10 @@ var Utils = {
 			salt: salt,
 			passwordHash: hash.digest('hex')
 		};
+	},
+
+	hashJSON(json) {
+		return objectHash.sha1(json);
 	},
 
 	getTimestamp() {
