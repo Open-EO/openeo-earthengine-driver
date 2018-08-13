@@ -73,7 +73,7 @@ var Subscription = {
 		for(var i in topics) {
 			var hash = Utils.hashJSON(topics[i]);
 			subs.delete(hash);
-			console.log("Unsubscribed to " + JSON.stringify(topics[i]));
+			console.log("Unsubscribed from " + JSON.stringify(topics[i]));
 		}
 	},
 
@@ -137,7 +137,7 @@ var Subscription = {
 					case 'openeo.subscribe':
 						this._handleSubscribe(user_id, json.payload.topics);
 						break;
-					case 'openeo.unsubscibe':
+					case 'openeo.unsubscribe':
 						this._handleUnsubscribe(user_id, json.payload.topics);
 						break;
 				}
