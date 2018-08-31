@@ -1,6 +1,11 @@
 {
   "hostname": "127.0.0.1",
-  "port": 8080,
+  "port": 80,
+  "ssl": {
+    "port": 443,
+    "key": null,
+    "certificate": null 
+  },
   "auth": {
     "method": "OAuth",
     "OAuth": {
@@ -9,7 +14,7 @@
       "redirectUri": "urn:ietf:wg:oauth:2.0:oob"
     },
     "ServiceAccount": {
-      "privateKeyFile": "privatekey.json"
+      "privateKeyFile": "storage/privatekey.json"
     }
   }
 }
