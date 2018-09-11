@@ -10,7 +10,6 @@ var Subscription = {
 		const WebSocket = require('ws');
 		this.websocketserver = new WebSocket.Server({noServer: true});
 		console.log('INFO: Subscriptions loaded - WebSocket Server started.');
-
 		return new Promise((resolve, reject) => resolve());
 	},
 
@@ -73,7 +72,7 @@ var Subscription = {
 		for(var i in topics) {
 			var hash = Utils.hashJSON(topics[i]);
 			subs.delete(hash);
-			console.log("Unsubscribed to " + JSON.stringify(topics[i]));
+			console.log("Unsubscribed from " + JSON.stringify(topics[i]));
 		}
 	},
 
@@ -107,6 +106,12 @@ var Subscription = {
 		this.sendMessage(user_id, topic, payload);
 	},
 
+	publish(topic, params, payload) {
+		this.connections.forEach((value, key, map) => 
+			this.sendMessageIfSubscribed(key, topic, params, payload)
+		);
+	},
+
 	getSubscription(req, res, next) {
 		if (!req.user._id) {
 			res.send(403);
@@ -137,7 +142,7 @@ var Subscription = {
 					case 'openeo.subscribe':
 						this._handleSubscribe(user_id, json.payload.topics);
 						break;
-					case 'openeo.unsubscibe':
+					case 'openeo.unsubscribe':
 						this._handleUnsubscribe(user_id, json.payload.topics);
 						break;
 				}
