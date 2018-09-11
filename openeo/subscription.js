@@ -10,14 +10,6 @@ var Subscription = {
 		const WebSocket = require('ws');
 		this.websocketserver = new WebSocket.Server({noServer: true});
 		console.log('INFO: Subscriptions loaded - WebSocket Server started.');
-
-		setInterval(() => {
-			this.broadcast('openeo.jobs.debug', {job_id: "18fFNrkjAkUsqboO"}, {job_id: "18fFNrkjAkUsqboO", status: 'running'})
-		}, 5000);
-		setInterval(() => {
-			this.broadcast('openeo.jobs.debug', {job_id: "ApaAMAKN5Tq991HX"}, {job_id: "ApaAMAKN5Tq991HX", percentage: 42})
-		}, 3000);
-
 		return new Promise((resolve, reject) => resolve());
 	},
 
@@ -114,7 +106,7 @@ var Subscription = {
 		this.sendMessage(user_id, topic, payload);
 	},
 
-	broadcast(topic, params, payload) {
+	publish(topic, params, payload) {
 		this.connections.forEach((value, key, map) => 
 			this.sendMessageIfSubscribed(key, topic, params, payload)
 		);

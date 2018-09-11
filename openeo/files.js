@@ -96,7 +96,7 @@ var Files = {
 				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
 				action: 'created'
 			};
-			this.subscriptions.broadcast('openeo.files', {}, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
+			this.subscriptions.publish('openeo.files', payload, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
 			return next();
 		});
 		req.on('error', () => {
@@ -133,7 +133,7 @@ var Files = {
 						path: p.replace('storage/user_files/'+req.user._id+'/', ''),
 						action: 'deleted'
 					};
-					this.subscriptions.broadcast('openeo.files', {}, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
+					this.subscriptions.publish('openeo.files', payload, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
 					return next();
 				}
 			});
