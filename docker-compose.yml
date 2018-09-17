@@ -7,4 +7,5 @@ services:
         image: openeo-gee:0.2.0
         container_name: openeo-gee-driver
         ports:
-            - "8080:8080"
+            - "80:80"
+            - "443:443"

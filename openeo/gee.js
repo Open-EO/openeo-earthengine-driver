@@ -27,7 +27,7 @@ const eeAuthenticator = {
 	},
 
 	withPrivateKey(onsuccess, onerror) {
-		const privateKey = require(path.join('../storage/', this.authInfo.ServiceAccount.privateKeyFile));
+		const privateKey = require(path.join('../', this.authInfo.ServiceAccount.privateKeyFile));
 		ee.data.authenticateViaPrivateKey(privateKey, () => { 
 			ee.initialize();
 			if (onsuccess)
