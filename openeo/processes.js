@@ -15,7 +15,9 @@ var Processes = {
 		var data = Object.values(ProcessRegistry.processes).map(e => {
 			return {
 				process_id: e.process_id,
-				description: e.description
+				description: e.description,
+				// This is not specified in the API, but it is required for the visual model builder in the web editor.
+				args: e.args
 			};
 		});
 		res.json(data);
