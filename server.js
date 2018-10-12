@@ -2,6 +2,8 @@ const Capabilities = require('./openeo/capabilities');
 const Subscriptions = require('./openeo/subscription');
 const Users = require('./openeo/users');
 const Utils = require('./openeo/utils');
+const fs = require('fs');
+const restify = require('restify');
 
 var geeServer = {
 
@@ -17,7 +19,8 @@ var geeServer = {
 		processGraphs: require('./openeo/processGraphs')
 	},
 
-	server: null,
+	http_server: null,
+	https_server: null,
 	config: require('./storage/config.json'),
 
 	init() {
@@ -48,7 +51,23 @@ var geeServer = {
 		if (method === 'delete') {
 			method = 'del';
 		}
-		this.server[method](path[1], callback);
+		this.http_server[method](path[1], callback);
+		if (this.isHttpsEnabled()) {
+			this.https_server[method](path[1], callback);
+		}
+	},
+
+	isHttpsEnabled() {
+		return (this.config.ssl && this.config.ssl.port > 0 && typeof this.config.ssl.key === 'string' && typeof this.config.ssl.certificate === 'string') ? true : false;
+	},
+
+	initServer(server) {
+		server.pre(this.preflight);
+		server.use(restify.plugins.queryParser());
+		server.use(restify.plugins.bodyParser());
+		server.use(restify.plugins.authorizationParser());
+		server.use(this.corsHeader);
+		server.use(Users.checkAuthToken.bind(Users));
 	},
 
 	createSubscriptions(topics) {
@@ -59,30 +78,49 @@ var geeServer = {
 	},
 
 	startServer() {
-		const restify = require('restify');
-		this.server = restify.createServer({handleUpgrades: true});  // handleUpgrades needed for protocol upgrade from HTTP to WebSockets: http://restify.com/docs/home/#upgrade-requests
-		this.server.pre(this.preflight);
-		this.server.use(restify.plugins.queryParser());
-		this.server.use(restify.plugins.bodyParser());
-		this.server.use(restify.plugins.authorizationParser());
-		this.server.use(this.corsHeader);
-		this.server.use(Users.checkAuthToken.bind(Users));
+		// handleUpgrades needed for protocol upgrade from HTTP to WebSockets: http://restify.com/docs/home/#upgrade-requests
+		this.http_server = restify.createServer({handleUpgrades: true});
+		this.initServer(this.http_server);
+
+		if (this.isHttpsEnabled()) {
+			var https_options = {
+				key: fs.readFileSync(this.config.ssl.key),
+				certificate: fs.readFileSync(this.config.ssl.certificate)
+			};
+			this.https_server = restify.createServer(https_options);
+			this.initServer(this.https_server);
+		}
 
 		this.initEndpoints().then(() => {
 			// Add routes
 			for(var i in this.endpoints) {
 				this.endpoints[i].routes(this);
 			}
-			// Start server on port ...
+
+			// Start HTTP server on port ...
 			const port = process.env.PORT || this.config.port;
-			this.server.listen(port, () => {
-				Utils.serverUrl = this.server.url.replace('[::]', this.config.hostname);
-				console.log('%s listening at %s', this.server.name, Utils.serverUrl)
+			this.http_server.listen(port, () => {
+				Utils.serverUrl = this.http_server.url.replace('[::]', this.config.hostname);
+				console.log('%s listening at %s (HTTP)', this.http_server.name, Utils.serverUrl);
+				this.startServerSSL();
 			});
 		}).catch((error) => {
 			console.log(error);
 			process.exit(2);
 		});
+	},
+
+	startServerSSL() {
+		// Start HTTPS server on port ...
+		if (this.isHttpsEnabled()) {
+			const sslport = process.env.SSL_PORT || this.config.ssl.port;
+			this.https_server.listen(sslport, () => {
+				console.log('%s listening at %s (HTTPS)', this.https_server.name, Utils.serverUrl)
+			});
+		}
+		else {
+			console.log('HTTPS not enabled.');
+		}
 	},
 
 	corsHeader(req, res, next) {
