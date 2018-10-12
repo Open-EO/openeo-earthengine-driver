@@ -1,4 +1,5 @@
 const Capabilities = require('./openeo/capabilities');
+const Subscriptions = require('./openeo/subscription');
 const Users = require('./openeo/users');
 const Utils = require('./openeo/utils');
 const fs = require('fs');
@@ -13,6 +14,7 @@ var geeServer = {
 		files: require('./openeo/files'),
 		jobs: require('./openeo/jobs'),
 		services: require('./openeo/services'),
+		subscription: Subscriptions,
 		users: Users,
 		processGraphs: require('./openeo/processGraphs')
 	},
@@ -68,8 +70,16 @@ var geeServer = {
 		server.use(Users.checkAuthToken.bind(Users));
 	},
 
+	createSubscriptions(topics) {
+		for(let i in topics) {
+			Subscriptions.registerTopic(topics[i]);
+		}
+		return Subscriptions;
+	},
+
 	startServer() {
-		this.http_server = restify.createServer();
+		// handleUpgrades needed for protocol upgrade from HTTP to WebSockets: http://restify.com/docs/home/#upgrade-requests
+		this.http_server = restify.createServer({handleUpgrades: true});
 		this.initServer(this.http_server);
 
 		if (this.isHttpsEnabled()) {

@@ -7,6 +7,7 @@ const path = require('path');
 var Files = {
 
 	folder: './storage/user_files',
+	subscriptions: null,
 
 	init() {
 		console.log("INFO: Files loaded.");
@@ -19,6 +20,8 @@ var Files = {
 		server.addEndpoint('get', pathRoutes, this.getFileByPath.bind(this));
 		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
 		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));
+
+		this.subscriptions = server.createSubscriptions(['openeo.files']);
 	},
 
 	getFiles(req, res, next) {
@@ -88,6 +91,12 @@ var Files = {
 		req.on('end', () => {
 			stream.end();
 			res.send(200);
+			const payload = {
+				user_id: req.user._id,
+				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
+				action: 'created'
+			};
+			this.subscriptions.publish('openeo.files', payload, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
 			return next();
 		});
 		req.on('error', () => {
@@ -119,6 +128,12 @@ var Files = {
 				}
 				else {
 					res.send(200);
+					const payload = {
+						user_id: req.user._id,
+						path: p.replace('storage/user_files/'+req.user._id+'/', ''),
+						action: 'deleted'
+					};
+					this.subscriptions.publish('openeo.files', payload, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
 					return next();
 				}
 			});
