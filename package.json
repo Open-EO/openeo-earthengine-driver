@@ -1,7 +1,7 @@
 {
   "name": "@openeo/earthengine-driver",
-  "version": "0.2.1",
-  "description": "An openEO driver for Google Earth Engine (proof-of-concept).",
+  "version": "0.3.0",
+  "description": "An openEO driver for Google Earth Engine.",
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js"
@@ -17,17 +17,15 @@
     "url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
   },
   "devDependencies": {
-    "nodemon": "^1.17.2"
+    "nodemon": "^1.18.4"
   },
   "dependencies": {
-    "@google/earthengine": "^0.1.140-prerelease",
+    "@google/earthengine": "^0.1.151",
     "axios": "^0.18.0",
-    "google-closure-library": "^20180204.0.0",
-    "googleapis": "^27.0.0",
     "nedb": "^1.8.0",
     "object-hash": "^1.3.0",
-    "restify": "^6.3.4",
-    "ws": "^5.2.1"
+    "restify": "^7.2.1",
+    "ws": "^6.1.0"
   },
   "nodemonConfig": {
     "ignore": [

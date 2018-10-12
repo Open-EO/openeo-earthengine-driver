@@ -2,7 +2,6 @@ const Utils = require('./utils');
 const Jobs = require('./jobs');
 const Capabilities = require('./capabilities');
 const ProcessRegistry = require('./processRegistry');
-const axios = require('axios');
 
 var Services = {
 

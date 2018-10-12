@@ -1,0 +1,10 @@
+{
+  "hostname": "127.0.0.1",
+  "port": 80,
+  "ssl": {
+    "port": 443,
+    "key": null,
+    "certificate": null 
+  },
+  "serviceAccountCredentialsFile": "privatekey.json"
+}

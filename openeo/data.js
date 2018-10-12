@@ -1,4 +1,3 @@
-const axios = require('axios');
 const Utils = require('./utils');
 
 var Data = {

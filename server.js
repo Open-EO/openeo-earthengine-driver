@@ -3,7 +3,9 @@ const Subscriptions = require('./openeo/subscription');
 const Users = require('./openeo/users');
 const Utils = require('./openeo/utils');
 const fs = require('fs');
+const path = require('path');
 const restify = require('restify');
+global.ee = require('@google/earthengine');
 
 var geeServer = {
 
@@ -21,18 +23,23 @@ var geeServer = {
 
 	http_server: null,
 	https_server: null,
-	config: require('./storage/config.json'),
+	config: require('./config.json'),
 
 	init() {
 		console.log('Initializing openEO Google Earth Engine driver...');
-		const { eeAuthenticator } = require('./openeo/gee.js');
-		eeAuthenticator.authenticate(this.config.auth, () => {
-			console.log("GEE Authentication succeeded.");
-			this.startServer();
-		}, (error) => {
-			console.log("GEE Authentication failed: " + error);
-			process.exit(1);
-		});
+
+		const privateKey = require(path.resolve('./', this.config.serviceAccountCredentialsFile));
+		ee.data.authenticateViaPrivateKey(privateKey,
+			() => { 
+				console.log("GEE Authentication succeeded.");
+				ee.initialize();
+				this.startServer();
+			},
+			(error) => {
+				console.log("GEE Authentication failed: " + error);
+				process.exit(1);
+			}
+		);
 	},
 
 	initEndpoints() {
