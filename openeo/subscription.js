@@ -85,7 +85,7 @@ var Subscription = {
 		params.topic = topic;
 		var subs = this.subscriptions.get(user_id);
 		var hash = Utils.hashJSON(params);
-		if (typeof subs.get(hash) !== 'undefined') {
+		if (subs && typeof subs.get(hash) !== 'undefined') {
 			return true;
 		}
 		else {

@@ -32,6 +32,9 @@ var zonal_statistics = {
 		var geojson = null;
 		if (typeof args.regions === 'string') {
 			var contents = Files.getFileContentsSync(req.user._id, args.regions);
+			if (contents === null) {
+				throw 'File path specified in regions parameter of process `zonal_statistics` doesn\'t exist'; // ToDo: Needs a separate error code and a full message that explains that the specified file in args.regions doesn't exist.
+			}
 			geojson = JSON.parse(contents);
 		}
 		else if (typeof args.regions.type === 'string') { // Only a rough check for GeoJSON
