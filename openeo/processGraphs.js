@@ -1,23 +1,22 @@
 const Utils = require('./utils');
 const ProcessRegistry = require('./processRegistry');
+const Errors = require('./errors');
 
-var ProcessGraphs = {
+module.exports = class ProcessGraphs {
 
-	db: null,
-
-	init() {
+	constructor() {
 		this.db = Utils.loadDB('process_graphs');
-		console.log("INFO: Process graphs loaded.");
-		return new Promise((resolve, reject) => resolve());
-	},
+	}
 
-	routes(server) {
-		server.addEndpoint('get', '/users/{user_id}/process_graphs', this.getProcessGraphs.bind(this));
-		server.addEndpoint('post', '/users/{user_id}/process_graphs', this.postProcessGraph.bind(this));
-		server.addEndpoint('get', '/users/{user_id}/process_graphs/{process_graph_id}', this.getProcessGraphById.bind(this));
-		server.addEndpoint('put', '/users/{user_id}/process_graphs/{process_graph_id}', this.putProcessGraphById.bind(this));
-		server.addEndpoint('delete', '/users/{user_id}/process_graphs/{process_graph_id}', this.deleteProcessGraphById.bind(this));
-	},
+	beforeServerStart(server) {
+//		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this)); // ToDo
+//		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this)); // ToDo
+//		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraphById.bind(this)); // ToDo
+//		server.addEndpoint('put', '/process_graphs/{process_graph_id}', this.putProcessGraphById.bind(this)); // ToDo
+//		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraphById.bind(this)); // ToDo
+
+		return new Promise((resolve, reject) => resolve());
+	}
 
 	getProcessGraphs(req, res, next) {
 		var query = {
@@ -25,20 +24,24 @@ var ProcessGraphs = {
 		};
 		this.db.find(query, {}, (err, graphs) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else {
-				var data = [];
-				for(var i in graphs) {
-					data.push(graphs[i]._id);
-				}
-				res.json(data);
+				var data = graphs.map(g => {
+					return {
+						process_graph_id: g._id,
+						title: g.title,
+						description: g.description
+					};
+				});
+				res.json({
+					process_graphs: data,
+					links: []
+				});
 				return next();
 			}
 		});
-	},
+	}
 
 	postProcessGraph(req, res, next) {
 		if (typeof req.body !== 'object' || Utils.size(req.body) === 0) {
@@ -46,7 +49,7 @@ var ProcessGraphs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req, req.body, false);
+			ProcessRegistry.parseProcessGraph(req.body, req, res, false);
 		} catch (e) {
 			console.log(e);
 			res.send(400, e); // Invalid process graph
@@ -59,9 +62,7 @@ var ProcessGraphs = {
 		};
 		this.db.insert(data, (err, graph) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else {
 				res.json({
@@ -70,7 +71,7 @@ var ProcessGraphs = {
 				return next();
 			}
 		});
-	},
+	}
 
 	putProcessGraphById(req, res, next) {
 		if (typeof req.body !== 'object' || Utils.size(req.body) === 0) {
@@ -78,7 +79,7 @@ var ProcessGraphs = {
 			return next();
 		}
 		try {
-			ProcessRegistry.parseProcessGraph(req, req.body, false);
+			ProcessRegistry.parseProcessGraph(req.body, req, res, false);
 		} catch (e) {
 			console.log(e);
 			res.send(400, e); // Invalid process graph
@@ -91,9 +92,7 @@ var ProcessGraphs = {
 		};
 		this.db.update(query, req.body, {}, (err, numReplaced) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (numReplaced === 0) {
 				res.send(404);
@@ -104,7 +103,7 @@ var ProcessGraphs = {
 				return next();
 			}
 		});
-	},
+	}
 
 	deleteProcessGraphById(req, res, next) {
 		var query = {
@@ -113,9 +112,7 @@ var ProcessGraphs = {
 		};
 		this.db.remove(query, {}, (err, numRemoved) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (numRemoved === 0) {
 				res.send(404);
@@ -126,7 +123,7 @@ var ProcessGraphs = {
 				return next();
 			}
 		});
-	},
+	}
 
 	getProcessGraphById(req, res, next) {
 		var query = {
@@ -135,9 +132,7 @@ var ProcessGraphs = {
 		};
 		this.db.findOne(query, {}, (err, pg) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (pg === null) {
 				res.send(404);
@@ -151,5 +146,3 @@ var ProcessGraphs = {
 	}
 
 };
-
-module.exports = ProcessGraphs;

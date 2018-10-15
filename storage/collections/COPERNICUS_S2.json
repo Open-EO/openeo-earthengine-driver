@@ -1,0 +1,480 @@
+{
+  "stac_version": "0.6.0", 
+  "properties": {
+    "gee:type": "image_collection", 
+    "eo:platform": "Sentinel-2A", 
+    "eo:instrument": "MSI", 
+    "eo:bands": [
+      {
+        "name": "B1", 
+        "description": "Aerosols", 
+        "gee:wavelength": "443.9nm (S2A) / 442.3nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B2", 
+        "description": "Blue", 
+        "gee:wavelength": "496.6nm (S2A) / 492.1nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B3", 
+        "description": "Green", 
+        "gee:wavelength": "560nm (S2A) / 559nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B4", 
+        "description": "Red", 
+        "gee:wavelength": "664.5nm (S2A) / 665nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B5", 
+        "description": "Red Edge 1", 
+        "gee:wavelength": "703.9nm (S2A) / 703.8nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B6", 
+        "description": "Red Edge 2", 
+        "gee:wavelength": "740.2nm (S2A) / 739.1nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B7", 
+        "description": "Red Edge 3", 
+        "gee:wavelength": "782.5nm (S2A) / 779.7nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B8", 
+        "description": "NIR", 
+        "gee:wavelength": "835.1nm (S2A) / 833nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B8a", 
+        "description": "Red Edge 4", 
+        "gee:wavelength": "864.8nm (S2A) / 864nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B9", 
+        "description": "Water vapor", 
+        "gee:wavelength": "945nm (S2A) / 943.2nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B10", 
+        "description": "Cirrus", 
+        "gee:wavelength": "1373.5nm (S2A) / 1376.9nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B11", 
+        "description": "SWIR 1", 
+        "gee:wavelength": "1613.7nm (S2A) / 1610.4nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "B12", 
+        "description": "SWIR 2", 
+        "gee:wavelength": "2202.4nm (S2A) / 2185.7nm (S2B)", 
+        "gsd": "meters", 
+        "gee:scale": 0.0001
+      }, 
+      {
+        "name": "QA10", 
+        "description": "Always empty", 
+        "gsd": "meters"
+      }, 
+      {
+        "name": "QA20", 
+        "description": "Always empty", 
+        "gsd": "meters"
+      }, 
+      {
+        "name": "QA60", 
+        "description": "Cloud mask", 
+        "gsd": "meters"
+      }
+    ], 
+    "gee:revisit_interval": "days", 
+    "gee:asset_schema": [
+      {
+        "description": "Granule-specific cloudy pixel percentage taken from the original metadata", 
+        "type": 3, 
+        "name": "CLOUDY_PIXEL_PERCENTAGE"
+      }, 
+      {
+        "description": "Cloudy pixel percentage for the whole archive that contains this granule. Taken from the original metadata", 
+        "type": 3, 
+        "name": "CLOUD_COVERAGE_ASSESSMENT"
+      }, 
+      {
+        "description": "The full id of the original Sentinel-2 product", 
+        "type": 1, 
+        "name": "PRODUCT_ID"
+      }, 
+      {
+        "description": "Unique identifier of the datastrip Product Data Item (PDI)", 
+        "type": 1, 
+        "name": "DATASTRIP_ID"
+      }, 
+      {
+        "description": "Uniquely identifies a given Datatake. The ID contains the Sentinel-2 satellite, start date and time, absolute orbit number, and processing baseline.", 
+        "type": 1, 
+        "name": "DATATAKE_IDENTIFIER"
+      }, 
+      {
+        "description": "MSI operation mode", 
+        "type": 1, 
+        "name": "DATATAKE_TYPE"
+      }, 
+      {
+        "description": "Percentage of degraded MSI and ancillary data", 
+        "type": 3, 
+        "name": "DEGRADED_MSI_DATA_PERCENTAGE"
+      }, 
+      {
+        "description": "Synthesis of the On-Line Quality Control (OLQC) checks performed at granule (Product_Syntax) and datastrip (Product Syntax and DS_Consistency) levels", 
+        "type": 1, 
+        "name": "FORMAT_CORRECTNESS_FLAG"
+      }, 
+      {
+        "description": "Synthesis of the OLQC checks performed at the datastrip level (Relative_Orbit_Number)", 
+        "type": 1, 
+        "name": "GENERAL_QUALITY_FLAG"
+      }, 
+      {
+        "description": "Product generation time", 
+        "type": 3, 
+        "name": "GENERATION_TIME"
+      }, 
+      {
+        "description": "Synthesis of the OLQC checks performed at the datastrip level (Attitude_Quality_Indicator)", 
+        "type": 1, 
+        "name": "GEOMETRIC_QUALITY_FLAG"
+      }, 
+      {
+        "description": "Unique identifier of the granule PDI (PDI_ID) ", 
+        "type": 1, 
+        "name": "GRANULE_ID"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B1 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B1"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B2 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B2"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B3 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B3"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B4 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B4"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B5 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B5"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B6 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B6"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B7 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B7"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B8 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B8"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B8a and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B8A"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B9 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B9"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B10 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B10"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B11 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B11"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence azimuth angle average for band B12 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B12"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B1 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B1"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B2 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B2"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B3 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B3"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B4 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B4"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B5 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B5"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B6 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B6"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B7 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B7"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B8 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B8"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B8a and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B8A"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B9 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B9"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B10 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B10"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B11 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B11"
+      }, 
+      {
+        "description": "Mean value containing viewing incidence zenith angle average for band B12 and for all detectors", 
+        "type": 3, 
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B12"
+      }, 
+      {
+        "description": "Mean value containing sun azimuth angle average for all bands and detectors", 
+        "type": 3, 
+        "name": "MEAN_SOLAR_AZIMUTH_ANGLE"
+      }, 
+      {
+        "description": "Mean value containing sun zenith angle average for all bands and detectors", 
+        "type": 3, 
+        "name": "MEAN_SOLAR_ZENITH_ANGLE"
+      }, 
+      {
+        "description": "US-Military Grid Reference System (MGRS) tile", 
+        "type": 1, 
+        "name": "MGRS_TILE"
+      }, 
+      {
+        "description": "Configuration baseline used at the time of the product generation in terms of processor software version and major Ground Image Processing Parameters (GIPP) version", 
+        "type": 1, 
+        "name": "PROCESSING_BASELINE"
+      }, 
+      {
+        "description": "Based on the OLQC reports contained in the Datastrips/QI_DATA with RADIOMETRIC_QUALITY checklist name", 
+        "type": 1, 
+        "name": "RADIOMETRIC_QUALITY_FLAG"
+      }, 
+      {
+        "description": "Earth-Sun distance correction factor", 
+        "type": 3, 
+        "name": "REFLECTANCE_CONVERSION_CORRECTION"
+      }, 
+      {
+        "description": "Imaging orbit direction", 
+        "type": 1, 
+        "name": "SENSING_ORBIT_DIRECTION"
+      }, 
+      {
+        "description": "Imaging orbit number", 
+        "type": 3, 
+        "name": "SENSING_ORBIT_NUMBER"
+      }, 
+      {
+        "description": "Synthesis of the OLQC checks performed at granule (Missing_Lines, Corrupted_ISP, and Sensing_Time) and datastrip (Degraded_SAD and Datation_Model) levels", 
+        "type": 1, 
+        "name": "SENSOR_QUALITY_FLAG"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B1", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B1"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B2", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B2"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B3", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B3"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B4", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B4"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B5", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B5"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B6", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B6"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B7", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B7"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B8", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B8"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B8a", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B8A"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B9", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B9"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B10", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B10"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B11", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B11"
+      }, 
+      {
+        "description": "Mean solar exoatmospheric irradiance for band B12", 
+        "type": 3, 
+        "name": "SOLAR_IRRADIANCE_B12"
+      }, 
+      {
+        "description": "Sentinel-2 spacecraft name: Sentinel-2A, Sentinel-2B", 
+        "type": 1, 
+        "name": "SPACECRAFT_NAME"
+      }
+    ]
+  }, 
+  "id": "COPERNICUS/S2", 
+  "title": "Sentinel-2 MSI: MultiSpectral Instrument, Level-1C", 
+  "description": "Sentinel-2 is a wide-swath, high-resolution, multi-spectral\nimaging mission supporting Copernicus Land Monitoring studies,\nincluding the monitoring of vegetation, soil and water cover,\nas well as observation of inland waterways and coastal areas.\n\nThe Sentinel-2 data contain 13 UINT16 spectral bands representing\nTOA reflectance scaled by 10000. See the [Sentinel-2 User Handbook](https://sentinel.esa.int/documents/247904/685211/Sentinel-2_User_Handbook)\nfor details. In addition, three QA bands are present where one\n(QA60) is a bitmask band with cloud mask information. For more\ndetails, [see the full explanation of how cloud masks are computed.](https://sentinel.esa.int/web/sentinel/technical-guides/sentinel-2-msi/level-1c/cloud-masks)\n\nEach Sentinel-2 product (zip archive) may contain multiple\ngranules. Each granule becomes a separate Earth Engine asset.\nEE asset ids for Sentinel-2 assets have the following format:\nCOPERNICUS/S2/20151128T002653_20151128T102149_T56MNN. Here the\nfirst numeric part represents the sensing date and time, the\nsecond numeric part represents the product generation date and\ntime, and the final 6-character string is a unique granule identifier\nindicating its UTM grid reference (see [MGRS](https://en.wikipedia.org/wiki/Military_Grid_Reference_System)).\n\nFor more details on Sentinel-2 radiometric resoltuon, [see this page](https://earth.esa.int/web/sentinel/user-guides/sentinel-2-msi/resolutions/radiometric).\n", 
+  "version": "", 
+  "license": "proprietary", 
+  "links": [
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/COPERNICUS_S2.json", 
+      "rel": "self"
+    }, 
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json", 
+      "rel": "parent"
+    }, 
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json", 
+      "rel": "root"
+    }
+  ], 
+  "keywords": [
+    "copernicus", 
+    "esa", 
+    "eu", 
+    "msi", 
+    "radiance", 
+    "sentinel"
+  ], 
+  "providers": [
+    {
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-2-msi", 
+      "type": [
+        "producer", 
+        "licensor"
+      ], 
+      "name": "European Union/ESA/Copernicus"
+    }, 
+    {
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2", 
+      "type": [
+        "host"
+      ], 
+      "name": "Google Earth Engine"
+    }
+  ], 
+  "extent": {
+    "spatial": [
+      180.0, 
+      -56.0, 
+      -180.0, 
+      83.0
+    ], 
+    "temporal": [
+      "2015-06-23T00:00:00Z", 
+      null
+    ]
+  }
+}

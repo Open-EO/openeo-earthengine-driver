@@ -1,0 +1,426 @@
+{
+  "stac_version": "0.6.0", 
+  "properties": {
+    "gee:type": "image_collection", 
+    "eo:platform": "Sentinel-1A", 
+    "eo:instrument": "SAR", 
+    "eo:bands": [
+      {
+        "name": "HH", 
+        "description": "Single co-polarization, horizontal transmit/horizontal receive", 
+        "gee:wavelength": "5.405GHz", 
+        "gsd": "meters"
+      }, 
+      {
+        "name": "HV", 
+        "description": "Dual-band cross-polarization, horizontal transmit/vertical receive", 
+        "gee:wavelength": "5.405GHz", 
+        "gsd": "meters"
+      }, 
+      {
+        "name": "VV", 
+        "description": "Single co-polarization, vertical transmit/vertical receive", 
+        "gee:wavelength": "5.405GHz", 
+        "gsd": "meters"
+      }, 
+      {
+        "name": "VH", 
+        "description": "Dual-band cross-polarization, vertical transmit/horizontal receive", 
+        "gee:wavelength": "5.405GHz", 
+        "gsd": "meters"
+      }, 
+      {
+        "name": "angle", 
+        "description": "Approximate viewing incidence angle", 
+        "gee:unit": "Degrees", 
+        "gsd": "meters"
+      }
+    ], 
+    "gee:revisit_interval": "days", 
+    "gee:asset_schema": [
+      {
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "GRD_Post_Processing_facility_country"
+      }, 
+      {
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "GRD_Post_Processing_facility_name"
+      }, 
+      {
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "GRD_Post_Processing_facility_organisation"
+      }, 
+      {
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "GRD_Post_Processing_facility_site"
+      }, 
+      {
+        "description": "Name of the software.", 
+        "type": 1, 
+        "name": "GRD_Post_Processing_software_name"
+      }, 
+      {
+        "description": "Software version identification.", 
+        "type": 1, 
+        "name": "GRD_Post_Processing_software_version"
+      }, 
+      {
+        "description": "Processing start time.", 
+        "type": 3, 
+        "name": "GRD_Post_Processing_start"
+      }, 
+      {
+        "description": "Processing stop time.", 
+        "type": 3, 
+        "name": "GRD_Post_Processing_stop"
+      }, 
+      {
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "SLC_Processing_facility_country"
+      }, 
+      {
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "SLC_Processing_facility_name"
+      }, 
+      {
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "SLC_Processing_facility_organisation"
+      }, 
+      {
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "SLC_Processing_facility_site"
+      }, 
+      {
+        "description": "Name of the software.", 
+        "type": 1, 
+        "name": "SLC_Processing_software_name"
+      }, 
+      {
+        "description": "Software version identification.", 
+        "type": 1, 
+        "name": "SLC_Processing_software_version"
+      }, 
+      {
+        "description": "Processing start time.", 
+        "type": 3, 
+        "name": "SLC_Processing_start"
+      }, 
+      {
+        "description": "Processing stop time.", 
+        "type": 3, 
+        "name": "SLC_Processing_stop"
+      }, 
+      {
+        "description": "Sentinel-1 Toolbox calibration tool version.", 
+        "type": 1, 
+        "name": "S1TBX_Calibration_Operator_version"
+      }, 
+      {
+        "description": "Sentinel-1 Toolbox SAR processing tool version.", 
+        "type": 1, 
+        "name": "S1TBX_SAR_Processing_version"
+      }, 
+      {
+        "description": "Sentinel Application Platform (SNAP) version.", 
+        "type": 1, 
+        "name": "SNAP_Graph_Processing_Framework_GPF_version"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HH_log_bias"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HH_log_gain"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HH_original_max"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HH_original_min"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HV_log_bias"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HV_log_gain"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HV_original_max"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "HV_original_min"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VV_log_bias"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VV_log_gain"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VV_original_max"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VV_original_min"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VH_log_bias"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VH_log_gain"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VH_original_max"
+      }, 
+      {
+        "description": "", 
+        "type": 3, 
+        "name": "VH_original_min"
+      }, 
+      {
+        "description": "Sensing start time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms].", 
+        "type": 3, 
+        "name": "startTimeANX"
+      }, 
+      {
+        "description": "Sensing stop time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms].", 
+        "type": 3, 
+        "name": "stopTimeANX"
+      }, 
+      {
+        "description": "Uniquely identifies the mission according to standards defined by the World Data Center for Satellite Information (WDC-SI), available at [http://nssdc.gsfc.nasa.gov/nmc/scquery.html](http://nssdc.gsfc.nasa.gov/nmc/scquery.html)", 
+        "type": 1, 
+        "name": "nssdcIdentifier"
+      }, 
+      {
+        "description": "The full mission name. E.g. \u201cSENTINEL-1\u201d", 
+        "type": 1, 
+        "name": "familyName"
+      }, 
+      {
+        "description": "The alphanumeric identifier of the platform within the mission.", 
+        "type": 1, 
+        "name": "platform_number"
+      }, 
+      {
+        "description": "Information related to the instrument on the platform to which acquired the data.", 
+        "type": 1, 
+        "name": "instrument"
+      }, 
+      {
+        "description": "IW ([Interferometric Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/interferometric-wide-swath)), EW ([Extra Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/extra-wide-swath)) or SM ([Strip Map](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/stripmap))", 
+        "type": 1, 
+        "name": "instrumentMode"
+      }, 
+      {
+        "description": "List of the swaths contained within a product. Most products will contain only one swath, except for TOPS SLC products which include 3 or 5 swaths.", 
+        "type": 1, 
+        "name": "instrumentSwath"
+      }, 
+      {
+        "description": "Absolute orbit number of the oldest line within the image data.", 
+        "type": 3, 
+        "name": "orbitNumber_start"
+      }, 
+      {
+        "description": "Absolute orbit number of the most recent line within the image data.", 
+        "type": 3, 
+        "name": "orbitNumber_stop"
+      }, 
+      {
+        "description": "Relative orbit number of the oldest line within the image data.", 
+        "type": 3, 
+        "name": "relativeOrbitNumber_start"
+      }, 
+      {
+        "description": "Relative orbit number of the most recent line within the image data.", 
+        "type": 3, 
+        "name": "relativeOrbitNumber_stop"
+      }, 
+      {
+        "description": "Absolute sequence number of the mission cycle to which the oldest image data applies.", 
+        "type": 3, 
+        "name": "cycleNumber"
+      }, 
+      {
+        "description": "Id of the mission phase to which the oldest image data applies.", 
+        "type": 3, 
+        "name": "phaseIdentifier"
+      }, 
+      {
+        "description": "Direction of the orbit ('ASCENDING' or 'DESCENDING') for the oldest image data in the product (the start of the product).", 
+        "type": 1, 
+        "name": "orbitProperties_pass"
+      }, 
+      {
+        "description": "UTC time of the ascending node of the orbit. This element is present for all products except ASAR L2 OCN products which are generated from an ASAR L1 input.", 
+        "type": 3, 
+        "name": "orbitProperties_ascendingNodeTime"
+      }, 
+      {
+        "description": " H for high or M for medium.", 
+        "type": 1, 
+        "name": "resolution"
+      }, 
+      {
+        "description": "Resolution in meters.", 
+        "type": 3, 
+        "name": "resolution_meters"
+      }, 
+      {
+        "description": "The instrument configuration ID (Radar database ID) for this data.", 
+        "type": 3, 
+        "name": "instrumentConfigurationID"
+      }, 
+      {
+        "description": "Unique ID of the datatake within the mission.", 
+        "type": 3, 
+        "name": "missionDataTakeID"
+      }, 
+      {
+        "description": "Transmit/Receive polarisation for the data. There is one element for each Tx/Rx combination: ['VV'], ['HH'], ['VV', 'VH'], or ['HH', 'HV'].", 
+        "type": 3, 
+        "name": "transmitterReceiverPolarisation"
+      }, 
+      {
+        "description": "Output product class \u201cA\u201d for Annotation or \u201cS\u201d for Standard.", 
+        "type": 1, 
+        "name": "productClass"
+      }, 
+      {
+        "description": "Textual description of the output product class.", 
+        "type": 1, 
+        "name": "productClassDescription"
+      }, 
+      {
+        "description": "The composition type of this product: \u201cIndividual\u201d, \u201cSlice\u201d or \u201cAssembled\u201d.", 
+        "type": 1, 
+        "name": "productComposition"
+      }, 
+      {
+        "description": "The product type (correction level) of this product.", 
+        "type": 1, 
+        "name": "productType"
+      }, 
+      {
+        "description": "Describes the required timeliness of the processing. One of: NRT-10m, NRT-1h, NRT-3h, Fast-24h, Off-line, or Reprocessing", 
+        "type": 1, 
+        "name": "productTimelinessCategory"
+      }, 
+      {
+        "description": "True if this is a slice from a larger product or false if this is a complete product.", 
+        "type": 1, 
+        "name": "sliceProductFlag"
+      }, 
+      {
+        "description": "Sensing start time of the segment to which this slice belongs. This field is only present if sliceProductFlag = true.", 
+        "type": 3, 
+        "name": "segmentStartTime"
+      }, 
+      {
+        "description": "Absolute slice number of this slice starting at 1. This field is only present if sliceProductFlag = true.", 
+        "type": 3, 
+        "name": "sliceNumber"
+      }, 
+      {
+        "description": "Total number of slices in the complete data take. This field is only present if sliceProductFlag = true.", 
+        "type": 3, 
+        "name": "totalSlices"
+      }
+    ]
+  }, 
+  "id": "COPERNICUS/S1_GRD", 
+  "title": "Sentinel-1 SAR GRD: C-band Synthetic Aperture Radar Ground Range Detected, log scaling", 
+  "description": "The Sentinel-1 mission provides data from a dual-polarization\nC-band Synthetic Aperture Radar (SAR) instrument.  This collection\nincludes the S1 Ground Range Detected (GRD) scenes, processed\nusing the Sentinel-1 Toolbox to generate a calibrated, ortho-corrected\nproduct. The collection is updated weekly.\n\nThis collection\ncontains all of the GRD scenes.  Each scene has one of 3 resolutions\n(10, 25 or 40 meters), 4 band combinations (corresponding to\nscene polarization) and 3 instrument modes.  Use of the collection\nin a mosaic context will likely require filtering down to a homogenous\nset of bands and parameters.  See [this article](https://developers.google.com/earth-engine/sentinel1)\nfor details of collection use and preprocessing. Each scene contains\neither 1 or 2 out of 4 possible polarization bands, depending\non the instrument's polarization settings.  The possible combinations\nare single band VV or HH, and dual band VV+VH and HH+HV:\n  1. VV: single co-polarization, vertical transmit/vertical receive\n  2. HH: single co-polarization, horizontal transmit/horizontal receive\n  3. VV + VH: dual-band cross-polarization, vertical transmit/horizontal\n  receive\n  4. HH + HV: dual-band cross-polarization, horizontal transmit/vertical\n  receive\n\nEach scene also includes an additional 'angle' band that contains\nthe approximate viewing incidence angle in degrees at every point.\nThis band is generated by interpolating the 'incidenceAngle' property\nof the 'geolocationGridPoint' gridded field provided with each asset.\n\nEach scene was pre-processed with [Sentinel-1 Toolbox](https://sentinel.esa.int/web/sentinel/toolboxes/sentinel-1)\nusing the following steps:\n  1. Thermal noise removal\n  2. Radiometric calibration\n  3. Terrain correction using SRTM 30 or ASTER DEM for areas greater than\n     60 degrees latitude, where SRTM is not available.\nThe final terrain corrected values are converted to decibels via log scaling\n(10*log10(x)) and quantized to 16-bits.\n\nFor more information about these pre-processing steps, please refer to the\n[Sentinel-1 Pre-processing article](https://developers.google.com/earth-engine/sentinel1).\n", 
+  "version": "", 
+  "license": "proprietary", 
+  "links": [
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/COPERNICUS_S1_GRD.json", 
+      "rel": "self"
+    }, 
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json", 
+      "rel": "parent"
+    }, 
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json", 
+      "rel": "root"
+    }
+  ], 
+  "keywords": [
+    "backscattering", 
+    "copernicus", 
+    "esa", 
+    "eu", 
+    "polarization", 
+    "radar", 
+    "sar", 
+    "sentinel"
+  ], 
+  "providers": [
+    {
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/", 
+      "type": [
+        "producer", 
+        "licensor"
+      ], 
+      "name": "European Union/ESA/Copernicus"
+    }, 
+    {
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD", 
+      "type": [
+        "host"
+      ], 
+      "name": "Google Earth Engine"
+    }
+  ], 
+  "extent": {
+    "spatial": [
+      -180, 
+      -90, 
+      180, 
+      90
+    ], 
+    "temporal": [
+      "2014-10-03T00:00:00Z", 
+      null
+    ]
+  }
+}

@@ -1,7 +1,12 @@
 /node_modules/
-/storage/*.db
+/storage/collections/*.json
+!/storage/collections/COPERNICUS_S1_GRD.json
+!/storage/collections/COPERNICUS_S2.json
+!/storage/collections/COPERNICUS_S3_OLCI.json
+/storage/database/*.db
 /storage/user_files/*
 /storage/temp_files/*
 /nbproject/
 /package-lock.json
 /.node-xmlhttprequest-sync-*
+/privatekey.json

@@ -1,71 +1,55 @@
-var Capabilities = {
+module.exports = class CapabilitiesAPI {
 
-	outputFormats: {
-		PNG: {},
-		JPEG: {},
-		JSON: {}
-	},
+	constructor(config) {
+		this.apiVersion = '0.3.1';
+		this.endpoints = [];
+	}
 
-	services: {
-		xyz: {}
-	},
+	beforeServerStart(server) {
+		server.addEndpoint('get', '/', this.getCapabilities.bind(this));
+		server.addEndpoint('get', '/service_types', this.getServices.bind(this));
+		server.addEndpoint('get', '/output_formats', this.getOutputFormats.bind(this));
 
-	endpoints: [],
-
-	init() {
 		return new Promise((resolve, reject) => resolve());
-	},
-
-	routes(server) {
-		server.addEndpoint('get', '/capabilities', this.getCapabilities.bind(this));
-		server.addEndpoint('get', '/capabilities/services', this.getServices.bind(this));
-		server.addEndpoint('get', '/capabilities/output_formats', this.getOutputFormats.bind(this));
-	},
+	}
 
 	addEndpoint(method, path) {
-		this.endpoints.push(path);
-	},
+		method = method.toUpperCase();
+		for(let i in this.endpoints) {
+			if (this.endpoints[i].path == path) {
+				this.endpoints[i].methods.push(method);
+				return;
+			}
+		}
+		this.endpoints.push({
+			path: path,
+			methods: [method]
+		});
+	}
 
 	getCapabilities(req, res, next) {
-		res.json(this.endpoints);
+		res.json({
+			version: this.apiVersion,
+			endpoints: this.endpoints,
+			billing: {
+				currency: req.config.currency,
+				default_plan: req.config.plans.default,
+				plans: req.config.plans.options
+			}
+		});
 		return next();
-	},
+	}
 
 	getServices(req, res, next) {
-		res.json(Object.keys(this.services));
+		res.json(req.config.services);
 		return next();
-	},
-
-	isValidOutputFormat(format) {
-		return (typeof this.outputFormats[format.toUpperCase()] === 'object') ? true : false;
-	},
-
-	isValidServiceType(service_type) {
-		return (typeof this.services[service_type.toLowerCase()] === 'object') ? true : false;
-	},
-
-	getDefaultOutputFormat() {
-		return "JPEG";
-	},
-
-	translateOutputFormat(format) {
-		format = format.toLowerCase();
-		switch(format) {
-			case 'jpeg':
-				return 'jpg';
-			default:
-				return format;
-		}
-	},
+	}
 
 	getOutputFormats(req, res, next) {
 		res.json({
-			default: this.getDefaultOutputFormat(),
-			formats: this.outputFormats
+			default: req.config.outputFormats.default,
+			formats: req.config.outputFormats.options
 		});
 		return next();
 	}
 };
-
-module.exports = Capabilities;
-

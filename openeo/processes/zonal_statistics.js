@@ -1,29 +1,83 @@
+const eeUtils = require('../eeUtils');
 const Files = require('../files');
 const Utils = require('../utils');
 
-var zonal_statistics = {
+module.exports = {
 	process_id: "zonal_statistics",
+	summary: "Calculates zonal statistics.",
 	description: "Calculates statistics for each zone specified in a file.",
-	args: {
+	parameters: {
 		imagery: {
-			description: "image or image collection"
+			description: "EO data to process.",
+			required: true,
+			schema: {
+				type: "object",
+				format: "eodata"
+			}
 		},
 		regions: {
-			description: "GeoJSON or a path to a GeoJSON file containing the regions. For paths you must specify the path to a user-uploaded file without the user id in the path."
+			description: "GeoJSON or a path to a GeoJSON file containing the regions. For paths you must specify the path to a user-uploaded file without the user id in the path.",
+			required: true,
+			schema: {
+				type: [
+					"object",
+					"string"
+				]
+			}
 		},
 		func: {
-			description: "Statistical function to calculate for the specified zones. Allowed values: min, max, mean, median, mode"
+			description: "Statistical function to calculate for the specified zones.",
+			required: true,
+			schema: {
+				type: "string",
+				enum: [
+					"min",
+					"max",
+					"mean",
+					"median",
+					"mod"
+				]
+			}
 		},
 		scale: {
-			description: "A nominal scale in meters of the projection to work in. Defaults to 1000."
-		}, 
+			description: "A nominal scale in meters of the projection to work in.",
+			schema: {
+				type: "number",
+				default: 1000
+			}
+		},
 		interval: {
-			description: "Interval to group the time series. Allowed values: day, wee, month, year. Defaults to day."
+			description: "Interval to group the time series.",
+			schema: {
+				type: "string",
+				enum: [
+					"day",
+					"week",
+					"month",
+					"year"
+				],
+				default: "day"
+			}
 		}
 	},
-	eeCode(args, req) {
+	returns: {
+		description: "Processed EO data.",
+		schema: {
+			type: "object",
+			format: "eodata"
+		}
+	},
+	exceptions: {
+		FileNotFound: {
+			description: "The specified file does not exist."
+		},
+		GeoJsonInvalid: {
+			description: "The GeoJSON object is invalid."
+		}
+	},
+	eeCode(args, req, res) {
 		// Convert to an Image
-		var imagery = args.imagery instanceof ee.Image ? ee.ImageCollection(args.imagery) : args.imagery;
+		var imagery = eeUtils.toImageCollection(args.imagery);
 
 		// Group the images by date
 		imagery = this._groupImageCollectionByInterval(imagery, args.interval);
@@ -129,5 +183,3 @@ var zonal_statistics = {
 		return imagery.iterate(multiRegionCalculator, data);
 	}
 };
-
-module.exports = zonal_statistics;

@@ -1,53 +1,54 @@
 const Utils = require('./utils');
 const fs = require('fs');
 const path = require('path');
+const Errors = require('./errors');
 
 // ToDo: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
 // ToDo: Replace sync calls with async calls.
-var Files = {
+module.exports = class FilesAPI {
 
-	folder: './storage/user_files',
-	subscriptions: null,
+	constructor() {
+		this.folder = './storage/user_files';
+	}
 
-	init() {
-		console.log("INFO: Files loaded.");
-		return new Promise((resolve, reject) => resolve());
-	},
-
-	routes(server) {
-		var pathRoutes = ['/users/{user_id}/files/{path}', '/users/:user_id/files/:path(.*)'];
-		server.addEndpoint('get', '/users/{user_id}/files', this.getFiles.bind(this));
+	beforeServerStart(server) {
+		var pathRoutes = ['/files/{user_id}/{path}', '/files/:user_id/*'];
+		server.addEndpoint('get', '/files/{user_id}', this.getFiles.bind(this));
 		server.addEndpoint('get', pathRoutes, this.getFileByPath.bind(this));
 		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
 		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));
 
-		this.subscriptions = server.createSubscriptions(['openeo.files']);
-	},
+		server.createSubscriptions(['openeo.files']);
+
+		return new Promise((resolve, reject) => resolve());
+	}
 
 	getFiles(req, res, next) {
 		if (!req.user._id) {
-			res.send(403);
-			return next();
+			return next(new Errors.AuthenticationRequired());
 		}
 		var p = this.getPathFromRequest(req, '.');
 		if (!p) {
-			res.send(400);
-			return next();
+			return next(new Errors.FilePathInvalid());
 		}
 
 		var files = this.walkSync(path.normalize(p));
 		var data = [];
 		for(var i in files) {
-			var fileName = path.relative(this.getUserFolder(req.user._id), files[i]);
+			let fileName = path.relative(this.getUserFolder(req.user._id), files[i]);
+			let stats = fs.statSync(files[i]);
 			data.push({
-				"name": fileName,
-				"size": fs.statSync(files[i]).size
-				// ToDo: Add time of modification
-			  });
+				name: fileName,
+				size: stats.size,
+				modified: stats.mtime.toISOString()
+			});
 		}
-		res.json(data);
+		res.json({
+			files: data,
+			links: []
+		});
 		return next();
-	},
+	}
 
 	walkSync(dir, filelist) {
 		filelist = filelist || [];
@@ -64,21 +65,20 @@ var Files = {
 			});
 		}
 		return filelist;
-	},
+	}
 
 	putFileByPath(req, res, next) {
 		if (!req.user._id) {
-			res.send(403);
-			return next();
+			return next(new Errors.AuthenticationRequired());
 		}
 		var p = this.getPathFromRequest(req);
-		if (!p || (fs.existsSync(p) && fs.statSync(p).isDirectory())) {
-			res.send(400);
-			return next();
+		var fileExists = fs.existsSync(p);
+		if (!p || (fileExists && fs.statSync(p).isDirectory())) {
+			return next(new Errors.FilePathInvalid());
 		}
-		if (req.contentType() !== 'application/octet-stream') {
-			res.send(400);
-			return next();
+		let contentType = 'application/octet-stream';
+		if (req.contentType() !== contentType) {
+			return next(new Errors.ContentTypeInvalid({types: contentType}));
 		}
 
 		let parent = path.dirname(p);
@@ -90,76 +90,67 @@ var Files = {
 		});
 		req.on('end', () => {
 			stream.end();
-			res.send(200);
 			const payload = {
 				user_id: req.user._id,
 				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
-				action: 'created'
+				action: fileExists ? 'updated' : 'created'
 			};
-			this.subscriptions.publish('openeo.files', payload, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
+			res.subscriptions.publish('openeo.files', payload, payload);
+			res.send(204);
 			return next();
 		});
-		req.on('error', () => {
+		req.on('error', (e) => {
 			stream.end();
-			if (fs.existsSync(p)) {
+			if (fs.exists(p)) {
 				fs.unlink(p, () => {});
 			}
-			res.send(500);
-			return next();
+			return next(new Errors.Internal(e));
 		});
-	},
+	}
 
 	deleteFileByPath(req, res, next) {
 		if (!req.user._id) {
-			res.send(403);
-			return next();
+			return next(new Errors.AuthenticationRequired());
 		}
 		var p = this.getPathFromRequest(req);
 		if (!p) {
-			res.send(400);
-			return next();
+			return next(new Errors.FilePathInvalid());
 		}
 		if (fs.existsSync(p) && fs.statSync(p).isFile()) {
-			fs.unlink(p, (err) => {
-				if (err) {
-					console.log(err);
-					res.send(500, err);
-					return next();
+			fs.unlink(p, (e) => {
+				if (e) {
+					return next(new Errors.Internal(e));
 				}
 				else {
-					res.send(200);
 					const payload = {
 						user_id: req.user._id,
 						path: p.replace('storage/user_files/'+req.user._id+'/', ''),
 						action: 'deleted'
 					};
-					this.subscriptions.publish('openeo.files', payload, payload); // TODO: params shouldn't be empty object but the payload, so that clients can subscribe to file-specific messages etc.
+					res.subscriptions.publish('openeo.files', payload, payload);
+					res.send(204);
 					return next();
 				}
 			});
 		}
 		else {
-			res.send(404);
-			return next();
+			return next(new Errors.FileNotFound());
 		}
-	},
+	}
 
 	getFileByPath(req, res, next) {
 		if (!req.user._id) {
-			res.send(403);
-			return next();
+			return next(new Errors.AuthenticationRequired());
 		}
 		var p = this.getPathFromRequest(req);
 		if (!p) {
-			res.send(400);
-			return next();
+			return next(new Errors.FilePathInvalid());
 		}
 		if (fs.existsSync(p) && fs.statSync(p).isFile()) {
 			let stream = fs.createReadStream(p);
 			stream.pipe(res);
-			stream.on('error', (error) => {
-				res.send(500);
-				return next();
+			stream.on('error', (e) => {
+				return next(new Errors.Internal(e));
 			});
 			stream.on('close', () => {
 				res.end();
@@ -167,18 +158,21 @@ var Files = {
 			});
 		}
 		else {
-			res.send(404);
-			return next();
+			return next(new Errors.FileNotFound());
 		}
-	},
+	}
 
 	getUserFolder(user_id) {
 		return path.join(this.folder, user_id);
-	},
+	}
 
 	getPathFromRequest(req, p) {
-		return this.getPath(req.user._id, (p ? p : req.params.path));
-	},
+		if (req.params.user_id != req.user._id) {
+			// The authorized user id and the user_id in the path mismatch
+			return null;
+		}
+		return this.getPath(req.user._id, (p ? p : req.params['*']));
+	}
 
 	getPath(user_id, p) {
 		let userFolder = this.getUserFolder(user_id);
@@ -187,8 +181,8 @@ var Files = {
 		if (filePath.startsWith(userPath)) {
 			return filePath;
 		}
-		return false;
-	},
+		return null;
+	}
 
 	getFileContentsSync(user_id, p) {
 		if (!user_id) {
@@ -203,5 +197,3 @@ var Files = {
 	}
 
 };
-
-module.exports = Files;

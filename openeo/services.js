@@ -1,27 +1,26 @@
 const Utils = require('./utils');
 const Jobs = require('./jobs');
-const Capabilities = require('./capabilities');
 const ProcessRegistry = require('./processRegistry');
+const Errors = require('./errors');
+const eeUtils = require('./eeUtils');
 
-var Services = {
+module.exports = class ServicesAPI {
 
-	db: null,
-
-	init() {
+	constructor() {
 		this.db = Utils.loadDB('services');
-		console.log("INFO: Services loaded.");
-		return new Promise((resolve, reject) => resolve());
-	},
+	}
 
-	routes(server) {
+	beforeServerStart(server) {
 		// Add endpoints
-		server.addEndpoint('post', '/services', this.postService.bind(this));
-		server.addEndpoint('get', '/services/{service_id}', this.getServiceById.bind(this));
-		server.addEndpoint('patch', '/services/{service_id}', this.patchServiceById.bind(this));
-		server.addEndpoint('delete', '/services/{service_id}', this.deleteServiceById.bind(this));
-		server.addEndpoint('get', '/users/{user_id}/services', this.getUserServices.bind(this));
-		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
-	},
+//		server.addEndpoint('post', '/services', this.postService.bind(this)); // ToDo
+//		server.addEndpoint('get', '/services/{service_id}', this.getServiceById.bind(this)); // ToDo
+//		server.addEndpoint('patch', '/services/{service_id}', this.patchServiceById.bind(this)); // ToDo
+//		server.addEndpoint('delete', '/services/{service_id}', this.deleteServiceById.bind(this)); // ToDo
+//		server.addEndpoint('get', '/users/{user_id}/services', this.getUserServices.bind(this)); // ToDo
+//		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this)); // ToDo
+
+		return new Promise((resolve, reject) => resolve());
+	}
 
 	getXYZ(req, res, next) {
 		var query = {
@@ -31,9 +30,7 @@ var Services = {
 		};
 		this.db.findOne(query, (err, service) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (service ===  null) {
 				res.send(404);
@@ -48,8 +45,8 @@ var Services = {
 		
 					// Execute graph
 					try {
-						var obj = ProcessRegistry.parseProcessGraph(req, job.process_graph);
-						var image = ProcessRegistry.toImage(obj);
+						var obj = ProcessRegistry.parseProcessGraph(job.process_graph, req, res);
+						var image = eeUtils.toImage(obj, req, res);
 
 						// Calculate tile bounds
 						// see: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_.28JavaScript.2FActionScript.2C_etc..29
@@ -71,7 +68,7 @@ var Services = {
 							region: rect.bounds().getInfo()
 						}, url => {
 							if (!url) {
-								console.log('Download URL from Google is empty.');
+								console.log('WARN: Download URL from Google is empty.');
 								res.send(404);
 							}
 							else {
@@ -80,26 +77,23 @@ var Services = {
 							}
 						});
 					} catch(e) {
-						console.log(e);
-						res.send(500, e);
-						return next();
+						return next(new Errors.Internal(e));
 					}
 				})
 				.catch(e => {
-					res.send(404, "Job does not exist any longer.");
-					return next();
+					return next(e);
 				});
 		});
-	},
+	}
 
 	tile2long(x, z) {
 		return (x / Math.pow(2,z) * 360 - 180);
-	},
+	}
 
 	tile2lat(y, z) {
 		var n = Math.PI - (2*Math.PI*y) / Math.pow(2,z);
 		return ((180 / Math.PI) * Math.atan( 0.5*(Math.exp(n)-Math.exp(-n)) ));
-	},
+	}
 
 	getUserServices(req, res, next) {
 		var query = {
@@ -107,9 +101,7 @@ var Services = {
 		};
 		this.db.find(query, {}, (err, services) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else {
 				services = services.map(service => {
@@ -119,7 +111,7 @@ var Services = {
 				return next();
 			}
 		});
-	},
+	}
 	  
 	deleteServiceById(req, res, next) {
 		var query = {
@@ -128,9 +120,7 @@ var Services = {
 		};
 		this.db.remove(query, {}, (err, numRemoved) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (numRemoved === 0) {
 				res.send(404);
@@ -141,7 +131,7 @@ var Services = {
 				return next();
 			}
 		});
-	},
+	}
 
 	patchServiceById(req, res, next) {
 		if (typeof req.body.service_args !== 'object') {
@@ -153,9 +143,7 @@ var Services = {
 		};
 		this.db.update(query, { $set: { service_args: req.body.service_args } }, {}, function (err, numChanged) {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (numChanged === 0) {
 				res.send(404);
@@ -166,7 +154,7 @@ var Services = {
 				return next();
 			}
 		});
-	},
+	}
 
 	getServiceById(req, res, next) {
 		var query = {
@@ -175,9 +163,7 @@ var Services = {
 		};
 		this.db.findOne(query, {}, (err, service) => {
 			if (err) {
-				console.log(err);
-				res.send(500, err);
-				return next();
+				return next(new Errors.Internal(err));
 			}
 			else if (service === null) {
 				res.send(404);
@@ -187,10 +173,10 @@ var Services = {
 			res.json(this.makeServiceResponse(service));
 			return next();
 		});
-	},
+	}
 
 	postService(req, res, next) {
-		if (typeof req.body.service_type !== 'string' || !Capabilities.isValidServiceType(req.body.service_type)) {
+		if (typeof req.body.service_type !== 'string' || !req.config.isValidServiceType(req.body.service_type)) {
 			res.send(400, "Service type is not supported.");
 			return next();
 		}
@@ -214,9 +200,7 @@ var Services = {
 				}
 				this.db.insert(data, (err, service) => {
 					if (err) {
-						console.log(err);
-						res.send(500, err);
-						return next();
+						return next(new Errors.Internal(err));
 					}
 					else {
 						res.json(this.makeServiceResponse(service));
@@ -225,10 +209,9 @@ var Services = {
 				});
 			})
 			.catch(e => {
-				res.send(404, "Specified Job ID does not exist.");
-				return next();
+				return next(e);
 			});
-	},
+	}
 
 	makeServiceResponse(service) {
 		return {
@@ -238,12 +221,10 @@ var Services = {
 			service_args: service.service_args,
 			job_id: service.job_id
 		};
-	},
+	}
 
 	makeServiceUrl(service) {
-		return Utils.serverUrl + '/' + service.service_type + '/' + service._id;
+		return Utils.getServerUrl() + '/' + service.service_type + '/' + service._id;
 	}
 	
 };
-
-module.exports = Services;

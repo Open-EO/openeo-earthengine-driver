@@ -1,34 +1,41 @@
-const Capabilities = require('./openeo/capabilities');
-const Subscriptions = require('./openeo/subscription');
-const Users = require('./openeo/users');
+const CapabilitiesAPI = require('./openeo/capabilities');
+const CollectionsAPI = require('./openeo/collections');
+const FilesAPI = require('./openeo/files');
+const JobsAPI = require('./openeo/jobs');
+const ProcessesAPI = require('./openeo/processes');
+const ProcessGraphsAPI = require('./openeo/processGraphs');
+const ServicesAPI = require('./openeo/services');
+const SubscriptionsAPI = require('./openeo/subscriptions');
+const UsersAPI = require('./openeo/users');
+
+const Config = require('./openeo/config');
 const Utils = require('./openeo/utils');
 const fs = require('fs');
 const path = require('path');
 const restify = require('restify');
 global.ee = require('@google/earthengine');
 
-var geeServer = {
+class Server {
 
-	endpoints: {
-		capabilities: Capabilities,
-		data: require('./openeo/data'),
-		processes: require('./openeo/processes'),
-		files: require('./openeo/files'),
-		jobs: require('./openeo/jobs'),
-		services: require('./openeo/services'),
-		subscription: Subscriptions,
-		users: Users,
-		processGraphs: require('./openeo/processGraphs')
-	},
-
-	http_server: null,
-	https_server: null,
-	config: require('./config.json'),
-
-	init() {
+	constructor() {
 		console.log('Initializing openEO Google Earth Engine driver...');
 
-		const privateKey = require(path.resolve('./', this.config.serviceAccountCredentialsFile));
+		this.http_server = null;
+		this.https_server = null;
+		this.config = new Config();
+
+		this.api = {};
+		this.api.capabilities = new CapabilitiesAPI(this.config);
+		this.api.collections = new CollectionsAPI();
+		this.api.processes = new ProcessesAPI();
+		this.api.files = new FilesAPI();
+		this.api.jobs = new JobsAPI();
+		this.api.services = new ServicesAPI()  ;
+		this.api.subscriptions = new SubscriptionsAPI();
+		this.api.users = new UsersAPI();
+		this.api.processGraphs = new ProcessGraphsAPI();
+
+		const privateKey = JSON.parse(fs.readFileSync(this.config.serviceAccountCredentialsFile));
 		ee.data.authenticateViaPrivateKey(privateKey,
 			() => { 
 				console.log("GEE Authentication succeeded.");
@@ -36,25 +43,17 @@ var geeServer = {
 				this.startServer();
 			},
 			(error) => {
-				console.log("GEE Authentication failed: " + error);
+				console.log("ERROR: GEE Authentication failed: " + error);
 				process.exit(1);
 			}
 		);
-	},
-
-	initEndpoints() {
-		var initFuncs = [];
-		for(var i in this.endpoints) {
-			initFuncs.push(this.endpoints[i].init())
-		}
-		return Promise.all(initFuncs);
-	},
+	}
 
 	addEndpoint(method, path, callback) {
 		if (!Array.isArray(path)) {
 			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
 		}
-		Capabilities.addEndpoint(method, path[0]);
+		this.api.capabilities.addEndpoint(method, path[0]);
 		if (method === 'delete') {
 			method = 'del';
 		}
@@ -62,75 +61,102 @@ var geeServer = {
 		if (this.isHttpsEnabled()) {
 			this.https_server[method](path[1], callback);
 		}
-	},
+	}
 
 	isHttpsEnabled() {
 		return (this.config.ssl && this.config.ssl.port > 0 && typeof this.config.ssl.key === 'string' && typeof this.config.ssl.certificate === 'string') ? true : false;
-	},
+	}
 
-	initServer(server) {
-		server.pre(this.preflight);
-		server.use(restify.plugins.queryParser());
-		server.use(restify.plugins.bodyParser());
-		server.use(restify.plugins.authorizationParser());
-		server.use(this.corsHeader);
-		server.use(Users.checkAuthToken.bind(Users));
-	},
-
-	createSubscriptions(topics) {
-		for(let i in topics) {
-			Subscriptions.registerTopic(topics[i]);
-		}
-		return Subscriptions;
-	},
-
-	startServer() {
-		// handleUpgrades needed for protocol upgrade from HTTP to WebSockets: http://restify.com/docs/home/#upgrade-requests
-		this.http_server = restify.createServer({handleUpgrades: true});
+	initHttpServer() {
+		var http_options = {
+			handleUpgrades: true
+		};
+		this.http_server = restify.createServer(http_options);
 		this.initServer(this.http_server);
+	}
 
+	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
 			var https_options = {
+				handleUpgrades: true,
 				key: fs.readFileSync(this.config.ssl.key),
 				certificate: fs.readFileSync(this.config.ssl.certificate)
 			};
 			this.https_server = restify.createServer(https_options);
 			this.initServer(this.https_server);
 		}
+	}
 
-		this.initEndpoints().then(() => {
-			// Add routes
-			for(var i in this.endpoints) {
-				this.endpoints[i].routes(this);
-			}
+	initServer(server) {
+		server.pre(this.preflight);
+		server.use(this.populateGlobals.bind(this));
+		server.use(restify.plugins.queryParser());
+		server.use(restify.plugins.bodyParser());
+		server.use(restify.plugins.authorizationParser());
+		server.use(this.injectCorsHeader);
+		server.use(this.api.users.checkAuthToken.bind(this.api.users));
+	}
 
-			// Start HTTP server on port ...
+	createSubscriptions(topics) {
+		for(let i in topics) {
+			this.api.subscriptions.registerTopic(topics[i]);
+		}
+	}
+
+	populateGlobals(req, res, next) {
+		req.config = this.config;
+		req.user = this.api.users.emptyUser();
+		res.subscriptions = this.api.subscriptions;
+		return next();
+	}
+
+	startServer() {
+		this.initHttpServer();
+		this.initHttpsServer();
+
+		let p = [];
+		for(var i in this.api) {
+			p.push(this.api[i].beforeServerStart(this));
+		}
+		Promise.all(p).then(() => {
+			this.startServerHttp()
+				.then(() => this.startServerHttps());
+		}).catch(e => {
+			console.log('Server not started due to the following error: ');
+			console.log(e);
+			process.exit(1);
+		});
+
+	}
+
+	startServerHttp() {
+		return new Promise((resolve, reject) => {
 			const port = process.env.PORT || this.config.port;
 			this.http_server.listen(port, () => {
 				Utils.serverUrl = this.http_server.url.replace('[::]', this.config.hostname);
-				console.log('%s listening at %s (HTTP)', this.http_server.name, Utils.serverUrl);
-				this.startServerSSL();
+				console.log('%s listening at %s (HTTP)', this.http_server.name, Utils.getServerUrl());
+				resolve();
 			});
-		}).catch((error) => {
-			console.log(error);
-			process.exit(2);
 		});
-	},
+	}
 
-	startServerSSL() {
-		// Start HTTPS server on port ...
-		if (this.isHttpsEnabled()) {
-			const sslport = process.env.SSL_PORT || this.config.ssl.port;
-			this.https_server.listen(sslport, () => {
-				console.log('%s listening at %s (HTTPS)', this.https_server.name, Utils.serverUrl)
-			});
-		}
-		else {
-			console.log('HTTPS not enabled.');
-		}
-	},
+	startServerHttps() {
+		return new Promise((resolve, reject) => {
+			if (this.isHttpsEnabled()) {
+				const sslport = process.env.SSL_PORT || this.config.ssl.port;
+				this.https_server.listen(sslport, () => {
+					console.log('%s listening at %s (HTTPS)', this.https_server.name, Utils.getServerUrl());
+					resolve();
+				});
+			}
+			else {
+				console.log('HTTPS not enabled.');
+				resolve();
+			}
+		});
+	}
 
-	corsHeader(req, res, next) {
+	injectCorsHeader(req, res, next) {
 		if (!req.headers['origin']) {
 			return next();
 		}
@@ -138,7 +164,7 @@ var geeServer = {
 		res.setHeader('access-control-allow-origin', req.headers['origin']);
 		res.setHeader('access-control-allow-credentials', 'true');
 		return next();
-	},
+	}
 
 	preflight(req, res, next) {
 		if (req.method !== 'OPTIONS') {
@@ -153,8 +179,9 @@ var geeServer = {
 		});
 
 		res.send(204);
+		// Don't call next, this ends execution, nothing more to send.
 	}
 
 };
 
-geeServer.init();
+var server = new Server();

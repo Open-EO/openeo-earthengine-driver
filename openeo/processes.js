@@ -1,44 +1,48 @@
 const ProcessRegistry = require('./processRegistry');
 
-var Processes = {
+module.exports = class Processes {
 
-	init() {
-		return new Promise((resolve, reject) => resolve());
-	},
+	constructor() {}
 
-	routes(server) {
+	beforeServerStart(server) {
 		server.addEndpoint('get', '/processes', this.getProcesses.bind(this));
-		server.addEndpoint('get', '/processes/{process_id}', this.getProcessById.bind(this));
-	},
+
+		return new Promise((resolve, reject) => resolve());
+	}
 
 	getProcesses(req, res, next) {
-		var data = Object.values(ProcessRegistry.processes).map(e => {
-			return {
-				process_id: e.process_id,
-				description: e.description,
-				// This is not specified in the API, but it is required for the visual model builder in the web editor.
-				args: e.args
+		var processes = Object.values(ProcessRegistry.processes).map(p => {
+			let process = {
+				name: p.process_id,
+				description: p.description,
+				parameters: p.parameters,
+				returns: p.returns
 			};
+			if (typeof p.summary !== 'undefined') {
+				process.summary = p.summary;
+			}
+			if (typeof p.min_parameters !== 'undefined') {
+				process.min_parameters = p.min_parameters;
+			}
+			if (typeof p.deprecated !== 'undefined') {
+				process.deprecated = p.deprecated;
+			}
+			if (typeof p.exceptions !== 'undefined') {
+				process.exceptions = p.exceptions;
+			}
+			if (typeof p.examples !== 'undefined') {
+				process.examples = p.examples;
+			}
+			if (typeof p.links !== 'undefined') {
+				process.links = p.links;
+			}
+			return process;
 		});
-		res.json(data);
-		return next();
-	},
-	
-	getProcessById(req, res, next) {
-		var process = ProcessRegistry.get(req.params.process_id);
-		if (process !== null) {
-			res.json({
-				process_id: process.process_id,
-				description: process.description,
-				args: process.args
-			});
-		}
-		else {
-			res.send(404);
-		}
+		res.json({
+			processes: processes,
+			links: []
+		});
 		return next();
 	}
 	
 };
-
-module.exports = Processes;

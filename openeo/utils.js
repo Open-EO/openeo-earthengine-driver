@@ -3,13 +3,21 @@ const crypto = require("crypto");
 const fs = require('fs');
 const path = require('path');
 const objectHash = require('object-hash');
+const Errors = require('./errors');
 
 var Utils = {
 
 	serverUrl: null,
 
+	getServerUrl() {
+		if (this.serverUrl === null) {
+			console.log('WARN: Server has not started yet, Utils.getServerUrl() is not available yet.');
+		}
+		return this.serverUrl;
+	},
+
 	toISODate(timestamp) {
-		return (new Date(timestamp)).toISOString().substr(0, 10);
+		return (new Date(timestamp)).toISOString();
 	},
 	
 	encodeQueryParams(data) {
@@ -25,7 +33,7 @@ var Utils = {
 	},
 
 	loadDB(name) {
-		var db = new Datastore({ filename: './storage/' + name + '.db', autoload: true });
+		var db = new Datastore({ filename: './storage/database/' + name + '.db', autoload: true });
 		db.persistence.setAutocompactionInterval(60 * 60 * 1000); // Once every hour
 		return db;
 	},

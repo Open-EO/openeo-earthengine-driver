@@ -1,0 +1,372 @@
+{
+  "stac_version": "0.6.0", 
+  "properties": {
+    "gee:type": "image_collection", 
+    "eo:gsd": "meters", 
+    "eo:platform": "Sentinel-3A", 
+    "eo:instrument": "OLCI", 
+    "eo:bands": [
+      {
+        "name": "Oa01_radiance", 
+        "description": "Aerosol correction, improved water constituent retrieval", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "400nm/15nm", 
+        "gee:scale": 0.01394646
+      }, 
+      {
+        "name": "Oa02_radiance", 
+        "description": "Yellow substance and detrital pigments (turbidity)", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "412.5nm/10nm", 
+        "gee:scale": 0.01338726
+      }, 
+      {
+        "name": "Oa03_radiance", 
+        "description": "Chl absorption max., biogeochemistry, vegetation", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "442.5nm/10nm", 
+        "gee:scale": 0.01214812
+      }, 
+      {
+        "name": "Oa04_radiance", 
+        "description": "High Chl, other pigments", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "490nm/10nm", 
+        "gee:scale": 0.01151982
+      }, 
+      {
+        "name": "Oa05_radiance", 
+        "description": "Chl, sediment, turbidity, red tide", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "510nm/10nm", 
+        "gee:scale": 0.01009526
+      }, 
+      {
+        "name": "Oa06_radiance", 
+        "description": "Chlorophyll reference (Chl minimum)", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "560nm/10nm", 
+        "gee:scale": 0.0123538
+      }, 
+      {
+        "name": "Oa07_radiance", 
+        "description": "Sediment loading", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "620nm/10nm", 
+        "gee:scale": 0.00879161
+      }, 
+      {
+        "name": "Oa08_radiance", 
+        "description": "Chl (2^nd Chl abs. max.), sediment, yellow substance/vegetation", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "665nm/10nm", 
+        "gee:scale": 0.00876539
+      }, 
+      {
+        "name": "Oa09_radiance", 
+        "description": "For improved fluorescence retrieval and to better account for [smile](https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-3-olci/level-2/smile-correction) together with the bands 665 and 680nm", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "673.75nm/7.5nm", 
+        "gee:scale": 0.0095103
+      }, 
+      {
+        "name": "Oa10_radiance", 
+        "description": "Chl fluorescence peak, red edge", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "681.25nm/7.5nm", 
+        "gee:scale": 0.00773378
+      }, 
+      {
+        "name": "Oa11_radiance", 
+        "description": "Chl fluorescence baseline, red edge transition", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "708.75nm/10nm", 
+        "gee:scale": 0.00675523
+      }, 
+      {
+        "name": "Oa12_radiance", 
+        "description": "O2 absorption/clouds, vegetation", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "753.75nm/7.5nm", 
+        "gee:scale": 0.0071996
+      }, 
+      {
+        "name": "Oa13_radiance", 
+        "description": "O2 absorption band/aerosol correction", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "761.25nm/7.5nm", 
+        "gee:scale": 0.00749684
+      }, 
+      {
+        "name": "Oa14_radiance", 
+        "description": "Atmospheric correction", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "764.375nm/3.75nm", 
+        "gee:scale": 0.0086512
+      }, 
+      {
+        "name": "Oa15_radiance", 
+        "description": "O2A used for cloud top pressure, fluorescence over land", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "767.5nm/2.5nm", 
+        "gee:scale": 0.00526779
+      }, 
+      {
+        "name": "Oa16_radiance", 
+        "description": "Atmospheric correction/aerosol correction", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "778.75nm/15nm", 
+        "gee:scale": 0.00530267
+      }, 
+      {
+        "name": "Oa17_radiance", 
+        "description": "Atmospheric correction/aerosol correction, clouds, pixel co-registration", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "865nm/20nm", 
+        "gee:scale": 0.00493004
+      }, 
+      {
+        "name": "Oa18_radiance", 
+        "description": "Water vapour absorption reference band. Common reference band with SLSTR instrument. Vegetation monitoring", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "885nm/10nm", 
+        "gee:scale": 0.00549962
+      }, 
+      {
+        "name": "Oa19_radiance", 
+        "description": "Water vapour absorption/vegetation monitoring (max. reflectance)", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "900nm/10nm", 
+        "gee:scale": 0.00502847
+      }, 
+      {
+        "name": "Oa20_radiance", 
+        "description": "Water vapour absorption, atmospheric/aerosol correction", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "940nm/20nm", 
+        "gee:scale": 0.00326378
+      }, 
+      {
+        "name": "Oa21_radiance", 
+        "description": "Atmospheric/aerosol correction", 
+        "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
+        "gee:wavelength": "1029nm/40nm", 
+        "gee:scale": 0.00324118
+      }, 
+      {
+        "name": "quality_flags", 
+        "description": "Quality flags"
+      }
+    ], 
+    "gee:revisit_interval": "days", 
+    "gee:asset_schema": [
+      {
+        "description": "Sentinel Application Platform (SNAP) version", 
+        "type": 1, 
+        "name": "SNAP_Graph_Processing_Framework_GPF_vers"
+      }, 
+      {
+        "description": "SNAP version", 
+        "type": 1, 
+        "name": "SNAP_Raster_Operators_vers"
+      }, 
+      {
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "processing_facility_country"
+      }, 
+      {
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "processing_facility_name"
+      }, 
+      {
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "processing_facility_organisation"
+      }, 
+      {
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": 1, 
+        "name": "processing_facility_site"
+      }, 
+      {
+        "description": "Name of the hardware in the facility used for the processing.", 
+        "type": 1, 
+        "name": "processing_hardware"
+      }, 
+      {
+        "description": "Name of the software component.", 
+        "type": 1, 
+        "name": "processing_software_name"
+      }, 
+      {
+        "description": "The version or release identifier of the software", 
+        "type": 3, 
+        "name": "processing_software_version"
+      }, 
+      {
+        "description": "The time the product was processed in 'epoch' format", 
+        "type": 3, 
+        "name": "processing_time"
+      }, 
+      {
+        "description": "This is always OL_1_EFR__", 
+        "type": 1, 
+        "name": "product"
+      }, 
+      {
+        "description": "The full id of the original Sentinel-3 product", 
+        "type": 1, 
+        "name": "PRODUCT_ID"
+      }, 
+      {
+        "description": "PASSED or empty", 
+        "type": 1, 
+        "name": "productQuality"
+      }, 
+      {
+        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days.", 
+        "type": 3, 
+        "name": "cycle_num"
+      }, 
+      {
+        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch.", 
+        "type": 3, 
+        "name": "orbitNumber"
+      }, 
+      {
+        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero.", 
+        "type": 3, 
+        "name": "relative_orbit_num"
+      }, 
+      {
+        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit.", 
+        "type": 1, 
+        "name": "groundTrackDirection"
+      }, 
+      {
+        "description": "Sentinel-3 spacecraft name: S3A, S3B", 
+        "type": 1, 
+        "name": "spacecraft"
+      }, 
+      {
+        "description": "Status of the file", 
+        "type": 1, 
+        "name": "status"
+      }, 
+      {
+        "description": "Timeliness of processing being analysed", 
+        "type": 1, 
+        "name": "timeliness"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "salineWaterPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "coastalPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "freshInlandWaterPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "tidalRegionPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "brightPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "invalidPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "cosmeticPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "duplicatedPixelsPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "dubiousSamplesPercent"
+      }, 
+      {
+        "description": "Pixel quality information", 
+        "type": 3, 
+        "name": "saturatedPixelsPercent"
+      }
+    ]
+  }, 
+  "id": "COPERNICUS/S3/OLCI", 
+  "title": "Sentinel-3 OLCI EFR: Ocean and Land Color Instrument Earth Observation Full Resolution", 
+  "description": "The Ocean and Land Color Instrument (OLCI) Earth Observation\nFull Resolution (EFR) dataset contains top of atmosphere radiances\nat 21 spectral bands with center wavelengths ranging between\n0.4\u03bcm and 1.02\u03bcm at spatial resolution of 300m with\nworldwide coverage every ~2 days.\n\nOLCI is one of the instruments\nin the ESA/EUMETSAT Sentinel-3 mission for measuring sea-surface\ntopography, sea- and land-surface temperature, ocean color and\nland color with high-end accuracy and reliability to support\nocean forecasting systems, as well as environmental and climate\nmonitoring.\n\nThe Sentinel-3 OLCI instrument is based on the\noptomechanical and imaging design of ENVISAT's MERIS. It is designed\nto retrieve the spectral distribution of upwelling radiance just\nabove the sea surface (the water-leaving radiance).\n\nOLCI observation is performed simultaneously in 21 spectral bands\nranging from the visible to the near-infrared (400 to 1029nm).\n", 
+  "version": "", 
+  "license": "proprietary", 
+  "links": [
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/COPERNICUS_S3_OLCI.json", 
+      "rel": "self"
+    }, 
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json", 
+      "rel": "parent"
+    }, 
+    {
+      "href": "https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json", 
+      "rel": "root"
+    }
+  ], 
+  "keywords": [
+    "OLCI", 
+    "TOA", 
+    "copernicus", 
+    "esa", 
+    "eu", 
+    "radiance", 
+    "sentinel"
+  ], 
+  "providers": [
+    {
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci", 
+      "type": [
+        "producer", 
+        "licensor"
+      ], 
+      "name": "European Union/ESA/Copernicus"
+    }, 
+    {
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI", 
+      "type": [
+        "host"
+      ], 
+      "name": "Google Earth Engine"
+    }
+  ], 
+  "extent": {
+    "spatial": [
+      -180, 
+      -90, 
+      180, 
+      90
+    ], 
+    "temporal": [
+      "2016-10-18T19:25:42Z", 
+      null
+    ]
+  }
+}
