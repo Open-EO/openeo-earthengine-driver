@@ -1,7 +1,7 @@
 const eeUtils = require('../eeUtils');
 
 module.exports = {
-	name: "min_time",
+	process_id: "min_time",
 	summary: "Calculates minimum values of time series.",
 	description: "Finds the minimum value of time series for all bands of the input dataset.",
 	parameters: {

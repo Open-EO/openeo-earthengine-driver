@@ -11,6 +11,13 @@ module.exports = {
 				type: "object",
 				format: "eodata"
 			}
+		},
+		null: {
+			description: "Defines whether the first element is allowed to be null (`true`, default) or not (`false`).",
+			schema: {
+				type: "boolean",
+				default: true
+			}
 		}
 	},
 	returns: {

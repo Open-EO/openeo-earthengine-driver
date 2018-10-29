@@ -4,7 +4,7 @@ const Errors = require('../errors');
 module.exports = {
 	process_id: "filter_bbox",
 	description: "Drops observations from a collection that are located outside of a given bounding box.",
-		parameters: {
+	parameters: {
 		imagery: {
 			description: "EO data to process.",
 			required: true,
@@ -49,12 +49,17 @@ module.exports = {
 				}
 			}
 		}
-		},
-		returns: {
+	},
+	returns: {
 		description: "Processed EO data.",
 		schema: {
 			type: "object",
 			format: "eodata"
+		}
+	},
+	exceptions: {
+		ProcessArgumentUnsupported: {
+			description: "The height or base parameters are set, but not supported."
 		}
 	},
 	eeCode(args, req, res) {
