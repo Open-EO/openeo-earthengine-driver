@@ -114,16 +114,25 @@ module.exports = class Data {
 				}
 				delete c.properties;
 			}
+			if (c['eo:bands'] && Array.isArray(c['eo:bands'])) {
+				let bands = {};
+				for(let i in c['eo:bands']) {
+					let b = c['eo:bands'][i];
+					let name = typeof b.name === 'string' ? b.name : i;
+					bands[name] = b;
+				}
+				c['eo:bands'] = bands;
+			}
 		}
 		c.links = c.links.map(l => {
 			let stacSuffix = isSTAC ? "?stac": "";
 			switch(l.rel) {
 				case 'self':
-					l.href = Utils.getServerUrl() + "/collections/" + c.id + stacSuffix;
+					l.href = Utils.getApiUrl("/collections/" + c.id + stacSuffix);
 					break;
 				case 'parent':
 				case 'root':
-					l.href = Utils.getServerUrl() + (isSTAC ? "/stac" : "/collections") + stacSuffix;
+					l.href = Utils.getApiUrl((isSTAC ? "/stac" : "/collections") + stacSuffix);
 					break;
 			}
 			return l;
@@ -139,11 +148,11 @@ module.exports = class Data {
 			links: [
 				{
 					rel: "self",
-					href: Utils.getServerUrl() + "/stac"
+					href: Utils.getApiUrl("/stac")
 				},
 				{
 					rel: "alternate",
-					href: Utils.getServerUrl() + "/collections",
+					href: Utils.getApiUrl("/collections"),
 					title: "WFS3 Collections",
 					type: "application/json"
 				},
@@ -155,7 +164,7 @@ module.exports = class Data {
 		this.getData(true).map(d => {
 			response.links.push({
 				rel: "child",
-				href: Utils.getServerUrl() + "/collections/" + d.id + "?stac",
+				href: Utils.getApiUrl("/collections/" + d.id + "?stac"),
 				title: d.title,
 				type: "application/json"
 			});

@@ -244,7 +244,7 @@ module.exports = class ServicesAPI {
 			}
 			else {
 				res.header('OpenEO-Identifier', service._id);
-				res.redirect(201, Utils.getServerUrl() + '/services/' + service._id, next);
+				res.redirect(201, Utils.getApiUrl('/services/' + service._id), next);
 			}
 		});
 	}
@@ -271,7 +271,7 @@ module.exports = class ServicesAPI {
 	}
 
 	makeServiceUrl(service) {
-		return Utils.getServerUrl() + '/' + service.type + '/' + service._id;
+		return Utils.getApiUrl('/' + service.type + '/' + service._id);
 	}
 	
 };

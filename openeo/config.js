@@ -4,6 +4,8 @@ module.exports = class Config {
 		// Set default that can be overriden by the config.json
 
 		this.hostname = "127.0.0.1";
+		this.apiPath = "/v0.3";
+		this.apiVersion = "0.3.1";
 
 		this.port = 80;
 		this.ssl = {

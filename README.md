@@ -3,7 +3,7 @@ Back-end driver for [Google Earth Engine](https://earthengine.google.com/).
 
 ## Configuration
 
-There are several configuration options in the file [config.json](config.json):
+There are several important configuration options in the file [config.json](config.json):
 
 * `hostname`: The address of the server running the openEO GEE driver. For local deployments usually `127.0.0.1`, for public instances the ip or domain name of the server, e.g. `earthengine.openeo.org`.
 * `port`: The port the HTTP instance of the openEO GEE driver is running on.
@@ -57,6 +57,7 @@ Currently, use case 1 of the proof of concept is supported. An exemplary process
 Alternatively, you can use the [openEO Web Editor](https://github.com/Open-EO/openeo-web-editor) to execute the same process graph:
 
 ```
+// Example is outdated and needs to be adopted to the new JS client version.
 OpenEO.Editor.ProcessGraph = OpenEO.ImageCollection.create("COPERNICUS/S2")
 	.filter_daterange("2018-01-01T00:00:00Z", "2018-01-31T23:59:59Z")
 	.NDVI("B4", "B8")

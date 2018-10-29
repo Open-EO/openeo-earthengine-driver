@@ -348,7 +348,7 @@ module.exports = class JobsAPI {
 			}
 			else {
 				res.header('OpenEO-Identifier', job._id);
-				res.redirect(201, Utils.getServerUrl() + '/jobs/' + job._id, next);
+				res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), next);
 			}
 		});
 	}
@@ -446,7 +446,7 @@ module.exports = class JobsAPI {
 			var parent = path.dirname(p);
 			Utils.mkdirSyncRecursive(parent);
 			fs.writeFileSync(p, JSON.stringify(obj));
-			return Utils.getServerUrl() + "/temp/" + fileName;
+			return Utils.getApiUrl("/temp/" + fileName);
 		}
 	}
 

@@ -24,6 +24,11 @@ class Server {
 		this.https_server = null;
 		this.config = new Config();
 
+		this.serverOptions = {
+			handleUpgrades: true,
+			ignoreTrailingSlash: true
+		};
+
 		this.api = {};
 		this.api.capabilities = new CapabilitiesAPI(this.config);
 		this.api.collections = new CollectionsAPI();
@@ -51,7 +56,7 @@ class Server {
 
 	addEndpoint(method, path, callback) {
 		if (!Array.isArray(path)) {
-			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
+			path = [path, this.config.apiPath + path.replace(/\{([\w]+)\}/g, ":$1")];
 		}
 		this.api.capabilities.addEndpoint(method, path[0]);
 		if (method === 'delete') {
@@ -68,20 +73,16 @@ class Server {
 	}
 
 	initHttpServer() {
-		var http_options = {
-			handleUpgrades: true
-		};
-		this.http_server = restify.createServer(http_options);
+		this.http_server = restify.createServer(this.serverOptions);
 		this.initServer(this.http_server);
 	}
 
 	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
-			var https_options = {
-				handleUpgrades: true,
+			var https_options = Object.assign(this.serverOptions, {
 				key: fs.readFileSync(this.config.ssl.key),
 				certificate: fs.readFileSync(this.config.ssl.certificate)
-			};
+			});
 			this.https_server = restify.createServer(https_options);
 			this.initServer(this.https_server);
 		}
@@ -133,8 +134,8 @@ class Server {
 		return new Promise((resolve, reject) => {
 			const port = process.env.PORT || this.config.port;
 			this.http_server.listen(port, () => {
-				Utils.serverUrl = this.http_server.url.replace('[::]', this.config.hostname);
-				console.log('%s listening at %s (HTTP)', this.http_server.name, Utils.getServerUrl());
+				Utils.serverUrl = "http://" + this.config.hostname + this.config.apiPath;
+				console.log('HTTP-Server listening at %s', Utils.getServerUrl());
 				resolve();
 			});
 		});
@@ -145,7 +146,8 @@ class Server {
 			if (this.isHttpsEnabled()) {
 				const sslport = process.env.SSL_PORT || this.config.ssl.port;
 				this.https_server.listen(sslport, () => {
-					console.log('%s listening at %s (HTTPS)', this.https_server.name, Utils.getServerUrl());
+					Utils.serverUrl = "https://" + this.config.hostname + this.config.apiPath;
+					console.log('HTTPS-Server listening at %s', Utils.getServerUrl());
 					resolve();
 				});
 			}

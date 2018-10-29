@@ -62,7 +62,7 @@ module.exports = class ProcessGraphs {
 			}
 			else {
 				res.header('OpenEO-Identifier', pg._id);
-				res.redirect(201, Utils.getServerUrl() + '/process_graphs/' + pg._id, next);
+				res.redirect(201, Utils.getApiUrl('/process_graphs/' + pg._id), next);
 			}
 		});
 	}

@@ -9,6 +9,13 @@ var Utils = {
 
 	serverUrl: null,
 
+	getApiUrl(path) {
+		if (this.serverUrl === null) {
+			console.log('WARN: Server has not started yet, Utils.getApiUrl() is not available yet.');
+		}
+		return this.serverUrl + path;
+	},
+
 	getServerUrl() {
 		if (this.serverUrl === null) {
 			console.log('WARN: Server has not started yet, Utils.getServerUrl() is not available yet.');
