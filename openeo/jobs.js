@@ -66,7 +66,10 @@ module.exports = class JobsAPI {
 			}
 			else {
 				jobs = jobs.map(job => this.makeJobResponse(job, false));
-				res.json(jobs);
+				res.json({
+					jobs: jobs,
+					links: []
+				});
 				return next();
 			}
 		});
@@ -227,7 +230,7 @@ module.exports = class JobsAPI {
 					parameters: processParams
 				};
 			}
-			res.subscriptions.publish(req, "openeo.jobs.debug", params, payload);
+			req.api.subscriptions.publish(req, "openeo.jobs.debug", params, payload);
 		} catch (e) {
 			console.log(e);
 		}
@@ -312,10 +315,9 @@ module.exports = class JobsAPI {
 				output.format = req.body.output.format;
 				// ToDo: We don't support any parameters yet, take and check input from req.body.output.parameters
 			} else {
-				throw new Errors.FormatUnsupported();
+				return next(new Errors.FormatUnsupported());
 			}
 		}
-
 
 		try {
 			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
@@ -357,6 +359,10 @@ module.exports = class JobsAPI {
 		if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
 			return next(Errors.ProcessGraphMissing());
 		}
+
+		let plan = req.body.plan || req.config.plans.default;
+		let budget = req.body.budget || null;
+		// ToDo: Validate data, handle budget and plan input
 	
 		this.sendDebugNotifiction(req, res, "Starting to process request");
 		try {
@@ -370,6 +376,7 @@ module.exports = class JobsAPI {
 			}).then(stream => {
 				var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
 				res.header('Content-Type', contentType);
+				res.header('OpenEO-Costs', 0);
 				stream.data.pipe(res);
 				return next();
 			}).catch(e => {

@@ -56,15 +56,18 @@ class Server {
 
 	addEndpoint(method, path, callback) {
 		if (!Array.isArray(path)) {
-			path = [path, this.config.apiPath + path.replace(/\{([\w]+)\}/g, ":$1")];
+			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
 		}
+
 		this.api.capabilities.addEndpoint(method, path[0]);
+
 		if (method === 'delete') {
 			method = 'del';
 		}
-		this.http_server[method](path[1], callback);
+
+		this.http_server[method](this.config.apiPath + path[1], callback);
 		if (this.isHttpsEnabled()) {
-			this.https_server[method](path[1], callback);
+			this.https_server[method](this.config.apiPath + path[1], callback);
 		}
 	}
 
@@ -107,7 +110,7 @@ class Server {
 	populateGlobals(req, res, next) {
 		req.config = this.config;
 		req.user = this.api.users.emptyUser();
-		res.subscriptions = this.api.subscriptions;
+		req.api = this.api;
 		return next();
 	}
 
@@ -134,7 +137,8 @@ class Server {
 		return new Promise((resolve, reject) => {
 			const port = process.env.PORT || this.config.port;
 			this.http_server.listen(port, () => {
-				Utils.serverUrl = "http://" + this.config.hostname + this.config.apiPath;
+				var portStr = port != 80 ? ":" + port : "";
+				Utils.serverUrl = "http://" + this.config.hostname + portStr + this.config.apiPath;
 				console.log('HTTP-Server listening at %s', Utils.getServerUrl());
 				resolve();
 			});
@@ -144,9 +148,10 @@ class Server {
 	startServerHttps() {
 		return new Promise((resolve, reject) => {
 			if (this.isHttpsEnabled()) {
-				const sslport = process.env.SSL_PORT || this.config.ssl.port;
+				var sslport = process.env.SSL_PORT || this.config.ssl.port;
 				this.https_server.listen(sslport, () => {
-					Utils.serverUrl = "https://" + this.config.hostname + this.config.apiPath;
+					var portStr = sslport != 443 ? ":" + sslport : "";
+					Utils.serverUrl = "https://" + this.config.hostname + portStr + this.config.apiPath;
 					console.log('HTTPS-Server listening at %s', Utils.getServerUrl());
 					resolve();
 				});

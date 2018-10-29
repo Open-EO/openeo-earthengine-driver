@@ -1,5 +1,4 @@
 const eeUtils = require('../eeUtils');
-const Files = require('../files');
 const Utils = require('../utils');
 
 module.exports = {
@@ -85,7 +84,7 @@ module.exports = {
 		// Read and parse GeoJSON file
 		var geojson = null;
 		if (typeof args.regions === 'string') {
-			var contents = Files.getFileContentsSync(req.user._id, args.regions);
+			var contents = req.api.files.getFileContentsSync(req.user._id, args.regions);
 			if (contents === null) {
 				throw 'File path specified in regions parameter of process `zonal_statistics` doesn\'t exist'; // ToDo: Needs a separate error code and a full message that explains that the specified file in args.regions doesn't exist.
 			}
@@ -119,7 +118,7 @@ module.exports = {
 		var lastImage = ee.Image(sortedImagery.reverse().get(0));
 		var end = ee.Date(lastImage.get('system:time_start'));
 		var diff = end.difference(start, interval);
-		var range = ee.List.sequence(0, diff.subtract(1)).map(day => { return start.advance(day, interval); });
+		var range = ee.List.sequence(0, diff.subtract(1)).map(day => start.advance(day, interval));
 		var mosaics = (date, newlist) => {
 			date = ee.Date(date);
 			newlist = ee.List(newlist);

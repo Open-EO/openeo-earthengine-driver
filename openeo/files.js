@@ -95,7 +95,7 @@ module.exports = class FilesAPI {
 				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
 				action: fileExists ? 'updated' : 'created'
 			};
-			res.subscriptions.publish('openeo.files', payload, payload);
+			req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
 			res.send(204);
 			return next();
 		});
@@ -127,7 +127,7 @@ module.exports = class FilesAPI {
 						path: p.replace('storage/user_files/'+req.user._id+'/', ''),
 						action: 'deleted'
 					};
-					res.subscriptions.publish('openeo.files', payload, payload);
+					req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
 					res.send(204);
 					return next();
 				}
