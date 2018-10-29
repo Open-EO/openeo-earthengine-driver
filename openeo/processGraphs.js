@@ -6,14 +6,15 @@ module.exports = class ProcessGraphs {
 
 	constructor() {
 		this.db = Utils.loadDB('process_graphs');
+		this.editableFields = ['title', 'description', 'process_graph'];
 	}
 
 	beforeServerStart(server) {
-//		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this)); // ToDo
-//		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this)); // ToDo
-//		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraphById.bind(this)); // ToDo
-//		server.addEndpoint('put', '/process_graphs/{process_graph_id}', this.putProcessGraphById.bind(this)); // ToDo
-//		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraphById.bind(this)); // ToDo
+		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this));
+		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this));
+		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraph.bind(this));
+		server.addEndpoint('patch', '/process_graphs/{process_graph_id}', this.patchProcessGraph.bind(this));
+		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraph.bind(this));
 
 		return new Promise((resolve, reject) => resolve());
 	}
@@ -27,13 +28,7 @@ module.exports = class ProcessGraphs {
 				return next(new Errors.Internal(err));
 			}
 			else {
-				var data = graphs.map(g => {
-					return {
-						process_graph_id: g._id,
-						title: g.title,
-						description: g.description
-					};
-				});
+				var data = graphs.map(pg => this.makeResponse(pg, false));
 				res.json({
 					process_graphs: data,
 					links: []
@@ -44,88 +39,35 @@ module.exports = class ProcessGraphs {
 	}
 
 	postProcessGraph(req, res, next) {
-		if (typeof req.body !== 'object' || Utils.size(req.body) === 0) {
-			res.send(400, "No process_graph specified.");
-			return next();
-		}
 		try {
-			ProcessRegistry.parseProcessGraph(req.body, req, res, false);
+			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
+				return next(new Errors.ProcessGraphMissing());
+			}
+
+			ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
 		} catch (e) {
 			console.log(e);
-			res.send(400, e); // Invalid process graph
-			return next();
+			return next(e);
 		}
 
 		var data = {
-			process_graph: req.body,
+			title: req.body.title || null,
+			description: req.body.description || null,
+			process_graph: req.body.process_graph,
 			user_id: req.user._id
 		};
-		this.db.insert(data, (err, graph) => {
+		this.db.insert(data, (err, pg) => {
 			if (err) {
 				return next(new Errors.Internal(err));
 			}
 			else {
-				res.json({
-					process_graph_id: graph._id
-				});
-				return next();
+				res.header('OpenEO-Identifier', pg._id);
+				res.redirect(201, Utils.getServerUrl() + '/process_graphs/' + pg._id, next);
 			}
 		});
 	}
 
-	putProcessGraphById(req, res, next) {
-		if (typeof req.body !== 'object' || Utils.size(req.body) === 0) {
-			res.send(400);
-			return next();
-		}
-		try {
-			ProcessRegistry.parseProcessGraph(req.body, req, res, false);
-		} catch (e) {
-			console.log(e);
-			res.send(400, e); // Invalid process graph
-			return next();
-		}
-
-		var query = {
-			_id: req.params.process_graph_id,
-			user_id: req.user._id
-		};
-		this.db.update(query, req.body, {}, (err, numReplaced) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (numReplaced === 0) {
-				res.send(404);
-				return next();
-			}
-			else {
-				res.send(200);
-				return next();
-			}
-		});
-	}
-
-	deleteProcessGraphById(req, res, next) {
-		var query = {
-			_id: req.params.process_graph_id,
-			user_id: req.user._id
-		};
-		this.db.remove(query, {}, (err, numRemoved) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (numRemoved === 0) {
-				res.send(404);
-				return next();
-			}
-			else {
-				res.send(200);
-				return next();
-			}
-		});
-	}
-
-	getProcessGraphById(req, res, next) {
+	patchProcessGraph(req, res, next) {
 		var query = {
 			_id: req.params.process_graph_id,
 			user_id: req.user._id
@@ -135,14 +77,101 @@ module.exports = class ProcessGraphs {
 				return next(new Errors.Internal(err));
 			}
 			else if (pg === null) {
-				res.send(404);
-				return next();
+				return next(new Errors.ProcessGraphNotFound());
+			}
+
+			var data = {};
+			for(let key in req.body) {
+				if (this.editableFields.includes(key)) {
+					switch(key) {
+						case 'process_graph':
+							if (Utils.size(req.body[key]) === 0) {
+								return next(new Errors.ProcessGraphMissing());
+							}
+
+							try {
+								ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
+							} catch (e) {
+								return next(e);
+							}
+							break;
+						default:
+							// ToDo: Validate further data
+					}
+					data[key] = req.body[key];
+				}
+				else {
+					return next(new Errors.PropertyNotEditable({property: key}));
+				}
+			}
+
+			if (Utils.size(data) === 0) {
+				return next(new Errors.NoDataForUpdate());
+			}
+
+			this.db.update(query, { $set: data }, {}, function (err, numChanged) {
+				if (err) {
+					return next(new Errors.Internal(err));
+				}
+				else if (numChanged === 0) {
+					return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+				}
+				else {
+					res.send(204);
+					return next();
+				}
+			});
+		});
+	}
+
+	deleteProcessGraph(req, res, next) {
+		var query = {
+			_id: req.params.process_graph_id,
+			user_id: req.user._id
+		};
+		this.db.remove(query, {}, (err, numRemoved) => {
+			if (err) {
+				return next(new Errors.Internal(err));
+			}
+			else if (numRemoved === 0) {
+				return next(Errors.ProcessGraphNotFound());
 			}
 			else {
-				res.json(pg.process_graph);
+				res.send(204);
 				return next();
 			}
 		});
+	}
+
+	getProcessGraph(req, res, next) {
+		var query = {
+			_id: req.params.process_graph_id,
+			user_id: req.user._id
+		};
+		this.db.findOne(query, {}, (err, pg) => {
+			if (err) {
+				return next(new Errors.Internal(err));
+			}
+			else if (pg === null) {
+				return next(Errors.ProcessGraphNotFound());
+			}
+			else {
+				res.json(this.makeResponse(pg));
+				return next();
+			}
+		});
+	}
+
+	makeResponse(pg, full = true) {
+		var response = {
+			process_graph_id: pg._id,
+			title: pg.title || null,
+			description: pg.description || null
+		};
+		if (full) {
+			response.process_graph = pg.process_graph;
+		}
+		return response;
 	}
 
 };
