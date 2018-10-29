@@ -1,5 +1,4 @@
 const Utils = require('./utils');
-const Jobs = require('./jobs');
 const ProcessRegistry = require('./processRegistry');
 const Errors = require('./errors');
 const eeUtils = require('./eeUtils');
@@ -8,16 +7,17 @@ module.exports = class ServicesAPI {
 
 	constructor() {
 		this.db = Utils.loadDB('services');
+		this.editableFields = ['title', 'description', 'process_graph', 'enabled', 'parameters', 'plan', 'budget'];
 	}
 
 	beforeServerStart(server) {
 		// Add endpoints
-//		server.addEndpoint('post', '/services', this.postService.bind(this)); // ToDo
-//		server.addEndpoint('get', '/services/{service_id}', this.getServiceById.bind(this)); // ToDo
-//		server.addEndpoint('patch', '/services/{service_id}', this.patchServiceById.bind(this)); // ToDo
-//		server.addEndpoint('delete', '/services/{service_id}', this.deleteServiceById.bind(this)); // ToDo
-//		server.addEndpoint('get', '/users/{user_id}/services', this.getUserServices.bind(this)); // ToDo
-//		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this)); // ToDo
+		server.addEndpoint('get', '/services', this.getServices.bind(this));
+		server.addEndpoint('post', '/services', this.postService.bind(this));
+		server.addEndpoint('get', '/services/{service_id}', this.getService.bind(this));
+		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
+		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
+		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
 
 		return new Promise((resolve, reject) => resolve());
 	}
@@ -33,56 +33,49 @@ module.exports = class ServicesAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (service ===  null) {
-				res.send(404);
-				return next();
+				return next(new Errors.ServiceNotFound());
 			}
 
-			Jobs.findJobById(service.job_id)
-				.then(job => {
-					var z = new Number(req.params.z);
-					var x = new Number(req.params.x);
-					var y = new Number(req.params.y);
-		
-					// Execute graph
-					try {
-						var obj = ProcessRegistry.parseProcessGraph(job.process_graph, req, res);
-						var image = eeUtils.toImage(obj, req, res);
+			try {
+				var z = new Number(req.params.z);
+				var x = new Number(req.params.x);
+				var y = new Number(req.params.y);
 
-						// Calculate tile bounds
-						// see: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_.28JavaScript.2FActionScript.2C_etc..29
-						var nw_lng = this.tile2long(x, z);
-						var nw_lat = this.tile2lat(y, z);
-						var se_lng  = this.tile2long(x+1, z);
-						var se_lat = this.tile2lat(y+1, z);
-						var xMin = Math.min(nw_lng, se_lng);
-						var xMax = Math.max(nw_lng, se_lng);
-						var yMin = Math.min(nw_lat, se_lat);
-						var yMax = Math.max(nw_lat, se_lat);
-						var rect = ee.Geometry.Rectangle([xMin, yMin, xMax, yMax], 'EPSG:4326');
-			
-						// Download image
-						// ToDo: Replace getThumbURL with getDownloadURL
-						image.getThumbURL({
-							format: 'jpeg',
-							dimensions: '256x256',
-							region: rect.bounds().getInfo()
-						}, url => {
-							if (!url) {
-								console.log('WARN: Download URL from Google is empty.');
-								res.send(404);
-							}
-							else {
-								console.log("Downloading " + url);
-								res.redirect(url, next);
-							}
-						});
-					} catch(e) {
-						return next(new Errors.Internal(e));
+				var obj = ProcessRegistry.parseProcessGraph(service.process_graph, req, res);
+				var image = eeUtils.toImage(obj, req, res);
+
+				// Calculate tile bounds
+				// see: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_.28JavaScript.2FActionScript.2C_etc..29
+				var nw_lng = this.tile2long(x, z);
+				var nw_lat = this.tile2lat(y, z);
+				var se_lng  = this.tile2long(x+1, z);
+				var se_lat = this.tile2lat(y+1, z);
+				var xMin = Math.min(nw_lng, se_lng);
+				var xMax = Math.max(nw_lng, se_lng);
+				var yMin = Math.min(nw_lat, se_lat);
+				var yMax = Math.max(nw_lat, se_lat);
+				var rect = ee.Geometry.Rectangle([xMin, yMin, xMax, yMax], 'EPSG:4326');
+	
+				// Download image
+				// ToDo: Replace getThumbURL with getDownloadURL
+				image.getThumbURL({
+					format: 'jpeg',
+					dimensions: '256x256',
+					region: rect.bounds().getInfo()
+				}, url => {
+					if (!url) {
+						console.log('WARN: Download URL from Google is empty.');
+						return next(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
 					}
-				})
-				.catch(e => {
-					return next(e);
+					else {
+						console.log("Downloading " + url);
+						res.redirect(url, next);
+					}
 				});
+			} catch(e) {
+				console.log(e);
+				return next(new Errors.Internal(e));
+			}
 		});
 	}
 
@@ -95,7 +88,7 @@ module.exports = class ServicesAPI {
 		return ((180 / Math.PI) * Math.atan( 0.5*(Math.exp(n)-Math.exp(-n)) ));
 	}
 
-	getUserServices(req, res, next) {
+	getServices(req, res, next) {
 		var query = {
 			user_id: req.user._id
 		};
@@ -104,16 +97,17 @@ module.exports = class ServicesAPI {
 				return next(new Errors.Internal(err));
 			}
 			else {
-				services = services.map(service => {
-					return this.makeServiceResponse(service);
+				services = services.map(service =>  this.makeServiceResponse(service, false));
+				res.json({
+					services: services,
+					links: []
 				});
-				res.json(services);
 				return next();
 			}
 		});
 	}
 	  
-	deleteServiceById(req, res, next) {
+	deleteService(req, res, next) {
 		var query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -123,40 +117,16 @@ module.exports = class ServicesAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (numRemoved === 0) {
-				res.send(404);
-				return next();
+				return next(Errors.ServiceNotFound());
 			}
 			else {
-				res.send(200);
+				res.send(204);
 				return next();
 			}
 		});
 	}
 
-	patchServiceById(req, res, next) {
-		if (typeof req.body.service_args !== 'object') {
-			req.body.service_args = {};
-		}
-		var query = {
-			_id: req.params.service_id,
-			user_id: req.user._id
-		};
-		this.db.update(query, { $set: { service_args: req.body.service_args } }, {}, function (err, numChanged) {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (numChanged === 0) {
-				res.send(404);
-				return next();
-			}
-			else {
-				res.send(200);
-				return next();
-			}
-		});
-	}
-
-	getServiceById(req, res, next) {
+	patchService(req, res, next) {
 		var query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -166,8 +136,70 @@ module.exports = class ServicesAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (service === null) {
-				res.send(404);
-				return next();
+				return next(new Errors.ServiceNotFound());
+			}
+
+			var data = {};
+			for(let key in req.body) {
+				if (this.editableFields.includes(key)) {
+					switch(key) {
+						case 'process_graph':
+							if (Utils.size(req.body[key]) === 0) {
+								return next(new Errors.ProcessGraphMissing());
+							}
+
+							try {
+								ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
+							} catch (e) {
+								return next(e);
+							}
+							break;
+						case 'type':
+							if (!req.config.isValidServiceType(req.body.type)) {
+								return next(new Errors.ServiceUnsupported());
+							}
+							break;
+						default:
+							// ToDo: Validate further data
+							// For example, if budget < costs, reject request
+					}
+					data[key] = req.body[key];
+				}
+				else {
+					return next(new Errors.PropertyNotEditable({property: key}));
+				}
+			}
+
+			if (Utils.size(data) === 0) {
+				return next(new Errors.NoDataForUpdate());
+			}
+
+			this.db.update(query, { $set: data }, {}, function (err, numChanged) {
+				if (err) {
+					return next(new Errors.Internal(err));
+				}
+				else if (numChanged === 0) {
+					return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+				}
+				else {
+					res.send(204);
+					return next();
+				}
+			});
+		});
+	}
+
+	getService(req, res, next) {
+		var query = {
+			_id: req.params.service_id,
+			user_id: req.user._id
+		};
+		this.db.findOne(query, {}, (err, service) => {
+			if (err) {
+				return next(new Errors.Internal(err));
+			}
+			else if (service === null) {
+				return next(Errors.ServiceNotFound());
 			}
 
 			res.json(this.makeServiceResponse(service));
@@ -176,55 +208,70 @@ module.exports = class ServicesAPI {
 	}
 
 	postService(req, res, next) {
-		if (typeof req.body.service_type !== 'string' || !req.config.isValidServiceType(req.body.service_type)) {
-			res.send(400, "Service type is not supported.");
-			return next();
+		if (!req.config.isValidServiceType(req.body.type)) {
+			return next(new Errors.ServiceUnsupported());
 		}
 
-		if (typeof req.body.job_id === 'undefined') {
-			res.send(400, "Job ID is undefined");
-			return next();
+		try {
+			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
+				return next(new Errors.ProcessGraphMissing());
+			}
+
+			ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
+		} catch (e) {
+			console.log(e);
+			return next(e);
 		}
 
-		if (typeof req.body.service_args !== 'object') {
-			req.body.service_args = {};
-		}
-
-		Jobs.findJobForUserById(req.body.job_id, req.user._id)
-			.then(job => {
-				var data = {
-					service_type: req.body.service_type,
-					service_args: req.body.service_args,
-					job_id: req.body.job_id,
-					user_id: req.user._id
-				}
-				this.db.insert(data, (err, service) => {
-					if (err) {
-						return next(new Errors.Internal(err));
-					}
-					else {
-						res.json(this.makeServiceResponse(service));
-						return next();
-					}
-				});
-			})
-			.catch(e => {
-				return next(e);
-			});
+		// ToDo: Validate data
+		var data = {
+			title: req.body.title || null,
+			description: req.body.description || null,
+			process_graph: req.body.process_graph,
+			parameters: typeof req.body.parameters === 'object' ? req.body.parameters : {},
+			attributes: {},
+			type: req.body.type,
+			enabled: req.body.enabled || true,
+			submitted: Utils.getISODateTime(),
+			plan: req.body.plan || req.config.plans.default,
+			costs: 0,
+			budget: req.body.budget || null,
+			user_id: req.user._id
+		};
+		this.db.insert(data, (err, service) => {
+			if (err) {
+				return next(new Errors.Internal(err));
+			}
+			else {
+				res.header('OpenEO-Identifier', service._id);
+				res.redirect(201, Utils.getServerUrl() + '/services/' + service._id, next);
+			}
+		});
 	}
 
-	makeServiceResponse(service) {
-		return {
+	makeServiceResponse(service, full = true) {
+		var response = {
 			service_id: service._id,
-			service_url: this.makeServiceUrl(service),
-			service_type: service.service_type,
-			service_args: service.service_args,
-			job_id: service.job_id
+			title: service.title || null,
+			description: service.description || null,
+			url: this.makeServiceUrl(service),
+			type: service.type,
+			enabled: service.enabled || true,
+			submitted: service.submitted,
+			plan: service.plan,
+			costs: service.costs || 0,
+			budget: service.budget || null
 		};
+		if (full) {
+			response.process_graph = service.process_graph;
+			response.parameters = typeof service.parameters !== 'object' ? service.parameters : {};
+			response.attributes = typeof service.attributes !== 'object' ? service.attributes : {};
+		}
+		return response;
 	}
 
 	makeServiceUrl(service) {
-		return Utils.getServerUrl() + '/' + service.service_type + '/' + service._id;
+		return Utils.getServerUrl() + '/' + service.type + '/' + service._id;
 	}
 	
 };

@@ -65,9 +65,7 @@ module.exports = class JobsAPI {
 				return next(new Errors.Internal(err));
 			}
 			else {
-				jobs = jobs.map(job => {
-					return this.makeJobResponse(job, false);
-				});
+				jobs = jobs.map(job => this.makeJobResponse(job, false));
 				res.json(jobs);
 				return next();
 			}
@@ -305,10 +303,6 @@ module.exports = class JobsAPI {
 	}
 
 	postJob(req, res, next) {
-		if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
-			return next(new Errors.ProcessGraphMissing());
-		}
-
 		let output = {
 			format: req.config.outputFormats.default,
 			parameters: {}
@@ -322,7 +316,12 @@ module.exports = class JobsAPI {
 			}
 		}
 
+
 		try {
+			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
+				return next(new Errors.ProcessGraphMissing());
+			}
+
 			ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
 		} catch (e) {
 			console.log(e);
@@ -348,6 +347,7 @@ module.exports = class JobsAPI {
 				return next(new Errors.Internal(err));
 			}
 			else {
+				res.header('OpenEO-Identifier', job._id);
 				res.redirect(201, Utils.getServerUrl() + '/jobs/' + job._id, next);
 			}
 		});
@@ -391,9 +391,10 @@ module.exports = class JobsAPI {
 			submitted: job.submitted,
 			updated: job.updated,
 			plan: job.plan,
-			costs: job.costs,
-			budget: job.budget
+			costs: job.costs || 0,
+			budget: job.budget || null
 		};
+		if (job.budget)
 		if (full) {
 			response.process_graph = job.process_graph;
 			if (job.output) {
