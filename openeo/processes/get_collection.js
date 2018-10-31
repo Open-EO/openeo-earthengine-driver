@@ -1,3 +1,6 @@
+const ProcessUtils = require('../processUtils');
+const Errors = require('../errors');
+
 module.exports = {
 	process_id: "get_collection",
 	summary: "Selects a collection.",
@@ -21,8 +24,19 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
-		// ToDo: Check whether name is valid and data exists
-		return ee.ImageCollection(args.name);
+	validate(req, args) {
+		return ProcessUtils.validateSchema(this, args, req).then(args => {
+			if (req.api.collections.getData(args.name) === null) {
+				throw new Errors.ProcessArgumentInvalid({
+					process: this.process_id,
+					argument: 'name',
+					reason: 'Collection does not exist.'
+				});
+			}
+			return args;
+		});
+	},
+	execute(req, args) {
+		return Promise.resolve(ee.ImageCollection(args.name));
 	}
 };

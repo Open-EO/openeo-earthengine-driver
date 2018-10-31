@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 
 module.exports = {
 	process_id: "NDVI",
@@ -35,9 +35,14 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
-		return eeUtils.toImageCollection(args.imagery).map((image) => {
+	validate(req, args) {
+		// ToDo: Further validation
+		return ProcessUtils.validateSchema(this, args, req);
+	},
+	execute(req, args) {
+		var obj = ProcessUtils.toImageCollection(args.imagery).map((image) => {
 			return image.normalizedDifference([args.nir, args.red]);
 		});
+		return Promise.resolve(obj);
 	}
 }

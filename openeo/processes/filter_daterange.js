@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 
 module.exports = {
 	process_id: "filter_daterange",
@@ -43,8 +43,13 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
+	validate(req, args) {
+		// ToDo: Further validation
+		return ProcessUtils.validateSchema(this, args, req);
+	},
+	execute(req, args) {
 		// ToDo: Check for null values
-		return eeUtils.toImageCollection(args.imagery).filterDate(args.extent[0], args.extent[1]);
+		var obj = ProcessUtils.toImageCollection(args.imagery).filterDate(args.extent[0], args.extent[1]);
+		return Promise.resolve(obj);
 	}
 };

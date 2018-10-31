@@ -79,7 +79,7 @@ module.exports = class SubscriptionsAPI {
 	beforeServerStart(server) {
 //		server.addEndpoint('get', '/subscription', this.getSubscription.bind(this));  // ToDo
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
 	}
 
 	createConnection(ws, user_id) {

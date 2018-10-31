@@ -10,13 +10,22 @@ module.exports = class ProcessGraphs {
 	}
 
 	beforeServerStart(server) {
+		server.addEndpoint('post', '/validation', this.postValidation.bind(this));
 		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this));
 		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this));
 		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraph.bind(this));
 		server.addEndpoint('patch', '/process_graphs/{process_graph_id}', this.patchProcessGraph.bind(this));
 		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraph.bind(this));
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
+	}
+
+	postValidation(req, res, next) {
+		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+			res.send(204);
+			next();
+		})
+		.catch(e => next(e));
 	}
 
 	getProcessGraphs(req, res, next) {
@@ -39,32 +48,24 @@ module.exports = class ProcessGraphs {
 	}
 
 	postProcessGraph(req, res, next) {
-		try {
-			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
-				return next(new Errors.ProcessGraphMissing());
-			}
-
-			ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
-		} catch (e) {
-			console.log(e);
-			return next(e);
-		}
-
-		var data = {
-			title: req.body.title || null,
-			description: req.body.description || null,
-			process_graph: req.body.process_graph,
-			user_id: req.user._id
-		};
-		this.db.insert(data, (err, pg) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else {
-				res.header('OpenEO-Identifier', pg._id);
-				res.redirect(201, Utils.getApiUrl('/process_graphs/' + pg._id), next);
-			}
-		});
+		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+			var data = {
+				title: req.body.title || null,
+				description: req.body.description || null,
+				process_graph: req.body.process_graph,
+				user_id: req.user._id
+			};
+			this.db.insert(data, (err, pg) => {
+				if (err) {
+					return next(new Errors.Internal(err));
+				}
+				else {
+					res.header('OpenEO-Identifier', pg._id);
+					res.redirect(201, Utils.getApiUrl('/process_graphs/' + pg._id), next);
+				}
+			});
+		})
+		.catch(e => next(e));
 	}
 
 	patchProcessGraph(req, res, next) {
@@ -81,19 +82,12 @@ module.exports = class ProcessGraphs {
 			}
 
 			var data = {};
+			var promises = [];
 			for(let key in req.body) {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							if (Utils.size(req.body[key]) === 0) {
-								return next(new Errors.ProcessGraphMissing());
-							}
-
-							try {
-								ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
-							} catch (e) {
-								return next(e);
-							}
+							promises.push(ProcessRegistry.validateProcessGraph(req, req.body.process_graph));
 							break;
 						default:
 							// ToDo: Validate further data
@@ -109,18 +103,21 @@ module.exports = class ProcessGraphs {
 				return next(new Errors.NoDataForUpdate());
 			}
 
-			this.db.update(query, { $set: data }, {}, function (err, numChanged) {
-				if (err) {
-					return next(new Errors.Internal(err));
-				}
-				else if (numChanged === 0) {
-					return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
-				}
-				else {
-					res.send(204);
-					return next();
-				}
-			});
+			Promise.all(promises).then(() => {
+				this.db.update(query, { $set: data }, {}, function (err, numChanged) {
+					if (err) {
+						return next(new Errors.Internal(err));
+					}
+					else if (numChanged === 0) {
+						return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+					}
+					else {
+						res.send(204);
+						return next();
+					}
+				});
+			})
+			.catch(e => next(Errors.wrap(e)));
 		});
 	}
 

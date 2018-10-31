@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 
 module.exports = {
 	process_id: "count_time",
@@ -20,7 +20,11 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
-		return eeUtils.toImageCollection(args.imagery).reduce('count');
+	validate(req, args) {
+		return ProcessUtils.validateSchema(this, req, args);
+	},
+	execute(req, args) {
+		var obj = ProcessUtils.toImageCollection(args.imagery).reduce('count');
+		return Promise.resolve(obj);
 	}
 };

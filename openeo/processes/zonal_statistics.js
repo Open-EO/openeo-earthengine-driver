@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 const Utils = require('../utils');
 
 module.exports = {
@@ -66,17 +66,13 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	exceptions: {
-		FileNotFound: {
-			description: "The specified file does not exist."
-		},
-		GeoJsonInvalid: {
-			description: "The GeoJSON object is invalid."
-		}
+	validate(req, args) {
+		// ToDo: Further validation
+		return ProcessUtils.validateSchema(this, args, req);
 	},
-	eeCode(args, req, res) {
+	execute(req, args) {
 		// Convert to an Image
-		var imagery = eeUtils.toImageCollection(args.imagery);
+		var imagery = ProcessUtils.toImageCollection(args.imagery);
 
 		// Group the images by date
 		imagery = this._groupImageCollectionByInterval(imagery, args.interval);
@@ -84,9 +80,14 @@ module.exports = {
 		// Read and parse GeoJSON file
 		var geojson = null;
 		if (typeof args.regions === 'string') {
+			// ToDo: Make async
 			var contents = req.api.files.getFileContentsSync(req.user._id, args.regions);
 			if (contents === null) {
-				throw 'File path specified in regions parameter of process `zonal_statistics` doesn\'t exist'; // ToDo: Needs a separate error code and a full message that explains that the specified file in args.regions doesn't exist.
+				throw new ProcessArgumentInvalid({
+					argument: 'regions',
+					process: this.process_id,
+					reason: 'File does not exist.'
+				});
 			}
 			geojson = JSON.parse(contents);
 		}
@@ -94,7 +95,11 @@ module.exports = {
 			geojson = args.regions;
 		}
 		else {
-			throw 400;
+			throw new ProcessArgumentInvalid({
+				argument: 'regions',
+				process: this.process_id,
+				reason: 'Not a valid GeoJSON object.'
+			});
 		}
 
 		// Convert GeoJSON to a GEE FeatureCollection
@@ -107,7 +112,7 @@ module.exports = {
 		var data = {
 			results: results.getInfo()
 		};
-		return data;
+		return Promise.resolve(data);
 	},
 
 	_groupImageCollectionByInterval(imagery, interval) {
@@ -157,7 +162,11 @@ module.exports = {
 
 		var reducer = this._createReducerByName(args.func);
 		if (reducer === null) {
-			throw 400;
+			throw new ProcessArgumentInvalid({
+				argument: 'func',
+				process: this.process_id,
+				reason: 'Must be one of: min, max, mean, median or mode.'
+			});
 		}
 
 		var multiRegionCalculator = function(image, list) {

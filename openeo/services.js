@@ -1,7 +1,7 @@
 const Utils = require('./utils');
 const ProcessRegistry = require('./processRegistry');
 const Errors = require('./errors');
-const eeUtils = require('./eeUtils');
+const ProcessUtils = require('./processUtils');
 
 module.exports = class ServicesAPI {
 
@@ -19,7 +19,25 @@ module.exports = class ServicesAPI {
 		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
 		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
+	}
+
+	calculateXYZRect(x, y, z) {
+		x = new Number(x);
+		y = new Number(y);
+		z = new Number(z);
+
+		// Calculate tile bounds
+		// see: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_.28JavaScript.2FActionScript.2C_etc..29
+		var nw_lng = this.tile2long(x, z);
+		var nw_lat = this.tile2lat(y, z);
+		var se_lng  = this.tile2long(x+1, z);
+		var se_lat = this.tile2lat(y+1, z);
+		var xMin = Math.min(nw_lng, se_lng);
+		var xMax = Math.max(nw_lng, se_lng);
+		var yMin = Math.min(nw_lat, se_lat);
+		var yMax = Math.max(nw_lat, se_lat);
+		return ee.Geometry.Rectangle([xMin, yMin, xMax, yMax], 'EPSG:4326');
 	}
 
 	getXYZ(req, res, next) {
@@ -37,44 +55,29 @@ module.exports = class ServicesAPI {
 			}
 
 			try {
-				var z = new Number(req.params.z);
-				var x = new Number(req.params.x);
-				var y = new Number(req.params.y);
-
-				var obj = ProcessRegistry.parseProcessGraph(service.process_graph, req, res);
-				var image = eeUtils.toImage(obj, req, res);
-
-				// Calculate tile bounds
-				// see: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_.28JavaScript.2FActionScript.2C_etc..29
-				var nw_lng = this.tile2long(x, z);
-				var nw_lat = this.tile2lat(y, z);
-				var se_lng  = this.tile2long(x+1, z);
-				var se_lat = this.tile2lat(y+1, z);
-				var xMin = Math.min(nw_lng, se_lng);
-				var xMax = Math.max(nw_lng, se_lng);
-				var yMin = Math.min(nw_lat, se_lat);
-				var yMax = Math.max(nw_lat, se_lat);
-				var rect = ee.Geometry.Rectangle([xMin, yMin, xMax, yMax], 'EPSG:4326');
-	
-				// Download image
-				// ToDo: Replace getThumbURL with getDownloadURL
-				image.getThumbURL({
-					format: 'jpeg',
-					dimensions: '256x256',
-					region: rect.bounds().getInfo()
-				}, url => {
-					if (!url) {
-						console.log('WARN: Download URL from Google is empty.');
-						return next(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-					}
-					else {
-						console.log("Downloading " + url);
-						res.redirect(url, next);
-					}
-				});
+				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
+				ProcessRegistry.executeProcessGraph(req, srvice.process_graph).then(obj => {
+					var image = ProcessUtils.toImage(obj, req);
+					// Download image
+					// ToDo: Replace getThumbURL with getDownloadURL
+					image.getThumbURL({
+						format: 'jpeg',
+						dimensions: '256x256',
+						region: rect.bounds().getInfo()
+					}, url => {
+						if (!url) {
+							console.log('WARN: Download URL from Google is empty.');
+							next(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+						}
+						else {
+							console.log("Downloading " + url);
+							res.redirect(url, next);
+						}
+					});
+				})
+				.catch(e => next(e));
 			} catch(e) {
-				console.log(e);
-				return next(new Errors.Internal(e));
+				return next(e);
 			}
 		});
 	}
@@ -140,24 +143,20 @@ module.exports = class ServicesAPI {
 			}
 
 			var data = {};
+			var promises = [];
 			for(let key in req.body) {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							if (Utils.size(req.body[key]) === 0) {
-								return next(new Errors.ProcessGraphMissing());
-							}
-
-							try {
-								ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
-							} catch (e) {
-								return next(e);
-							}
+							promises.push(ProcessRegistry.validateProcessGraph(req, req.body.process_graph));
 							break;
 						case 'type':
-							if (!req.config.isValidServiceType(req.body.type)) {
-								return next(new Errors.ServiceUnsupported());
-							}
+							promises.push(new Promise((resolve, reject) => {
+								if (!req.config.isValidServiceType(req.body.type)) {
+									reject(new Errors.ServiceUnsupported());
+								}
+								resolve();
+							}));
 							break;
 						default:
 							// ToDo: Validate further data
@@ -174,18 +173,21 @@ module.exports = class ServicesAPI {
 				return next(new Errors.NoDataForUpdate());
 			}
 
-			this.db.update(query, { $set: data }, {}, function (err, numChanged) {
-				if (err) {
-					return next(new Errors.Internal(err));
-				}
-				else if (numChanged === 0) {
-					return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
-				}
-				else {
-					res.send(204);
-					return next();
-				}
-			});
+			Promise.all(promises).then(() => {
+				this.db.update(query, { $set: data }, {}, function (err, numChanged) {
+					if (err) {
+						return next(new Errors.Internal(err));
+					}
+					else if (numChanged === 0) {
+						return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+					}
+					else {
+						res.send(204);
+						return next();
+					}
+				});
+			})
+			.catch(e => next(Errors.wrap(e)));
 		});
 	}
 
@@ -212,41 +214,32 @@ module.exports = class ServicesAPI {
 			return next(new Errors.ServiceUnsupported());
 		}
 
-		try {
-			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
-				return next(new Errors.ProcessGraphMissing());
-			}
-
-			ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
-		} catch (e) {
-			console.log(e);
-			return next(e);
-		}
-
-		// ToDo: Validate data
-		var data = {
-			title: req.body.title || null,
-			description: req.body.description || null,
-			process_graph: req.body.process_graph,
-			parameters: typeof req.body.parameters === 'object' ? req.body.parameters : {},
-			attributes: {},
-			type: req.body.type,
-			enabled: req.body.enabled || true,
-			submitted: Utils.getISODateTime(),
-			plan: req.body.plan || req.config.plans.default,
-			costs: 0,
-			budget: req.body.budget || null,
-			user_id: req.user._id
-		};
-		this.db.insert(data, (err, service) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else {
-				res.header('OpenEO-Identifier', service._id);
-				res.redirect(201, Utils.getApiUrl('/services/' + service._id), next);
-			}
-		});
+		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+			// ToDo: Validate data
+			var data = {
+				title: req.body.title || null,
+				description: req.body.description || null,
+				process_graph: req.body.process_graph,
+				parameters: Utils.isObject(req.body.parameters) ? req.body.parameters : {},
+				attributes: {},
+				type: req.body.type,
+				enabled: req.body.enabled || true,
+				submitted: Utils.getISODateTime(),
+				plan: req.body.plan || req.config.plans.default,
+				costs: 0,
+				budget: req.body.budget || null,
+				user_id: req.user._id
+			};
+			this.db.insert(data, (err, service) => {
+				if (err) {
+					return next(new Errors.Internal(err));
+				}
+				else {
+					res.header('OpenEO-Identifier', service._id);
+					res.redirect(201, Utils.getApiUrl('/services/' + service._id), next);
+				}
+			});
+		}).catch(e => next(e));
 	}
 
 	makeServiceResponse(service, full = true) {
@@ -264,8 +257,8 @@ module.exports = class ServicesAPI {
 		};
 		if (full) {
 			response.process_graph = service.process_graph;
-			response.parameters = typeof service.parameters !== 'object' ? service.parameters : {};
-			response.attributes = typeof service.attributes !== 'object' ? service.attributes : {};
+			response.parameters = Utils.isObject(service.parameters) ? service.parameters : {};
+			response.attributes = Utils.isObject(service.attributes) ? service.attributes : {};
 		}
 		return response;
 	}

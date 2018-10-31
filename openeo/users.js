@@ -12,7 +12,7 @@ module.exports = class UsersAPI {
 		server.addEndpoint('post', '/credentials', this.postCredentials.bind(this)); // Proprietary extension to register a user
 		server.addEndpoint('get', '/me', this.getUserInfo.bind(this));
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
 	}
 
 	checkAuthToken(req, res, next) {

@@ -122,10 +122,10 @@ class Server {
 		for(var i in this.api) {
 			p.push(this.api[i].beforeServerStart(this));
 		}
-		Promise.all(p).then(() => {
-			this.startServerHttp()
-				.then(() => this.startServerHttps());
-		}).catch(e => {
+		Promise.all(p)
+		.then(() => this.startServerHttp())
+		.then(() => this.startServerHttps())
+		.catch(e => {
 			console.log('Server not started due to the following error: ');
 			console.log(e);
 			process.exit(1);

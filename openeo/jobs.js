@@ -4,7 +4,7 @@ const Utils = require('./utils');
 const fs = require('fs');
 const path = require('path');
 const Errors = require('./errors');
-const eeUtils = require('./eeUtils');
+const ProcessUtils = require('./processUtils');
 
 module.exports = class JobsAPI {
 
@@ -32,7 +32,7 @@ module.exports = class JobsAPI {
 
 		server.createSubscriptions(['openeo.jobs.debug']);
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
 	}
 
 	getTempFile(req, res, next) {
@@ -76,14 +76,11 @@ module.exports = class JobsAPI {
 	}
 
 	getJob(req, res, next) {
-		this.findJobForUserById(req.params.job_id, req.user._id)
-			.then(job => {
-				res.json(this.makeJobResponse(job));
-				return next();
-			})
-			.catch(e => {
-				return next(e);
-			});
+		this.findJobForUserById(req.params.job_id, req.user._id).then(job => {
+			res.json(this.makeJobResponse(job));
+			return next();
+		})
+		.catch(e => next(Errors.wrap(e)));
 	}
 
 	deleteJob(req, res, next) {
@@ -193,9 +190,8 @@ module.exports = class JobsAPI {
 				return next(new Errors.JobNotStarted());
 			}
 
-			try {
-				this.sendDebugNotifiction(req, res, "Starting to process download request");
-				var url = this.execute(req, res, job.process_graph, job.output);
+			this.sendDebugNotifiction(req, res, "Starting to process download request");
+			this.execute(req, res, job.process_graph, job.output).then(url => {
 				this.sendDebugNotifiction(req, res, "Executed processes, result available at " + url);
 				res.send({
 					job_id: job._id,
@@ -208,11 +204,13 @@ module.exports = class JobsAPI {
 						}
 					]
 				});
-				return next();
-			} catch (e) {
+				next();
+			})
+			.catch(e => {
+				e = Errors.wrap(e);
 				this.sendDebugNotifiction(req, res, e);
-				return next(e);
-			}
+				next(e);
+			});
 		});
 	}
 
@@ -253,24 +251,20 @@ module.exports = class JobsAPI {
 			}
 
 			var data = {};
+			var promises = [];
 			for(let key in req.body) {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							if (Utils.size(req.body[key]) === 0) {
-								return next(new Errors.ProcessGraphMissing());
-							}
-
-							try {
-								ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
-							} catch (e) {
-								return next(e);
-							}
+							promises.push(ProcessRegistry.validateProcessGraph(req, req.body.process_graph));
 							break;
 						case 'output':
-							if (typeof req.body.output === 'object' && typeof req.body.output.format !== 'string') {
-								return next(new Errors.FormatUnsupported());
-							}
+							promises.push(new Promise((resolve, reject) => {
+								if (Utils.isObject(req.body.output) && typeof req.body.output.format !== 'string') {
+									reject(new Errors.FormatUnsupported());
+								}
+								resolve();
+							}));
 							break;
 						default:
 							// ToDo: Validate further data
@@ -290,18 +284,21 @@ module.exports = class JobsAPI {
 				return next(new Errors.NoDataForUpdate());
 			}
 
-			this.db.update(query, { $set: data }, {}, function (err, numChanged) {
-				if (err) {
-					return next(new Errors.Internal(err));
-				}
-				else if (numChanged === 0) {
-					return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
-				}
-				else {
-					res.send(204);
-					return next();
-				}
-			});
+			Promise.all(promises).then(() => {
+				this.db.update(query, { $set: data }, {}, function (err, numChanged) {
+					if (err) {
+						return next(new Errors.Internal(err));
+					}
+					else if (numChanged === 0) {
+						return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+					}
+					else {
+						res.send(204);
+						return next();
+					}
+				});
+			})
+			.catch(e => next(Errors.wrap(e)));
 		});
 	}
 
@@ -310,7 +307,7 @@ module.exports = class JobsAPI {
 			format: req.config.outputFormats.default,
 			parameters: {}
 		};
-		if (typeof req.body.output === 'object' && typeof req.body.output.format === 'string') {
+		if (Utils.isObject(req.body.output) && typeof req.body.output.format === 'string') {
 			if (req.config.isValidOutputFormat(req.body.output.format)) {
 				output.format = req.body.output.format;
 				// ToDo: We don't support any parameters yet, take and check input from req.body.output.parameters
@@ -319,44 +316,36 @@ module.exports = class JobsAPI {
 			}
 		}
 
-		try {
-			if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
-				return next(new Errors.ProcessGraphMissing());
-			}
-
-			ProcessRegistry.parseProcessGraph(req.body.process_graph, req, res, false);
-		} catch (e) {
-			console.log(e);
-			return next(e);
-		}
-
-		// ToDo: Validate data
-		var data = {
-			title: req.body.title || null,
-			description: req.body.description || null,
-			process_graph: req.body.process_graph,
-			output: output,
-			status: "submitted",
-			submitted: Utils.getISODateTime(),
-			updated: Utils.getISODateTime(),
-			plan: req.body.plan || req.config.plans.default,
-			costs: 0,
-			budget: req.body.budget || null,
-			user_id: req.user._id
-		};
-		this.db.insert(data, (err, job) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else {
-				res.header('OpenEO-Identifier', job._id);
-				res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), next);
-			}
-		});
+		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+			// ToDo: Validate data
+			var data = {
+				title: req.body.title || null,
+				description: req.body.description || null,
+				process_graph: req.body.process_graph,
+				output: output,
+				status: "submitted",
+				submitted: Utils.getISODateTime(),
+				updated: Utils.getISODateTime(),
+				plan: req.body.plan || req.config.plans.default,
+				costs: 0,
+				budget: req.body.budget || null,
+				user_id: req.user._id
+			};
+			this.db.insert(data, (err, job) => {
+				if (err) {
+					next(new Errors.Internal(err));
+				}
+				else {
+					res.header('OpenEO-Identifier', job._id);
+					res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), next);
+				}
+			});
+		})
+		.catch(e => next(Errors.wrap(e)));
 	}
 
 	postPreview(req, res, next) {
-		if (typeof req.body.process_graph !== 'object' || Utils.size(req.body.process_graph) === 0) {
+		if (!Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
 			return next(Errors.ProcessGraphMissing());
 		}
 
@@ -365,28 +354,26 @@ module.exports = class JobsAPI {
 		// ToDo: Validate data, handle budget and plan input
 	
 		this.sendDebugNotifiction(req, res, "Starting to process request");
-		try {
-			var url = this.execute(req, res, req.body.process_graph, req.body.output);
+		this.execute(req, res, req.body.process_graph, req.body.output).then(url => {
 			this.sendDebugNotifiction(req, res, "Downloading " + url);
 			console.log("Downloading " + url);
-			axios({
+			return axios({
 				method: 'get',
 				url: url,
 				responseType: 'stream'
-			}).then(stream => {
-				var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
-				res.header('Content-Type', contentType);
-				res.header('OpenEO-Costs', 0);
-				stream.data.pipe(res);
-				return next();
-			}).catch(e => {
-				this.sendDebugNotifiction(req, res, e);
-				return next(Errors.Internal(e));
 			});
-		} catch (e) {
+		})
+		.then(stream => {
+			var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
+			res.header('Content-Type', contentType);
+			res.header('OpenEO-Costs', 0);
+			stream.data.pipe(res);
+			return next();
+		})
+		.catch(e => {
 			this.sendDebugNotifiction(req, res, e);
-			return next(e);
-		}
+			next(Errors.wrap(e));
+		});
 	}
 
 	makeJobResponse(job, full = true) {
@@ -414,12 +401,12 @@ module.exports = class JobsAPI {
 	execute(req, res, processGraph, output) {
 		// Check output format
 		var format;
-		if (typeof output === 'object' && typeof output.format === 'string') {
+		if (Utils.isObject(output) && typeof output.format === 'string') {
 			if (req.config.isValidOutputFormat(output.format)) {
 				format = output.format;
 				// ToDo: We don't support any parameters yet, take and check input from output.parameters
 			} else {
-				throw new Errors.FormatUnsupported();
+				return Promise.reject(new Errors.FormatUnsupported());
 			}
 		}
 		else {
@@ -429,32 +416,34 @@ module.exports = class JobsAPI {
 		// Execute graph
 		// ToDo: global.downloadRegion a hack. Search for all occurances and remove them once a solution is available.
 		global.downloadRegion = null;
-		var obj = ProcessRegistry.parseProcessGraph(processGraph, req, res);
-		if (format.toLowerCase() !== 'json') {
-			var image = eeUtils.toImage(obj, req, res);
+		return ProcessRegistry.executeProcessGraph(req, processGraph).then(obj => {
+			if (format.toLowerCase() !== 'json') {
+				var image = ProcessUtils.toImage(obj, req);
 
-			// Download image
-			if (global.downloadRegion === null) {
-//				global.downloadRegion = image.geometry();
-				throw new Errors.BoundingBoxMissing();
+				// Download image
+				if (global.downloadRegion === null) {
+	//				global.downloadRegion = image.geometry();
+					throw new Errors.BoundingBoxMissing();
+				}
+				var bounds = global.downloadRegion.bounds().getInfo();
+				// ToDo: Replace getThumbURL with getDownloadURL
+				// ToDo: ASYNC
+				var url = image.getThumbURL({
+					format: this.translateOutputFormat(format),
+					dimensions: '512',
+					region: bounds
+				});
+				return url;
 			}
-			var bounds = global.downloadRegion.bounds().getInfo();
-			// ToDo: Replace getThumbURL with getDownloadURL
-			var url = image.getThumbURL({
-				format: this.translateOutputFormat(format),
-				dimensions: '512',
-				region: bounds
-			});
-			return url;
-		}
-		else {
-			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
-			var p = path.normalize(path.join(this.tempFolder, fileName));
-			var parent = path.dirname(p);
-			Utils.mkdirSyncRecursive(parent);
-			fs.writeFileSync(p, JSON.stringify(obj));
-			return Utils.getApiUrl("/temp/" + fileName);
-		}
+			else {
+				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
+				var p = path.normalize(path.join(this.tempFolder, fileName));
+				var parent = path.dirname(p);
+				Utils.mkdirSyncRecursive(parent);
+				fs.writeFileSync(p, JSON.stringify(obj));
+				return Utils.getApiUrl("/temp/" + fileName);
+			}
+		});
 	}
 
 	translateOutputFormat(format) {

@@ -1,6 +1,7 @@
 const openeo_errors = require('../storage/errors/errors.json');
 const custom_errors = require('../storage/errors/custom.json');
 const restify_errors = require('restify-errors');
+const Utils = require('./utils');
 
 const errors = Object.assign(openeo_errors, custom_errors);
 
@@ -41,13 +42,22 @@ for(var name in errors) {
 				args.message = obj.message;
 			}
 		}
-		else if (typeof obj === 'object') {
+		else if (Utils.isObject(obj)) {
 			args = obj;
 		}
 
 		this.info = args;
 	};
 	restify_errors[name].prototype = old;
+}
+
+restify_errors['wrap'] = function(e, callback) {
+	if (typeof e.restCode !== 'undefined') {
+		return e; // An openEO error
+	}
+	else {
+		return callback ? callback(e) : new restify_errors.Internal(e); // Probably an internal error
+	}
 }
 
 module.exports = restify_errors;

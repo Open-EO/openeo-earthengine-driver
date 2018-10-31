@@ -1,3 +1,5 @@
+const ProcessUtils = require('../processUtils');
+
 module.exports = {
 	process_id: "filter_bands",
 	summary: "Filters by bands.",
@@ -32,13 +34,19 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
+	validate(req, args) {
+		// ToDo: Further validation
+		return ProcessUtils.validateSchema(this, args, req);
+	},
+	execute(req, args) {
+		var obj;
 		// Select works on both images and image collections => no conversion applied.
 		if (Array.isArray(args.bands)) {
-			return args.imagery.select(args.bands, args.bands);
+			obj = args.imagery.select(args.bands, args.bands);
 		}
 		else {
-			return args.imagery.select(args.bands);
+			obj = args.imagery.select(args.bands);
 		}
+		return Promise.resolve(obj);
 	}
 };

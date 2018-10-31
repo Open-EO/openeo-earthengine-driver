@@ -20,7 +20,7 @@ module.exports = class FilesAPI {
 
 		server.createSubscriptions(['openeo.files']);
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
 	}
 
 	getFiles(req, res, next) {

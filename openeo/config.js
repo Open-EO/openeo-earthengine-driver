@@ -1,3 +1,5 @@
+const Utils = require('./utils');
+
 module.exports = class Config {
 
 	constructor() {
@@ -48,11 +50,11 @@ module.exports = class Config {
 	}
 
 	isValidOutputFormat(format) {
-		return (typeof format === 'string' && typeof this.outputFormats.options[format.toUpperCase()] === 'object');
+		return (typeof format === 'string' && Utils.isObject(this.outputFormats.options[format.toUpperCase()]));
 	}
 
 	isValidServiceType(service_type) {
-		return (typeof service_type === 'string' && typeof this.services[service_type.toLowerCase()] === 'object');
+		return (typeof service_type === 'string' && Utils.isObject(this.services[service_type.toLowerCase()]));
 	}
 
 }

@@ -10,7 +10,7 @@ module.exports = class CapabilitiesAPI {
 		server.addEndpoint('get', '/service_types', this.getServices.bind(this));
 		server.addEndpoint('get', '/output_formats', this.getOutputFormats.bind(this));
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
 	}
 
 	addEndpoint(method, path) {

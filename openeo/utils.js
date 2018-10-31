@@ -3,7 +3,6 @@ const crypto = require("crypto");
 const fs = require('fs');
 const path = require('path');
 const objectHash = require('object-hash');
-const Errors = require('./errors');
 
 var Utils = {
 
@@ -34,8 +33,15 @@ var Utils = {
 		}
 		return ret.join('&');
 	},
+
+	isObject(obj) {
+		return (obj === Object(obj) && !Array.isArray(obj));
+	},
 	
 	size(obj) {
+		if (obj === null) {
+			return 0;
+		}
 		return Object.keys(obj).length;
 	},
 

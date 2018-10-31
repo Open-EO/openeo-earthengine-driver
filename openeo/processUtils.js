@@ -1,6 +1,6 @@
-module.exports = {
+var ProcessUtils = {
 
-	toImage(obj, req, res) {
+	toImage(obj, req) {
 		if (obj instanceof ee.Image) {
 			return obj;
 		}
@@ -25,6 +25,12 @@ module.exports = {
 			return ee.ImageCollection(obj);
 		}
 		return null;
+	},
+
+	validateSchema(process, args, req) {
+		return Promise.resolve(args);
 	}
 
 };
+
+module.exports = ProcessUtils;

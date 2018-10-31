@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 
 module.exports = {
 	process_id: "stretch_colors",
@@ -34,11 +34,16 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
-		return eeUtils.toImage(args.imagery, req, res).visualize({
+	validate(req, args) {
+		return ProcessUtils.validateSchema(this, args, req);
+	},
+
+	execute(req, args) {
+		var obj = ProcessUtils.toImage(args.imagery, req).visualize({
 			min: args.min,
 			max: args.max,
 			palette: ['000000', 'FFFFFF']
 		});
+		return Promise.resolve(obj);
 	}
 };

@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 
 module.exports = {
 	process_id: "last_time",
@@ -27,7 +27,11 @@ module.exports = {
 			format: "eodata"
 		}
 	},
-	eeCode(args, req, res) {
-		return eeUtils.toImageCollection(args.imagery).reduce(args.null === true ? 'last' : 'lastNonNull');
+	validate(req, args) {
+		return ProcessUtils.validateSchema(this, args, req);
+	},
+	execute(req, args) {
+		var obj = ProcessUtils.toImageCollection(args.imagery).reduce(args.null === true ? 'last' : 'lastNonNull');
+		return Promise.resolve(obj);
 	}
 };

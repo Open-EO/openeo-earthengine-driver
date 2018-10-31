@@ -1,4 +1,4 @@
-const eeUtils = require('../eeUtils');
+const ProcessUtils = require('../processUtils');
 const Errors = require('../errors');
 
 module.exports = {
@@ -62,15 +62,27 @@ module.exports = {
 			description: "The height or base parameters are set, but not supported."
 		}
 	},
-	eeCode(args, req, res) {
-		if (args.extent.height) {
-			throw new Errors.ProcessArgumentUnsupported({process: this.process_id, argument: 'extent.height'});
+	validate(req, args) {
+		// ToDo: Further validation
+		return ProcessUtils.validateSchema(this, args, req);
+	},
+	execute(req, args) {
+		var geom;
+		try {
+			geom = ee.Geometry.Rectangle([args.extent.west, args.extent.south, args.extent.east, args.extent.north], args.extent.crs);
+			global.downloadRegion = geom;
+		} catch (e) {
+			return Promise.reject(new Errors.ProcessArgumentInvalid({
+				process: this.process_id,
+				argument: 'extent',
+				reason: e.message
+			}));
 		}
-		if (args.extent.base) {
-			throw new Errors.ProcessArgumentUnsupported({process: this.process_id, argument: 'extent.base'});
+		try {
+			var obj = ProcessUtils.toImageCollection(args.imagery).filterBounds(geom);
+			return Promise.resolve(obj);
+		} catch (e) {
+			return Promise.reject(new Errors.EarthEngineError(e, {process: this.process_id}));
 		}
-		var geom = ee.Geometry.Rectangle([args.extent.west, args.extent.south, args.extent.east, args.extent.north], args.extent.crs);
-		global.downloadRegion = geom;
-		return eeUtils.toImageCollection(args.imagery).filterBounds(geom);
 	}
 };

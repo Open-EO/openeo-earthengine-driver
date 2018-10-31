@@ -7,7 +7,7 @@ module.exports = class Processes {
 	beforeServerStart(server) {
 		server.addEndpoint('get', '/processes', this.getProcesses.bind(this));
 
-		return new Promise((resolve, reject) => resolve());
+		return Promise.resolve();
 	}
 
 	getProcesses(req, res, next) {

@@ -1,7 +1,6 @@
 const Utils = require('./utils');
 const Errors = require('./errors');
 const fs = require('fs');
-const axios = require('axios');
 const {Storage} = require('@google-cloud/storage');
 
 module.exports = class Data {
@@ -53,7 +52,7 @@ module.exports = class Data {
 			let fileTime = new Date(fs.statSync(catalogFile).ctime).getTime();
 			let expiryTime = new Date().getTime() - 24 * 60 * 60 * 1000; // Expiry time: A day
 			if (fileTime > expiryTime) {
-				return new Promise((resolve, reject) => resolve());
+				return Promise.resolve();
 			}
 		}
 
@@ -65,7 +64,8 @@ module.exports = class Data {
 		const prefix = 'catalog/';
 		return bucket.getFiles({
 			prefix: prefix
-		}).then(data => {
+		})
+		.then(data => {
 			let promises = [];
 			for(var i in data[0]) {
 				let file = data[0][i];
@@ -78,14 +78,14 @@ module.exports = class Data {
 	}
 
 	loadCatalog() {
-		return this.updateCatalog()
-			.then(() => {
-				this.readLocalCatalog();
-				console.log("Loaded catalog with " + Utils.size(this.collections) + " collections.");
-			});
+		return this.updateCatalog().then(() => {
+			this.readLocalCatalog();
+			console.log("Loaded catalog with " + Utils.size(this.collections) + " collections.");
+			return Promise.resolve();
+		});
 	}
 
-	getData(isSTAC, id = null) {
+	getData(id = null, isSTAC = false) {
 		if (id !== null) {
 			if (typeof this.collections[id] !== 'undefined') {
 				return this.fixData(this.collections[id], isSTAC);
@@ -108,7 +108,7 @@ module.exports = class Data {
 			c.provider = c.providers;
 			delete c.providers;
 			delete c.stac_version;
-			if (typeof c.properties === 'object' && c.properties !== null) {
+			if (Utils.isObject(c.properties)) {
 				for(let key in c.properties) {
 					c[key] = c.properties[key];
 				}
@@ -161,7 +161,7 @@ module.exports = class Data {
 			]
 		};
 
-		this.getData(true).map(d => {
+		this.getData(null, true).map(d => {
 			response.links.push({
 				rel: "child",
 				href: Utils.getApiUrl("/collections/" + d.id + "?stac"),
@@ -201,7 +201,7 @@ module.exports = class Data {
 		}
 
 		var isSTAC = (typeof req.query.stac !== 'undefined');
-		var collection = this.getData(isSTAC, id);
+		var collection = this.getData(id, isSTAC);
 		if (collection !== null) {
 			res.json(collection);
 			return next();
