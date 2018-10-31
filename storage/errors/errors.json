@@ -306,6 +306,15 @@
 			"Processes"
 		]
 	},
+	"ProcessArgumentsMissing": {
+		"code": 2105,
+		"description": null,
+		"message": "Process '{process}' requires at least '{min_parameters}' parameters.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
 	"JobNotFound": {
 		"code": 5101,
 		"description": "The requested job does not exist.",

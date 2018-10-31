@@ -15,6 +15,7 @@ module.exports = {
 		},
 		extent: {
 			description: "Spatial extent, may include a vertical axis (height or depth).",
+			required: true,
 			schema: {
 				type: "object",
 				format: "spatial_extent",
@@ -24,6 +25,7 @@ module.exports = {
 					"north",
 					"south"
 				],
+				additionalProperties: false,
 				properties: {
 					crs: {
 						description: "Coordinate reference system. EPSG codes must be supported. In addition, proj4 strings should be supported by back-ends. Whenever possible, it is recommended to use EPSG codes instead of proj4 strings.\nDefaults to `EPSG:4326` unless the client explicitly requests a different coordinate reference system.",

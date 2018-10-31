@@ -1,3 +1,6 @@
+const validate = require('jsonschema').validate;
+const Errors = require('./errors');
+
 var ProcessUtils = {
 
 	toImage(obj, req) {
@@ -28,6 +31,55 @@ var ProcessUtils = {
 	},
 
 	validateSchema(process, args, req) {
+		let paramCount = 0;
+		var unsupportedArgs = Object.assign({}, args);
+		delete unsupportedArgs.process_id;
+		delete unsupportedArgs.process_description;
+		for(let name in process.parameters) {
+			delete unsupportedArgs[name];
+			paramCount++;
+			let param = process.parameters[name];
+			// Check whether parameter is required
+			if (typeof args[name] === 'undefined') {
+				if (param.required) {
+					return Promise.reject(new Errors.ProcessArgumentRequired({
+						process: process.process_id,
+						argument: name
+					}));
+				}
+				else {
+					continue; // Parameter not set, nothing to validate against
+				}
+			}
+			
+			// Validate against JSON schema
+			let arg = args[name];
+			let result = validate(arg, param.schema);
+			if (!result.valid) {
+				var errors = [];
+				for (let i in result.errors) {
+					errors.push(result.errors[i].stack);
+				}
+				return Promise.reject(new Errors.ProcessArgumentInvalid({
+					process: process.process_id,
+					argument: name,
+					reason: errors.join("; ")
+				}));
+			}
+			// ToDo: Validate dependencies
+		}
+		for (let name in unsupportedArgs) {
+			return Promise.reject(new Errors.ProcessArgumentUnsupported({
+				process: process.process_id,
+				argument: name
+			}));
+		}
+		if (typeof process.min_parameters === 'number' && process.min_parameters > paramCount) {
+			return Promise.reject(new Errors.ProcessArgumentsMissing({
+				process: process.process_id,
+				min_parameters: process.min_parameters
+			}));
+		}
 		return Promise.resolve(args);
 	}
 
