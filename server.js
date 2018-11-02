@@ -10,8 +10,7 @@ const UsersAPI = require('./openeo/users');
 
 const Config = require('./openeo/config');
 const Utils = require('./openeo/utils');
-const fs = require('fs');
-const path = require('path');
+const fse = require('fs-extra');
 const restify = require('restify');
 global.ee = require('@google/earthengine');
 
@@ -40,7 +39,7 @@ class Server {
 		this.api.users = new UsersAPI();
 		this.api.processGraphs = new ProcessGraphsAPI();
 
-		const privateKey = JSON.parse(fs.readFileSync(this.config.serviceAccountCredentialsFile));
+		const privateKey = fse.readJsonSync(this.config.serviceAccountCredentialsFile);
 		ee.data.authenticateViaPrivateKey(privateKey,
 			() => { 
 				console.log("GEE Authentication succeeded.");
@@ -83,8 +82,8 @@ class Server {
 	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
 			var https_options = Object.assign(this.serverOptions, {
-				key: fs.readFileSync(this.config.ssl.key),
-				certificate: fs.readFileSync(this.config.ssl.certificate)
+				key: fse.readFileSync(this.config.ssl.key),
+				certificate: fse.readFileSync(this.config.ssl.certificate)
 			});
 			this.https_server = restify.createServer(https_options);
 			this.initServer(this.https_server);
@@ -111,6 +110,7 @@ class Server {
 		req.config = this.config;
 		req.user = this.api.users.emptyUser();
 		req.api = this.api;
+		req.downloadRegion = null;
 		return next();
 	}
 

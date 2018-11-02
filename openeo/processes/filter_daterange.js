@@ -48,7 +48,12 @@ module.exports = {
 		return ProcessUtils.validateSchema(this, args, req);
 	},
 	execute(req, args) {
-		// ToDo: Check for null values
+		if (args.extent[0] === null) {
+			args.extent[0] = "0000-01-01"; // Open date range: We just set the extent to the minimal start date here.
+		}
+		if (args.extent[1] === null) {
+			args.extent[1] = Date.now(); // Open date range: The end date is set to the current date
+		}
 		var obj = ProcessUtils.toImageCollection(args.imagery).filterDate(args.extent[0], args.extent[1]);
 		return Promise.resolve(obj);
 	}

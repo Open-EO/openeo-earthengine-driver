@@ -1,5 +1,6 @@
 const ProcessUtils = require('../processUtils');
 const Utils = require('../utils');
+const Errors = require('../errors');
 
 module.exports = {
 	process_id: "zonal_statistics",
@@ -78,41 +79,42 @@ module.exports = {
 		imagery = this._groupImageCollectionByInterval(imagery, args.interval);
 
 		// Read and parse GeoJSON file
-		var geojson = null;
+		var p = null;
 		if (typeof args.regions === 'string') {
-			// ToDo: Make async
-			var contents = req.api.files.getFileContentsSync(req.user._id, args.regions);
-			if (contents === null) {
-				throw new ProcessArgumentInvalid({
+			p = req.api.files.getFileContents(req.user._id, args.regions)
+			.then(contents => JSON.parse(contents))
+			.catch(err => {
+				return Promise.reject(new Errors.ProcessArgumentInvalid({
 					argument: 'regions',
 					process: this.process_id,
-					reason: 'File does not exist.'
-				});
-			}
-			geojson = JSON.parse(contents);
+					reason: err.message
+				}));
+			});
 		}
 		else if (typeof args.regions.type === 'string') { // Only a rough check for GeoJSON
-			geojson = args.regions;
+			p = Promise.resolve(args.regions);
 		}
 		else {
-			throw new ProcessArgumentInvalid({
+			throw new Errors.ProcessArgumentInvalid({
 				argument: 'regions',
 				process: this.process_id,
 				reason: 'Not a valid GeoJSON object.'
 			});
 		}
 
-		// Convert GeoJSON to a GEE FeatureCollection
-		var features = Utils.geoJsonToFeatureCollection(geojson);
+		return p.then(geojson => {
+			// Convert GeoJSON to a GEE FeatureCollection
+			var features = Utils.geoJsonToFeatureCollection(geojson);
 
-		// Calculate the zonal statistics
-		var results = this._calculateStatistics(imagery, features, args);
+			// Calculate the zonal statistics
+			var results = this._calculateStatistics(imagery, features, args);
 
-		// Transform results into the openEO format
-		var data = {
-			results: results.getInfo()
-		};
-		return Promise.resolve(data);
+			// Transform results into the openEO format
+			var data = {
+				results: results.getInfo()
+			};
+			return Promise.resolve(data);
+		});
 	},
 
 	_groupImageCollectionByInterval(imagery, interval) {
@@ -180,6 +182,7 @@ module.exports = {
 			return ee.List(list).add(ee.Dictionary({
 				date: ee.Date(image.get('date')).format('y-MM-DD'),
 				result: {
+					// ToDo: Try to find a way to fill the missing values for valid/total number of pixels
 					totalCount: null,
 					validCount: null,
 					value: value

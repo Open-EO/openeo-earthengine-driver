@@ -1,6 +1,6 @@
 const Utils = require('./utils');
 const Errors = require('./errors');
-const fs = require('fs');
+const fse = require('fs-extra');
 const {Storage} = require('@google-cloud/storage');
 
 module.exports = class Data {
@@ -35,11 +35,11 @@ module.exports = class Data {
 
 	readLocalCatalog() {
 		this.collections = {};
-		var files = fs.readdirSync(this.dataFolder, {withFileTypes: true});
+		var files = fse.readdirSync(this.dataFolder, {withFileTypes: true});
 		for(var i in files) {
 			let file = files[i];
 			if (file.isFile() && file.name !== 'catalog.json') {
-				let collection = JSON.parse(fs.readFileSync(this.dataFolder + file.name));
+				let collection = fse.readJsonSync(this.dataFolder + file.name);
 				this.collections[collection.id] = collection;
 			}
 		}
@@ -48,8 +48,8 @@ module.exports = class Data {
 	updateCatalog() {
 		// To refresh the catalog manually, delete the catalog.json.
 		let catalogFile = this.dataFolder + 'catalog.json';
-		if (fs.existsSync(catalogFile)) {
-			let fileTime = new Date(fs.statSync(catalogFile).ctime).getTime();
+		if (fse.existsSync(catalogFile)) {
+			let fileTime = new Date(fse.statSync(catalogFile).ctime).getTime();
 			let expiryTime = new Date().getTime() - 24 * 60 * 60 * 1000; // Expiry time: A day
 			if (fileTime > expiryTime) {
 				return Promise.resolve();

@@ -66,7 +66,6 @@ module.exports = class ServicesAPI {
 						region: rect.bounds().getInfo()
 					}, url => {
 						if (!url) {
-							console.log('WARN: Download URL from Google is empty.');
 							next(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
 						}
 						else {
@@ -120,7 +119,7 @@ module.exports = class ServicesAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (numRemoved === 0) {
-				return next(Errors.ServiceNotFound());
+				return next(new Errors.ServiceNotFound());
 			}
 			else {
 				res.send(204);
@@ -201,7 +200,7 @@ module.exports = class ServicesAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (service === null) {
-				return next(Errors.ServiceNotFound());
+				return next(new Errors.ServiceNotFound());
 			}
 
 			res.json(this.makeServiceResponse(service));

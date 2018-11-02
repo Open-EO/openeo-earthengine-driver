@@ -131,7 +131,7 @@ module.exports = class ProcessGraphs {
 				return next(new Errors.Internal(err));
 			}
 			else if (numRemoved === 0) {
-				return next(Errors.ProcessGraphNotFound());
+				return next(new Errors.ProcessGraphNotFound());
 			}
 			else {
 				res.send(204);
@@ -150,7 +150,7 @@ module.exports = class ProcessGraphs {
 				return next(new Errors.Internal(err));
 			}
 			else if (pg === null) {
-				return next(Errors.ProcessGraphNotFound());
+				return next(new Errors.ProcessGraphNotFound());
 			}
 			else {
 				res.json(this.makeResponse(pg));

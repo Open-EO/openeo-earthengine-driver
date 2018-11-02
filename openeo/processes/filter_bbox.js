@@ -72,7 +72,7 @@ module.exports = {
 		var geom;
 		try {
 			geom = ee.Geometry.Rectangle([args.extent.west, args.extent.south, args.extent.east, args.extent.north], args.extent.crs);
-			global.downloadRegion = geom;
+			req.downloadRegion = geom;
 		} catch (e) {
 			return Promise.reject(new Errors.ProcessArgumentInvalid({
 				process: this.process_id,

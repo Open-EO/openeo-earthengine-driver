@@ -1,10 +1,8 @@
-const Utils = require('./utils');
-const fs = require('fs');
+const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('./errors');
 
 // ToDo: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
-// ToDo: Replace sync calls with async calls.
 module.exports = class FilesAPI {
 
 	constructor() {
@@ -32,39 +30,43 @@ module.exports = class FilesAPI {
 			return next(new Errors.FilePathInvalid());
 		}
 
-		var files = this.walkSync(path.normalize(p));
-		var data = [];
-		for(var i in files) {
-			let fileName = path.relative(this.getUserFolder(req.user._id), files[i]);
-			let stats = fs.statSync(files[i]);
-			data.push({
-				name: fileName,
-				size: stats.size,
-				modified: stats.mtime.toISOString()
+		this.walk(path.normalize(p)).then(files => {
+			var output = files.map(file => {
+				return {
+					name: path.relative(this.getUserFolder(req.user._id), file.path),
+					size: file.stat.size,
+					modified: file.stat.mtime.toISOString()
+				}
 			});
-		}
-		res.json({
-			files: data,
-			links: []
-		});
-		return next();
+			res.json( {
+				files:output,
+				links:[]
+			});
+			return next();
+		})
+		.catch(e => next(new Errors.Internal(e)));
 	}
 
-	walkSync(dir, filelist) {
-		filelist = filelist || [];
-		if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) {
-			files = fs.readdirSync(dir);
-			files.forEach((file) => {
-				let fullPath = path.join(dir, file);
-				if (fs.statSync(fullPath).isDirectory()) {
-					filelist = this.walkSync(fullPath, filelist);
-				}
-				else {
-					filelist.push(fullPath);
-				}
+	walk(dir) {
+		return fse.readdir(dir).then(files => {
+			return Promise.all(files.map(file => {
+				const filepath = path.join(dir, file);
+				return fse.stat(filepath).then(stats => {
+					if (stats.isDirectory()) {
+						return walk(filepath);
+					}
+					else if (stats.isFile()) {
+						return Promise.resolve({
+							path: filepath,
+							stat: stats
+						});
+					}
+				});
+			}))
+			.then((foldersContents) => {
+				return Promise.resolve(foldersContents.reduce((all, folderContents) => all.concat(folderContents), []));
 			});
-		}
-		return filelist;
+		});
 	}
 
 	putFileByPath(req, res, next) {
@@ -72,40 +74,51 @@ module.exports = class FilesAPI {
 			return next(new Errors.AuthenticationRequired());
 		}
 		var p = this.getPathFromRequest(req);
-		var fileExists = fs.existsSync(p);
-		if (!p || (fileExists && fs.statSync(p).isDirectory())) {
+		if (!p) {
 			return next(new Errors.FilePathInvalid());
 		}
-		let contentType = 'application/octet-stream';
-		if (req.contentType() !== contentType) {
-			return next(new Errors.ContentTypeInvalid({types: contentType}));
-		}
 
-		let parent = path.dirname(p);
-		Utils.mkdirSyncRecursive(parent);
-	
-		var stream = fs.createWriteStream(p);
-		req.on('data', (chunk) => {
-			stream.write(chunk);
-		});
-		req.on('end', () => {
-			stream.end();
-			const payload = {
-				user_id: req.user._id,
-				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
-				action: fileExists ? 'updated' : 'created'
-			};
-			req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
-			res.send(204);
-			return next();
-		});
-		req.on('error', (e) => {
-			stream.end();
-			if (fs.exists(p)) {
-				fs.unlink(p, () => {});
+		return fse.stat(p)
+		.catch(() => {
+			 // File doesn't exist => not a problem for uploading; create missing folders and continue process chain.
+			let parent = path.dirname(p);
+			return fse.ensureDir(parent).then(() => {
+				return Promise.resolve(null);
+			})
+			.catch(err => Promise.reject(new Errors.Internal(err)));
+		})
+		.then(stat => {
+			let fileExists = (stat !== null);
+			if (fileExists && stat.isDirectory()) {
+				throw new Errors.FilePathInvalid();
 			}
-			return next(new Errors.Internal(e));
-		});
+			let contentType = 'application/octet-stream';
+			if (req.contentType() !== contentType) {
+				throw new Errors.ContentTypeInvalid( {types:contentType});
+			}
+
+			var stream = fse.createWriteStream(p);
+			req.on('data', (chunk) => {
+				stream.write(chunk);
+			});
+			req.on('end', () => {
+				stream.end();
+				const payload = {
+					user_id: req.user._id,
+					path: p.replace('storage/user_files/' + req.user._id + '/', ''),
+					action: fileExists ? 'updated' : 'created'
+				};
+				req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
+				res.send(204);
+				return next();
+			});
+			req.on('error', (e) => {
+				stream.end();
+				fse.exists(p).then(() => fse.unlink(p));
+				return next(new Errors.Internal(e));
+			});
+		})
+		.catch(err => next(Errors.wrap(err)));
 	}
 
 	deleteFileByPath(req, res, next) {
@@ -116,26 +129,20 @@ module.exports = class FilesAPI {
 		if (!p) {
 			return next(new Errors.FilePathInvalid());
 		}
-		if (fs.existsSync(p) && fs.statSync(p).isFile()) {
-			fs.unlink(p, (e) => {
-				if (e) {
-					return next(new Errors.Internal(e));
-				}
-				else {
-					const payload = {
-						user_id: req.user._id,
-						path: p.replace('storage/user_files/'+req.user._id+'/', ''),
-						action: 'deleted'
-					};
-					req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
-					res.send(204);
-					return next();
-				}
-			});
-		}
-		else {
-			return next(new Errors.FileNotFound());
-		}
+
+		this.isFile(p)
+		.then(() => fse.unlink(p))
+		.then(() => {
+			const payload = {
+				user_id: req.user._id,
+				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
+				action: 'deleted'
+			};
+			req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
+			res.send(204);
+			return next();
+		})
+		.catch(err => next(Errors.wrap(err)));
 	}
 
 	getFileByPath(req, res, next) {
@@ -146,8 +153,8 @@ module.exports = class FilesAPI {
 		if (!p) {
 			return next(new Errors.FilePathInvalid());
 		}
-		if (fs.existsSync(p) && fs.statSync(p).isFile()) {
-			let stream = fs.createReadStream(p);
+		this.isFile(p).then(() => {
+			let stream = fse.createReadStream(p);
 			stream.pipe(res);
 			stream.on('error', (e) => {
 				return next(new Errors.Internal(e));
@@ -156,10 +163,8 @@ module.exports = class FilesAPI {
 				res.end();
 				return next();
 			});
-		}
-		else {
-			return next(new Errors.FileNotFound());
-		}
+		})
+		.catch(err => next(Errors.wrap(err)));
 	}
 
 	getUserFolder(user_id) {
@@ -184,16 +189,30 @@ module.exports = class FilesAPI {
 		return null;
 	}
 
-	getFileContentsSync(user_id, p) {
+	isFile(path) {
+		return fse.stat(path).then(stat => {
+			if (stat.isFile()) {
+				return Promise.resolve();
+			}
+			else {
+				return Promise.reject(new Errors.FileOperationUnsupported());
+			}
+		})
+		.catch(err => {
+			return Promise.reject(new Errors.FileNotFound());
+		});
+	}
+
+	getFileContents(user_id, p) {
 		if (!user_id) {
-			return null;
+			return Promise.reject(new Errors.FilePathInvalid());
 		}
 		var p = this.getPath(user_id, p);
-		if (!p || !fs.existsSync(p) || !fs.statSync(p).isFile()) {
-			return null;
+		if (!p) {
+			return Promise.reject(new Errors.FilePathInvalid());
 		}
-
-		return fs.readFileSync(p);
+		
+		return this.isFile(p).then(() => fse.readFile(p));
 	}
 
 };

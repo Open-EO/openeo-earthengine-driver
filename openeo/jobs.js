@@ -1,7 +1,7 @@
 const axios = require('axios');
 const ProcessRegistry = require('./processRegistry');
 const Utils = require('./utils');
-const fs = require('fs');
+const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('./errors');
 const ProcessUtils = require('./processUtils');
@@ -24,9 +24,9 @@ module.exports = class JobsAPI {
 		server.addEndpoint('patch', '/jobs/{job_id}', this.patchJob.bind(this));
 		server.addEndpoint('delete', '/jobs/{job_id}', this.deleteJob.bind(this));
 
-		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this)); // ToDo
-		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this)); // ToDo
-		server.addEndpoint('delete', '/jobs/{job_id}/results', this.deleteJobResults.bind(this)); // ToDo
+		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
+		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
+		server.addEndpoint('delete', '/jobs/{job_id}/results', this.deleteJobResults.bind(this));
 
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
 
@@ -37,23 +37,25 @@ module.exports = class JobsAPI {
 
 	getTempFile(req, res, next) {
 		var p = path.normalize(path.join(this.tempFolder, req.params.token, req.params.file));
-		if (p && p.startsWith(path.normalize(this.tempFolder)) && fs.existsSync(p) && fs.statSync(p).isFile()) {
+		if (!p || !p.startsWith(path.normalize(this.tempFolder))) {
+			return next(new Errors.NotFound());
+		}
+		
+		req.api.files.isFile(p).then(() => {
 			if (p.endsWith('.json')) {
 				res.header('Content-Type', 'application/json');
 			}
-			var stream = fs.createReadStream(p);
+			var stream = fse.createReadStream(p);
 			stream.pipe(res);
 			stream.on('error', (e) => {
-				return next(Errors.Internal(e));
+				return next(new Errors.Internal(e));
 			});
 			stream.on('close', () => {
 				res.end();
 				return next();
 			});
-		}
-		else {
-			return next(Errors.NotFound());
-		}
+		})
+		.catch(err => next(new Errors.wrap(err)));
 	}
 
 	getJobs(req, res, next) {
@@ -93,7 +95,7 @@ module.exports = class JobsAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (numRemoved === 0) {
-				return next(Errors.JobNotFound());
+				return next(new Errors.JobNotFound());
 			}
 			else {
 				res.send(204);
@@ -346,7 +348,7 @@ module.exports = class JobsAPI {
 
 	postPreview(req, res, next) {
 		if (!Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
-			return next(Errors.ProcessGraphMissing());
+			return next(new Errors.ProcessGraphMissing());
 		}
 
 		let plan = req.body.plan || req.config.plans.default;
@@ -414,34 +416,41 @@ module.exports = class JobsAPI {
 		}
 
 		// Execute graph
-		// ToDo: global.downloadRegion a hack. Search for all occurances and remove them once a solution is available.
-		global.downloadRegion = null;
+		// ToDo: req.downloadRegion a hack. Search for all occurances and remove them once a solution is available.
+		req.downloadRegion = null;
 		return ProcessRegistry.executeProcessGraph(req, processGraph).then(obj => {
 			if (format.toLowerCase() !== 'json') {
 				var image = ProcessUtils.toImage(obj, req);
 
 				// Download image
-				if (global.downloadRegion === null) {
-	//				global.downloadRegion = image.geometry();
+				if (req.downloadRegion === null) {
+	//				req.downloadRegion = image.geometry();
 					throw new Errors.BoundingBoxMissing();
 				}
-				var bounds = global.downloadRegion.bounds().getInfo();
+				var bounds = req.downloadRegion.bounds().getInfo();
 				// ToDo: Replace getThumbURL with getDownloadURL
-				// ToDo: ASYNC
-				var url = image.getThumbURL({
-					format: this.translateOutputFormat(format),
-					dimensions: '512',
-					region: bounds
+				return new Promise((resolve, reject) => {
+					image.getThumbURL({
+						format: this.translateOutputFormat(format),
+						dimensions: '512',
+						region: bounds
+					}, url => {
+						if (!url) {
+							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+						}
+						else {
+							resolve(url);
+						}
+					});
 				});
-				return url;
 			}
 			else {
 				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
 				var p = path.normalize(path.join(this.tempFolder, fileName));
 				var parent = path.dirname(p);
-				Utils.mkdirSyncRecursive(parent);
-				fs.writeFileSync(p, JSON.stringify(obj));
-				return Utils.getApiUrl("/temp/" + fileName);
+				return fse.ensureDirSync(parent)
+				.then(() => fse.writeJsonSync(p, obj))
+				.then(() => Promise.resolve(Utils.getApiUrl("/temp/" + fileName)))
 			}
 		});
 	}
