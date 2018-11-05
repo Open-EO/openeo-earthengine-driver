@@ -15,11 +15,13 @@ for(var name in errors) {
 		url: "https://open-eo.github.io/openeo-api/errors/#openeo-error-codes",
 		toJSON() {
 			// ToDo: Remove console logging once this is a bit more stable
-			if (this.originalError !== null) {
-				console.log(this.originalError);
-			}
-			else {
-				console.log(this);
+			if (global.server.config.debug) {
+				if (this.originalError !== null) {
+					console.log(this.originalError);
+				}
+				else {
+					console.log(this);
+				}
 			}
 			let message = this.message;
 			for(var placeholder in this.info) {

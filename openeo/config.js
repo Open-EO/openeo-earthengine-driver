@@ -4,6 +4,7 @@ module.exports = class Config {
 
 	constructor() {
 		// Set default that can be overriden by the config.json
+		this.debug = false;
 
 		this.hostname = "127.0.0.1";
 		this.apiPath = "/v0.3";

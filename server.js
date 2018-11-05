@@ -102,7 +102,7 @@ class Server {
 		server.use(restify.plugins.bodyParser());
 		server.use(restify.plugins.authorizationParser());
 		server.use(this.injectCorsHeader);
-		server.use(this.api.users.checkAuthToken.bind(this.api.users));
+		server.use(this.api.users.checkRequestAuthToken.bind(this.api.users));
 	}
 
 	createSubscriptions(topics) {
@@ -197,4 +197,4 @@ class Server {
 
 };
 
-var server = new Server();
+global.server = new Server();

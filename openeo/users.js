@@ -15,37 +15,45 @@ module.exports = class UsersAPI {
 		return Promise.resolve();
 	}
 
-	checkAuthToken(req, res, next) {
+	checkAuthToken(token) {
+		return new Promise((resolve, reject) => {
+			this.db.findOne({ token: token }, {}, (err, user) => {
+				if (err) {
+					reject(new Errors.Internal(err));
+				}
+				else if (user === null) {
+					reject(new Errors.AuthenticationRequired({
+						reason: 'Token invalid.'
+					}));
+				}
+				else {
+					// ToDo: Expire token
+			
+					// Update token time
+					user.tokenTime = Utils.getTimestamp();
+					this.db.update({ token: token }, { $set: { tokenTime: user.tokenTime } }, {});
+
+					resolve(user);
+				}
+			});
+		});
+	}
+
+	checkRequestAuthToken(req, res, next) {
 		var token = null;
-		var route = req.getRoute();
 		if (req.authorization.scheme === 'Bearer') {
 			token = req.authorization.credentials;
-		}
-		else if (route.path == '/subscription' && typeof req.query.authorization === 'string') {
-			token = req.query.authorization;
 		}
 		else {
 			return next();
 		}
 
-		this.db.findOne({ token: token }, (err, user) => {
-			if (err) {
-				res.send(new Errors.Internal(err));
-				return; // Error => Don't call next for security purposes!
-			}
-			else if (user === null) {
-				res.send(new Errors.AuthenticationRequired());
-				return; // token is invalid => finish handling this request, so don't call next!
-			}
-
-			// ToDo: Expire token
-
-			// Update token time
-			user.tokenTime = Utils.getTimestamp();
-			this.db.update({ token: token }, { $set: { tokenTime: user.tokenTime } }, {});
-
+		this.checkAuthToken(token).then(user => {
 			req.user = user;
-			return next();
+			next();
+		})
+		.catch(err => {
+			res.send(err);
 		});
 	}
 
@@ -62,12 +70,16 @@ module.exports = class UsersAPI {
 				return next(new Errors.Internal(err));
 			}
 			else if (user === null) {
-				return next(new Errors.AuthenticationRequired()); // User not found
+				return next(new Errors.AuthenticationRequired({
+					reason: 'User not found'
+				}));
 			}
 
 			var pw = Utils.hashPassword(req.authorization.basic.password, user.passwordSalt);
 			if (pw.passwordHash !== user.password) {
-				return next(new Errors.AuthenticationRequired()); // Password invalid
+				return next(new Errors.AuthenticationRequired({
+					reason: 'Password invalid'
+				}));
 			}
 
 			user.token = Utils.generateHash();

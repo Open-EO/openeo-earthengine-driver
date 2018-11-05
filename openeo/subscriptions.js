@@ -58,7 +58,7 @@ class SubscriptionConnection {
 			return;
 		}
 
-		this.sendMessage(this.user_id, topic, payload);
+		this.sendMessage(topic, payload);
 	}
 
 	close() {
@@ -74,10 +74,19 @@ module.exports = class SubscriptionsAPI {
 		this.topics = [];
 		this.websocketserver = new WebSocket.Server({noServer: true});
 		console.log('WebSocket Server started.');
+
 	}
 
 	beforeServerStart(server) {
-//		server.addEndpoint('get', '/subscription', this.getSubscription.bind(this));  // ToDo
+		server.addEndpoint('get', '/subscription', this.getSubscription.bind(this));
+
+		// ToDo: Remove test topic once this is a bit more stable
+		if (global.server.config.debug) {
+			this.registerTopic("openeo.test");
+			setInterval(() => {
+				this.broadcast("openeo.test", {}, {message: 'test'})
+			}, 1000);
+		}
 
 		return Promise.resolve();
 	}
@@ -88,6 +97,7 @@ module.exports = class SubscriptionsAPI {
 			oldConnection.close();
 		}
 
+		ws.user_id = user_id;
 		var con = new SubscriptionConnection(this, ws, user_id);
 		this.connections.set(user_id, con);
 		return con;
@@ -99,7 +109,7 @@ module.exports = class SubscriptionsAPI {
 
 	broadcast(topic, params, payload) {
 		this.connections.forEach(con => {
-			con.sendMessage(topic, params, payload);
+			con.sendMessage(topic, payload);
 		});
 	}
 
@@ -109,60 +119,97 @@ module.exports = class SubscriptionsAPI {
 		});
 	}
 
-	publish(req, topic, params, payload) {
-		let con = this.getConnectionForAuthenticatedUser(req);
+	publish(user_id, topic, params, payload) {
+		let con = this.getConnection(user_id);
 		if (con !== null) {
 			con.sendMessageIfSubscribed(topic, params, payload);
 		}
 	}
 
-	getConnectionForAuthenticatedUser(req) {
-		if (!req.user._id) {
+	getConnection(user_id) {
+		if (!user_id) {
 			return null;
 		}
 
-		let con = this.connections.get(req.user._id);
+		let con = this.connections.get(user_id);
 		return typeof con !== 'undefined' ? con : null;
 	}
 
-	getSubscription(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+	xscribe(json, user_id, subscribe) {
+		if (typeof json.payload.topics === 'object' && Array.isArray(json.payload.topics)) {
+			var con = this.getConnection(user_id);
+			if (con !== null) {
+				if (subscribe) {
+					con.subscribe(json.payload.topics);
+				}
+				else {
+					con.unsubscribe(json.payload.topics);
+				}
+			}
 		}
+	}
+
+	checkAuth(req, auth) {
+		var i = auth.indexOf(' ');
+		var scheme = auth.slice(0, i);
+		var token = auth.slice(i+1);
+		if (scheme !== 'Bearer') {
+			throw new Error("Invalid authorization schema provided.");
+		}
+
+		return req.api.users.checkAuthToken(token);
+	}
+
+	getSubscription(req, res, next) {
 		if (!res.claimUpgrade) {
 			return next(new Errors.WebSocketUpgradeNotRequested());
 		}
-		
-		const user_id = req.user._id;
+
 		const wss = this.websocketserver;
 		const upgrade = res.claimUpgrade();
 		
 		wss.handleUpgrade(req, upgrade.socket, upgrade.head, (ws) => {
 			wss.emit('connection', ws, req);
 
-			var con = this.createConnection(ws, user_id);
-
 			ws.on('message', data => {
-				// ToDO: Error handling for invalid data
+				// ToDo: Error handling for invalid JSON data
 				var json = JSON.parse(data);
-				if (typeof json.message.topic !== 'string' || !json.payload.topics || !Array.isArray(json.payload.topics)) {
-					return;
+	
+				if (typeof json.authorization !== 'string') {
+					ws.close();
+					throw new Error("No authorization details provided.");
 				}
-				switch(json.message.topic) {
-					case 'openeo.authorize':
-						con.authorize(json.payload.topics);
-						break;
-					case 'openeo.subscribe':
-						con.subscribe(json.payload.topics);
-						break;
-					case 'openeo.unsubscribe':
-						con.unsubscribe(json.payload.topics);
-						break;
-				}
+
+				this.checkAuth(req, json.authorization)
+				.then((user) => {
+					if (typeof json.message.topic !== 'string') {
+						return;
+					}
+
+					switch(json.message.topic) {
+						case 'openeo.authorize':
+							this.createConnection(ws, user._id);
+							break;
+						case 'openeo.subscribe':
+							this.xscribe(json, user._id, true);
+							break;
+						case 'openeo.unsubscribe':
+							this.xscribe(json, user._id, false);
+							break;
+					}
+				})
+				.catch(err => {
+					if (global.server.config.debug) {
+						console.log(err);
+					}
+					ws.close();
+				});
 			});
 		 
 			ws.on('close', () => {
-				this.connections.delete(user_id);
+				if (ws.user_id) {
+					this.connections.delete(ws.user_id);
+				}
 			});
 		});
 		
