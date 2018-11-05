@@ -9,6 +9,7 @@ const SubscriptionsAPI = require('./openeo/subscriptions');
 const UsersAPI = require('./openeo/users');
 
 const Config = require('./openeo/config');
+const ProcessRegistry = require('./openeo/processRegistry');
 const Utils = require('./openeo/utils');
 const fse = require('fs-extra');
 const restify = require('restify');
@@ -22,6 +23,10 @@ class Server {
 		this.http_server = null;
 		this.https_server = null;
 		this.config = new Config();
+		this.processRegistry = new ProcessRegistry();
+		for(var i in this.config.processes) {
+			this.processRegistry.add(this.config.processes[i]);
+		}
 
 		this.serverOptions = {
 			handleUpgrades: true,
@@ -108,6 +113,7 @@ class Server {
 
 	populateGlobals(req, res, next) {
 		req.config = this.config;
+		req.processRegistry = this.processRegistry;
 		req.user = this.api.users.emptyUser();
 		req.api = this.api;
 		req.downloadRegion = null;

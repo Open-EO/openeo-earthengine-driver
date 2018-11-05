@@ -43,6 +43,25 @@ module.exports = class Config {
 			xyz: {}
 		};
 
+		this.processes = [
+			'count_time',
+			'filter_bands',
+			'filter_bbox',
+			'filter_daterange',
+			'first_time',
+			'get_collection',
+			'last_time',
+			'max_time',
+			'mean_time',
+			'median_time',
+			'min_time',
+			'ndvi',
+			'process_graph',
+			'stretch_colors',
+			'sum_time',
+			'zonal_statistics'
+		];
+
 		let config = require('../config.json');
 		for(var c in config) {
 			this[c] = config[c];

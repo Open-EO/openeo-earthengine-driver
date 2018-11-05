@@ -1,5 +1,4 @@
 const Utils = require('./utils');
-const ProcessRegistry = require('./processRegistry');
 const Errors = require('./errors');
 const ProcessUtils = require('./processUtils');
 
@@ -56,7 +55,7 @@ module.exports = class ServicesAPI {
 
 			try {
 				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				ProcessRegistry.executeProcessGraph(req, srvice.process_graph).then(obj => {
+				req.processRegistry.executeProcessGraph(req, srvice.process_graph).then(obj => {
 					var image = ProcessUtils.toImage(obj, req);
 					// Download image
 					// ToDo: Replace getThumbURL with getDownloadURL
@@ -147,7 +146,7 @@ module.exports = class ServicesAPI {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							promises.push(ProcessRegistry.validateProcessGraph(req, req.body.process_graph));
+							promises.push(req.processRegistry.validateProcessGraph(req, req.body.process_graph));
 							break;
 						case 'type':
 							promises.push(new Promise((resolve, reject) => {
@@ -213,7 +212,7 @@ module.exports = class ServicesAPI {
 			return next(new Errors.ServiceUnsupported());
 		}
 
-		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,

@@ -1,5 +1,4 @@
 const axios = require('axios');
-const ProcessRegistry = require('./processRegistry');
 const Utils = require('./utils');
 const fse = require('fs-extra');
 const path = require('path');
@@ -258,7 +257,7 @@ module.exports = class JobsAPI {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							promises.push(ProcessRegistry.validateProcessGraph(req, req.body.process_graph));
+							promises.push(req.processRegistry.validateProcessGraph(req, req.body.process_graph));
 							break;
 						case 'output':
 							promises.push(new Promise((resolve, reject) => {
@@ -318,7 +317,7 @@ module.exports = class JobsAPI {
 			}
 		}
 
-		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,
@@ -418,7 +417,7 @@ module.exports = class JobsAPI {
 		// Execute graph
 		// ToDo: req.downloadRegion a hack. Search for all occurances and remove them once a solution is available.
 		req.downloadRegion = null;
-		return ProcessRegistry.executeProcessGraph(req, processGraph).then(obj => {
+		return req.processRegistry.executeProcessGraph(req, processGraph).then(obj => {
 			if (format.toLowerCase() !== 'json') {
 				var image = ProcessUtils.toImage(obj, req);
 

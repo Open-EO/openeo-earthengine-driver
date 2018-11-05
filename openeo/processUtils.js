@@ -30,6 +30,10 @@ var ProcessUtils = {
 		return null;
 	},
 
+	isVariable(obj) {
+		return (typeof obj === 'object' && typeof obj.variable_id === 'string');
+	},
+
 	validateSchema(process, args, req) {
 		let paramCount = 0;
 		var unsupportedArgs = Object.assign({}, args);
@@ -52,8 +56,12 @@ var ProcessUtils = {
 				}
 			}
 			
-			// Validate against JSON schema
 			let arg = args[name];
+			// No validation (yet) as it is a variable - but could validate against the variable type (arg.type)
+			if (this.isVariable(arg)) {
+				continue;
+			}
+			// Validate against JSON schema
 			let result = validate(arg, param.schema);
 			if (!result.valid) {
 				var errors = [];

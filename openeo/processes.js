@@ -1,5 +1,3 @@
-const ProcessRegistry = require('./processRegistry');
-
 module.exports = class Processes {
 
 	constructor() {}
@@ -11,7 +9,7 @@ module.exports = class Processes {
 	}
 
 	getProcesses(req, res, next) {
-		var processes = Object.values(ProcessRegistry.processes).map(p => {
+		var processes = Object.values(req.processRegistry.processes).map(p => {
 			let process = {
 				name: p.process_id,
 				description: p.description,

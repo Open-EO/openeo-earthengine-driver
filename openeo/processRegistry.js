@@ -1,31 +1,33 @@
 const Errors = require('./errors');
 const Utils = require('./utils');
 
-var ProcessRegistry = {
-	
-	// Keys must be lowercase!
-	processes: {},
-	variableTypes: ['string', 'number', 'boolean', 'array', 'object'],
+module.exports = class ProcessRegistry {
+
+	constructor() {
+		// Keys added to this object must be lowercase!
+		this.processes = {};
+		this.variableTypes = ['string', 'number', 'boolean', 'array', 'object'];
+	}
 
 	add(process_id) {
 		this.processes[process_id] = require('./processes/' + process_id);
-	},
+	}
 	
 	get(process_id) {
 		var pid = process_id.toLowerCase();
-		if (typeof ProcessRegistry.processes[pid] !== 'undefined') {
-			return ProcessRegistry.processes[pid];
+		if (typeof this.processes[pid] !== 'undefined') {
+			return this.processes[pid];
 		}
 		return null;
-	},
+	}
 
 	validateProcessGraph(req, process_graph, variables = {}) {
 		return this.parseProcessGraph(req, process_graph, variables, false);
-	},
+	}
 
 	executeProcessGraph(req, process_graph, variables = {}) {
 		return this.parseProcessGraph(req, process_graph, variables, true);
-	},
+	}
 
 	getType(obj) {
 		if (Utils.isObject(obj)) {
@@ -37,7 +39,7 @@ var ProcessRegistry = {
 			}
 		}
 		return (typeof obj);
-	},
+	}
 
 	parseProcessGraph(req, process_graph, variables, execute) {
 		let type = this.getType(process_graph);
@@ -46,7 +48,7 @@ var ProcessRegistry = {
 		}
 
 		return this.parseObject(req, process_graph, variables, execute);
-	},
+	}
 
 	parseObject(req, obj, variables, execute) {
 		let type = this.getType(obj);
@@ -66,7 +68,7 @@ var ProcessRegistry = {
 		else {
 			return Promise.resolve(obj);
 		}
-	},
+	}
 
 	parseValue(req, val, variables, execute) {
 		if (Array.isArray(val)) {
@@ -78,7 +80,7 @@ var ProcessRegistry = {
 		else {
 			return Promise.resolve(val);
 		}
-	},
+	}
 
 	parseValues(req, obj, variables, execute) {
 		let promises = [];
@@ -93,7 +95,7 @@ var ProcessRegistry = {
 		return Promise.all(promises).then(() => {
 			return Promise.resolve(obj);
 		});
-	},
+	}
 
 	parseProcess(req, obj, variables, execute) {
 		let process = this.get(obj.process_id);
@@ -114,7 +116,7 @@ var ProcessRegistry = {
 		.catch(e => {
 			return Promise.reject(Errors.wrap(e, error => new Errors.EarthEngineError(error, {process: obj.process_id})));
 		});
-	},
+	}
 
 	parseVariable(variable, variables, execute) {
 		// Check whether the variable id is valid
@@ -150,22 +152,3 @@ var ProcessRegistry = {
 	}
 
 };
-
-ProcessRegistry.add('count_time');
-ProcessRegistry.add('filter_bands');
-ProcessRegistry.add('filter_bbox');
-ProcessRegistry.add('filter_daterange');
-ProcessRegistry.add('first_time');
-ProcessRegistry.add('get_collection');
-ProcessRegistry.add('last_time');
-ProcessRegistry.add('max_time');
-ProcessRegistry.add('mean_time');
-ProcessRegistry.add('median_time');
-ProcessRegistry.add('min_time');
-ProcessRegistry.add('ndvi');
-ProcessRegistry.add('process_graph');
-ProcessRegistry.add('stretch_colors');
-ProcessRegistry.add('sum_time');
-ProcessRegistry.add('zonal_statistics');
-
-module.exports = ProcessRegistry;

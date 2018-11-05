@@ -164,7 +164,7 @@ module.exports = {
 
 		var reducer = this._createReducerByName(args.func);
 		if (reducer === null) {
-			throw new ProcessArgumentInvalid({
+			throw new Errors.ProcessArgumentInvalid({
 				argument: 'func',
 				process: this.process_id,
 				reason: 'Must be one of: min, max, mean, median or mode.'

@@ -27,7 +27,7 @@ After configuration, the server can be started. Run `npm install` to install the
 
 Afterwards, you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 
-Currently, use case 1 of the proof of concept is supported. An exemplary process graph to create an on-demand XYZ web-service looks like this: 
+An exemplary process graph to create an on-demand XYZ web-service looks like this: 
 
 ```
 {
@@ -56,17 +56,6 @@ Currently, use case 1 of the proof of concept is supported. An exemplary process
 }
 ```
 
-Alternatively, you can use the [openEO Web Editor](https://github.com/Open-EO/openeo-web-editor) to execute the same process graph:
-
-```
-// Example is outdated and needs to be adopted to the new JS client version.
-OpenEO.Editor.ProcessGraph = OpenEO.ImageCollection.create("COPERNICUS/S2")
-	.filter_daterange("2018-01-01T00:00:00Z", "2018-01-31T23:59:59Z")
-	.NDVI("B4", "B8")
-	.min_time()
-	.process("stretch_colors", {min: -1, max: 1}, "imagery");
-```
-
 This translates into the following [Google Earth Engine Playground](https://code.earthengine.google.com/) script:
 
 ```
@@ -87,3 +76,5 @@ img = img.reduce('min');
 // stretch_color and mapping
 Map.addLayer(img, {min: -1, max: 1, palette: ['black', 'white']});
 ```
+
+**[Further documentation](docs/README.md) can be found in the [docs/](docs/) directory, but is currently work in progress.**

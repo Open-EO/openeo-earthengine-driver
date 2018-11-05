@@ -26,7 +26,7 @@ module.exports = {
 	},
 	validate(req, args) {
 		return ProcessUtils.validateSchema(this, args, req).then(args => {
-			if (req.api.collections.getData(args.name) === null) {
+			if (!ProcessUtils.isVariable(args.name) && req.api.collections.getData(args.name) === null) {
 				throw new Errors.ProcessArgumentInvalid({
 					process: this.process_id,
 					argument: 'name',

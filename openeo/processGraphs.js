@@ -1,12 +1,11 @@
 const Utils = require('./utils');
-const ProcessRegistry = require('./processRegistry');
 const Errors = require('./errors');
 
 module.exports = class ProcessGraphs {
 
 	constructor() {
 		this.db = Utils.loadDB('process_graphs');
-		this.editableFields = ['title', 'description', 'process_graph'];
+		this.editableFields = ['title', 'description', 'process_graph', 'public'];
 	}
 
 	beforeServerStart(server) {
@@ -21,7 +20,7 @@ module.exports = class ProcessGraphs {
 	}
 
 	postValidation(req, res, next) {
-		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
 			res.send(204);
 			next();
 		})
@@ -48,11 +47,12 @@ module.exports = class ProcessGraphs {
 	}
 
 	postProcessGraph(req, res, next) {
-		ProcessRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
 			var data = {
 				title: req.body.title || null,
 				description: req.body.description || null,
 				process_graph: req.body.process_graph,
+				public: req.body.public || false,
 				user_id: req.user._id
 			};
 			this.db.insert(data, (err, pg) => {
@@ -87,7 +87,7 @@ module.exports = class ProcessGraphs {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							promises.push(ProcessRegistry.validateProcessGraph(req, req.body.process_graph));
+							promises.push(req.processRegistry.validateProcessGraph(req, req.body.process_graph));
 							break;
 						default:
 							// ToDo: Validate further data
@@ -141,21 +141,27 @@ module.exports = class ProcessGraphs {
 	}
 
 	getProcessGraph(req, res, next) {
-		var query = {
-			_id: req.params.process_graph_id,
-			user_id: req.user._id
-		};
-		this.db.findOne(query, {}, (err, pg) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (pg === null) {
-				return next(new Errors.ProcessGraphNotFound());
-			}
-			else {
-				res.json(this.makeResponse(pg));
-				return next();
-			}
+		// ToDo: Implement process graph variables
+		this.getById(req.params.process_graph_id, req.user._id).then(pg => {
+			res.json(this.makeResponse(pg));
+			next();
+		})
+		.catch(err => next(err));
+	}
+
+	getById(id, user_id) {
+		return new Promise((resolve, reject) => {
+			this.db.findOne({_id: id}, {}, (err, pg) => {
+				if (err) {
+					reject(new Errors.Internal(err));
+				}
+				else if (pg === null || (pg.public !== true && pg.user_id !== user_id)) {
+					reject(new Errors.ProcessGraphNotFound());
+				}
+				else {
+					resolve(pg);
+				}
+			});
 		});
 	}
 
@@ -163,7 +169,8 @@ module.exports = class ProcessGraphs {
 		var response = {
 			process_graph_id: pg._id,
 			title: pg.title || null,
-			description: pg.description || null
+			description: pg.description || null,
+			public: pg.public || false
 		};
 		if (full) {
 			response.process_graph = pg.process_graph;
