@@ -157,6 +157,7 @@ module.exports = class FilesAPI {
 		}
 		this.isFile(p).then(() => {
 			let stream = fse.createReadStream(p);
+			res.setHeader('Content-Type', 'application/octet-stream');
 			stream.pipe(res);
 			stream.on('error', (e) => {
 				return next(new Errors.Internal(e));
