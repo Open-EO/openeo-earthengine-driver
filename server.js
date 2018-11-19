@@ -144,8 +144,8 @@ class Server {
 		return new Promise((resolve, reject) => {
 			const port = process.env.PORT || this.config.port;
 			this.http_server.listen(port, () => {
-				var portStr = port != 80 ? ":" + port : "";
-				Utils.serverUrl = "http://" + this.config.hostname + portStr + this.config.apiPath;
+				var exposePortStr = this.config.exposePort != 80 ? ":" + this.config.exposePort : "";
+				Utils.serverUrl = "http://" + this.config.hostname + exposePortStr + this.config.apiPath;
 				console.log('HTTP-Server listening at %s', Utils.getServerUrl());
 				resolve();
 			});
@@ -157,8 +157,8 @@ class Server {
 			if (this.isHttpsEnabled()) {
 				var sslport = process.env.SSL_PORT || this.config.ssl.port;
 				this.https_server.listen(sslport, () => {
-					var portStr = sslport != 443 ? ":" + sslport : "";
-					Utils.serverUrl = "https://" + this.config.hostname + portStr + this.config.apiPath;
+					var exposePortStr = this.config.ssl.exposePort != 443 ? ":" + this.config.ssl.exposePort : "";
+					Utils.serverUrl = "https://" + this.config.hostname + exposePortStr + this.config.apiPath;
 					console.log('HTTPS-Server listening at %s', Utils.getServerUrl());
 					resolve();
 				});

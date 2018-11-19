@@ -11,8 +11,10 @@ module.exports = class Config {
 		this.apiVersion = "0.3.1";
 
 		this.port = 80;
+		this.exposePort = null;
 		this.ssl = {
 			port: 443,
+			exposePort: null,
 			key: null,
 			certificate: null 
 		};
@@ -67,6 +69,9 @@ module.exports = class Config {
 		for(var c in config) {
 			this[c] = config[c];
 		}
+
+		this.ssl.exposePort = this.ssl.exposePort || this.ssl.port;
+		this.exposePort = this.exposePort || this.port;
 	}
 
 	isValidOutputFormat(format) {
