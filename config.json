@@ -1,10 +1,10 @@
 {
   "hostname": "127.0.0.1",
   "port": 80,
-  "exposePort": 880,
+  "exposePort": null,
   "ssl": {
     "port": 443,
-    "exposePort": 8443,
+    "exposePort": null,
     "key": null,
     "certificate": null 
   },
