@@ -39,329 +39,329 @@
     "gee:revisit_interval": "days", 
     "gee:asset_schema": [
       {
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "GRD_Post_Processing_facility_country"
+        "name": "GRD_Post_Processing_facility_country", 
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "GRD_Post_Processing_facility_name"
+        "name": "GRD_Post_Processing_facility_name", 
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "GRD_Post_Processing_facility_organisation"
+        "name": "GRD_Post_Processing_facility_organisation", 
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "GRD_Post_Processing_facility_site"
+        "name": "GRD_Post_Processing_facility_site", 
+        "description": "Geographical location of the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the software.", 
         "type": "STRING", 
-        "name": "GRD_Post_Processing_software_name"
+        "name": "GRD_Post_Processing_software_name", 
+        "description": "Name of the software."
       }, 
       {
-        "description": "Software version identification.", 
         "type": "STRING", 
-        "name": "GRD_Post_Processing_software_version"
+        "name": "GRD_Post_Processing_software_version", 
+        "description": "Software version identification."
       }, 
       {
-        "description": "Processing start time.", 
         "type": "DOUBLE", 
-        "name": "GRD_Post_Processing_start"
+        "name": "GRD_Post_Processing_start", 
+        "description": "Processing start time."
       }, 
       {
-        "description": "Processing stop time.", 
         "type": "DOUBLE", 
-        "name": "GRD_Post_Processing_stop"
+        "name": "GRD_Post_Processing_stop", 
+        "description": "Processing stop time."
       }, 
       {
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "SLC_Processing_facility_country"
+        "name": "SLC_Processing_facility_country", 
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "SLC_Processing_facility_name"
+        "name": "SLC_Processing_facility_name", 
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "SLC_Processing_facility_organisation"
+        "name": "SLC_Processing_facility_organisation", 
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "SLC_Processing_facility_site"
+        "name": "SLC_Processing_facility_site", 
+        "description": "Geographical location of the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the software.", 
         "type": "STRING", 
-        "name": "SLC_Processing_software_name"
+        "name": "SLC_Processing_software_name", 
+        "description": "Name of the software."
       }, 
       {
-        "description": "Software version identification.", 
         "type": "STRING", 
-        "name": "SLC_Processing_software_version"
+        "name": "SLC_Processing_software_version", 
+        "description": "Software version identification."
       }, 
       {
-        "description": "Processing start time.", 
         "type": "DOUBLE", 
-        "name": "SLC_Processing_start"
+        "name": "SLC_Processing_start", 
+        "description": "Processing start time."
       }, 
       {
-        "description": "Processing stop time.", 
         "type": "DOUBLE", 
-        "name": "SLC_Processing_stop"
+        "name": "SLC_Processing_stop", 
+        "description": "Processing stop time."
       }, 
       {
-        "description": "Sentinel-1 Toolbox calibration tool version.", 
         "type": "STRING", 
-        "name": "S1TBX_Calibration_Operator_version"
+        "name": "S1TBX_Calibration_Operator_version", 
+        "description": "Sentinel-1 Toolbox calibration tool version."
       }, 
       {
-        "description": "Sentinel-1 Toolbox SAR processing tool version.", 
         "type": "STRING", 
-        "name": "S1TBX_SAR_Processing_version"
+        "name": "S1TBX_SAR_Processing_version", 
+        "description": "Sentinel-1 Toolbox SAR processing tool version."
       }, 
       {
-        "description": "Sentinel Application Platform (SNAP) version.", 
         "type": "STRING", 
-        "name": "SNAP_Graph_Processing_Framework_GPF_version"
+        "name": "SNAP_Graph_Processing_Framework_GPF_version", 
+        "description": "Sentinel Application Platform (SNAP) version."
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HH_log_bias"
+        "name": "HH_log_bias", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HH_log_gain"
+        "name": "HH_log_gain", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HH_original_max"
+        "name": "HH_original_max", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HH_original_min"
+        "name": "HH_original_min", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HV_log_bias"
+        "name": "HV_log_bias", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HV_log_gain"
+        "name": "HV_log_gain", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HV_original_max"
+        "name": "HV_original_max", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "HV_original_min"
+        "name": "HV_original_min", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VV_log_bias"
+        "name": "VV_log_bias", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VV_log_gain"
+        "name": "VV_log_gain", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VV_original_max"
+        "name": "VV_original_max", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VV_original_min"
+        "name": "VV_original_min", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VH_log_bias"
+        "name": "VH_log_bias", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VH_log_gain"
+        "name": "VH_log_gain", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VH_original_max"
+        "name": "VH_original_max", 
+        "description": ""
       }, 
       {
-        "description": "", 
         "type": "DOUBLE", 
-        "name": "VH_original_min"
+        "name": "VH_original_min", 
+        "description": ""
       }, 
       {
-        "description": "Sensing start time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms].", 
         "type": "DOUBLE", 
-        "name": "startTimeANX"
+        "name": "startTimeANX", 
+        "description": "Sensing start time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms]."
       }, 
       {
-        "description": "Sensing stop time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms].", 
         "type": "DOUBLE", 
-        "name": "stopTimeANX"
+        "name": "stopTimeANX", 
+        "description": "Sensing stop time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms]."
       }, 
       {
-        "description": "Uniquely identifies the mission according to standards defined by the World Data Center for Satellite Information (WDC-SI), available at [http://nssdc.gsfc.nasa.gov/nmc/scquery.html](http://nssdc.gsfc.nasa.gov/nmc/scquery.html)", 
         "type": "STRING", 
-        "name": "nssdcIdentifier"
+        "name": "nssdcIdentifier", 
+        "description": "Uniquely identifies the mission according to standards defined by the World Data Center for Satellite Information (WDC-SI), available at [http://nssdc.gsfc.nasa.gov/nmc/scquery.html](http://nssdc.gsfc.nasa.gov/nmc/scquery.html)"
       }, 
       {
-        "description": "The full mission name. E.g. \u201cSENTINEL-1\u201d", 
         "type": "STRING", 
-        "name": "familyName"
+        "name": "familyName", 
+        "description": "The full mission name. E.g. \u201cSENTINEL-1\u201d"
       }, 
       {
-        "description": "The alphanumeric identifier of the platform within the mission.", 
         "type": "STRING", 
-        "name": "platform_number"
+        "name": "platform_number", 
+        "description": "The alphanumeric identifier of the platform within the mission."
       }, 
       {
-        "description": "Information related to the instrument on the platform to which acquired the data.", 
         "type": "STRING", 
-        "name": "instrument"
+        "name": "instrument", 
+        "description": "Information related to the instrument on the platform to which acquired the data."
       }, 
       {
-        "description": "IW ([Interferometric Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/interferometric-wide-swath)), EW ([Extra Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/extra-wide-swath)) or SM ([Strip Map](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/stripmap))", 
         "type": "STRING", 
-        "name": "instrumentMode"
+        "name": "instrumentMode", 
+        "description": "IW ([Interferometric Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/interferometric-wide-swath)), EW ([Extra Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/extra-wide-swath)) or SM ([Strip Map](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/stripmap))"
       }, 
       {
-        "description": "List of the swaths contained within a product. Most products will contain only one swath, except for TOPS SLC products which include 3 or 5 swaths.", 
         "type": "STRING", 
-        "name": "instrumentSwath"
+        "name": "instrumentSwath", 
+        "description": "List of the swaths contained within a product. Most products will contain only one swath, except for TOPS SLC products which include 3 or 5 swaths."
       }, 
       {
-        "description": "Absolute orbit number of the oldest line within the image data.", 
         "type": "DOUBLE", 
-        "name": "orbitNumber_start"
+        "name": "orbitNumber_start", 
+        "description": "Absolute orbit number of the oldest line within the image data."
       }, 
       {
-        "description": "Absolute orbit number of the most recent line within the image data.", 
         "type": "DOUBLE", 
-        "name": "orbitNumber_stop"
+        "name": "orbitNumber_stop", 
+        "description": "Absolute orbit number of the most recent line within the image data."
       }, 
       {
-        "description": "Relative orbit number of the oldest line within the image data.", 
         "type": "DOUBLE", 
-        "name": "relativeOrbitNumber_start"
+        "name": "relativeOrbitNumber_start", 
+        "description": "Relative orbit number of the oldest line within the image data."
       }, 
       {
-        "description": "Relative orbit number of the most recent line within the image data.", 
         "type": "DOUBLE", 
-        "name": "relativeOrbitNumber_stop"
+        "name": "relativeOrbitNumber_stop", 
+        "description": "Relative orbit number of the most recent line within the image data."
       }, 
       {
-        "description": "Absolute sequence number of the mission cycle to which the oldest image data applies.", 
         "type": "DOUBLE", 
-        "name": "cycleNumber"
+        "name": "cycleNumber", 
+        "description": "Absolute sequence number of the mission cycle to which the oldest image data applies."
       }, 
       {
-        "description": "Id of the mission phase to which the oldest image data applies.", 
         "type": "DOUBLE", 
-        "name": "phaseIdentifier"
+        "name": "phaseIdentifier", 
+        "description": "Id of the mission phase to which the oldest image data applies."
       }, 
       {
-        "description": "Direction of the orbit ('ASCENDING' or 'DESCENDING') for the oldest image data in the product (the start of the product).", 
         "type": "STRING", 
-        "name": "orbitProperties_pass"
+        "name": "orbitProperties_pass", 
+        "description": "Direction of the orbit ('ASCENDING' or 'DESCENDING') for the oldest image data in the product (the start of the product)."
       }, 
       {
-        "description": "UTC time of the ascending node of the orbit. This element is present for all products except ASAR L2 OCN products which are generated from an ASAR L1 input.", 
         "type": "DOUBLE", 
-        "name": "orbitProperties_ascendingNodeTime"
+        "name": "orbitProperties_ascendingNodeTime", 
+        "description": "UTC time of the ascending node of the orbit. This element is present for all products except ASAR L2 OCN products which are generated from an ASAR L1 input."
       }, 
       {
-        "description": " H for high or M for medium.", 
         "type": "STRING", 
-        "name": "resolution"
+        "name": "resolution", 
+        "description": " H for high or M for medium."
       }, 
       {
-        "description": "Resolution in meters.", 
         "type": "DOUBLE", 
-        "name": "resolution_meters"
+        "name": "resolution_meters", 
+        "description": "Resolution in meters."
       }, 
       {
-        "description": "The instrument configuration ID (Radar database ID) for this data.", 
         "type": "DOUBLE", 
-        "name": "instrumentConfigurationID"
+        "name": "instrumentConfigurationID", 
+        "description": "The instrument configuration ID (Radar database ID) for this data."
       }, 
       {
-        "description": "Unique ID of the datatake within the mission.", 
         "type": "DOUBLE", 
-        "name": "missionDataTakeID"
+        "name": "missionDataTakeID", 
+        "description": "Unique ID of the datatake within the mission."
       }, 
       {
-        "description": "Transmit/Receive polarisation for the data. There is one element for each Tx/Rx combination: ['VV'], ['HH'], ['VV', 'VH'], or ['HH', 'HV'].", 
         "type": "DOUBLE", 
-        "name": "transmitterReceiverPolarisation"
+        "name": "transmitterReceiverPolarisation", 
+        "description": "Transmit/Receive polarisation for the data. There is one element for each Tx/Rx combination: ['VV'], ['HH'], ['VV', 'VH'], or ['HH', 'HV']."
       }, 
       {
-        "description": "Output product class \u201cA\u201d for Annotation or \u201cS\u201d for Standard.", 
         "type": "STRING", 
-        "name": "productClass"
+        "name": "productClass", 
+        "description": "Output product class \u201cA\u201d for Annotation or \u201cS\u201d for Standard."
       }, 
       {
-        "description": "Textual description of the output product class.", 
         "type": "STRING", 
-        "name": "productClassDescription"
+        "name": "productClassDescription", 
+        "description": "Textual description of the output product class."
       }, 
       {
-        "description": "The composition type of this product: \u201cIndividual\u201d, \u201cSlice\u201d or \u201cAssembled\u201d.", 
         "type": "STRING", 
-        "name": "productComposition"
+        "name": "productComposition", 
+        "description": "The composition type of this product: \u201cIndividual\u201d, \u201cSlice\u201d or \u201cAssembled\u201d."
       }, 
       {
-        "description": "The product type (correction level) of this product.", 
         "type": "STRING", 
-        "name": "productType"
+        "name": "productType", 
+        "description": "The product type (correction level) of this product."
       }, 
       {
-        "description": "Describes the required timeliness of the processing. One of: NRT-10m, NRT-1h, NRT-3h, Fast-24h, Off-line, or Reprocessing", 
         "type": "STRING", 
-        "name": "productTimelinessCategory"
+        "name": "productTimelinessCategory", 
+        "description": "Describes the required timeliness of the processing. One of: NRT-10m, NRT-1h, NRT-3h, Fast-24h, Off-line, or Reprocessing"
       }, 
       {
-        "description": "True if this is a slice from a larger product or false if this is a complete product.", 
         "type": "STRING", 
-        "name": "sliceProductFlag"
+        "name": "sliceProductFlag", 
+        "description": "True if this is a slice from a larger product or false if this is a complete product."
       }, 
       {
-        "description": "Sensing start time of the segment to which this slice belongs. This field is only present if sliceProductFlag = true.", 
         "type": "DOUBLE", 
-        "name": "segmentStartTime"
+        "name": "segmentStartTime", 
+        "description": "Sensing start time of the segment to which this slice belongs. This field is only present if sliceProductFlag = true."
       }, 
       {
-        "description": "Absolute slice number of this slice starting at 1. This field is only present if sliceProductFlag = true.", 
         "type": "DOUBLE", 
-        "name": "sliceNumber"
+        "name": "sliceNumber", 
+        "description": "Absolute slice number of this slice starting at 1. This field is only present if sliceProductFlag = true."
       }, 
       {
-        "description": "Total number of slices in the complete data take. This field is only present if sliceProductFlag = true.", 
         "type": "DOUBLE", 
-        "name": "totalSlices"
+        "name": "totalSlices", 
+        "description": "Total number of slices in the complete data take. This field is only present if sliceProductFlag = true."
       }
     ]
   }, 
@@ -372,16 +372,16 @@
   "license": "proprietary", 
   "links": [
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S1_GRD.json", 
-      "rel": "self"
+      "rel": "self", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S1_GRD.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "parent"
+      "rel": "parent", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "root"
+      "rel": "root", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }
   ], 
   "keywords": [
@@ -396,19 +396,19 @@
   ], 
   "providers": [
     {
-      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/", 
+      "name": "European Union/ESA/Copernicus", 
       "roles": [
         "producer", 
         "licensor"
       ], 
-      "name": "European Union/ESA/Copernicus"
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/"
     }, 
     {
-      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD", 
-      "type": [
+      "name": "Google Earth Engine", 
+      "roles": [
         "host"
       ], 
-      "name": "Google Earth Engine"
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S1_GRD"
     }
   ], 
   "extent": {

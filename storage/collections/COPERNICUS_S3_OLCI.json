@@ -161,154 +161,154 @@
     "gee:revisit_interval": "days", 
     "gee:asset_schema": [
       {
-        "description": "Sentinel Application Platform (SNAP) version", 
         "type": "STRING", 
-        "name": "SNAP_Graph_Processing_Framework_GPF_vers"
+        "name": "SNAP_Graph_Processing_Framework_GPF_vers", 
+        "description": "Sentinel Application Platform (SNAP) version"
       }, 
       {
-        "description": "SNAP version", 
         "type": "STRING", 
-        "name": "SNAP_Raster_Operators_vers"
+        "name": "SNAP_Raster_Operators_vers", 
+        "description": "SNAP version"
       }, 
       {
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "processing_facility_country"
+        "name": "processing_facility_country", 
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "processing_facility_name"
+        "name": "processing_facility_name", 
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "processing_facility_organisation"
+        "name": "processing_facility_organisation", 
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
         "type": "STRING", 
-        "name": "processing_facility_site"
+        "name": "processing_facility_site", 
+        "description": "Geographical location of the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the hardware in the facility used for the processing.", 
         "type": "STRING", 
-        "name": "processing_hardware"
+        "name": "processing_hardware", 
+        "description": "Name of the hardware in the facility used for the processing."
       }, 
       {
-        "description": "Name of the software component.", 
         "type": "STRING", 
-        "name": "processing_software_name"
+        "name": "processing_software_name", 
+        "description": "Name of the software component."
       }, 
       {
-        "description": "The version or release identifier of the software", 
         "type": "DOUBLE", 
-        "name": "processing_software_version"
+        "name": "processing_software_version", 
+        "description": "The version or release identifier of the software"
       }, 
       {
-        "description": "The time the product was processed in 'epoch' format", 
         "type": "DOUBLE", 
-        "name": "processing_time"
+        "name": "processing_time", 
+        "description": "The time the product was processed in 'epoch' format"
       }, 
       {
-        "description": "This is always OL_1_EFR__", 
         "type": "STRING", 
-        "name": "product"
+        "name": "product", 
+        "description": "This is always OL_1_EFR__"
       }, 
       {
-        "description": "The full id of the original Sentinel-3 product", 
         "type": "STRING", 
-        "name": "PRODUCT_ID"
+        "name": "PRODUCT_ID", 
+        "description": "The full id of the original Sentinel-3 product"
       }, 
       {
-        "description": "PASSED or empty", 
         "type": "STRING", 
-        "name": "productQuality"
+        "name": "productQuality", 
+        "description": "PASSED or empty"
       }, 
       {
-        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days.", 
         "type": "DOUBLE", 
-        "name": "cycle_num"
+        "name": "cycle_num", 
+        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days."
       }, 
       {
-        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch.", 
         "type": "DOUBLE", 
-        "name": "orbitNumber"
+        "name": "orbitNumber", 
+        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch."
       }, 
       {
-        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero.", 
         "type": "DOUBLE", 
-        "name": "relative_orbit_num"
+        "name": "relative_orbit_num", 
+        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero."
       }, 
       {
-        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit.", 
         "type": "STRING", 
-        "name": "groundTrackDirection"
+        "name": "groundTrackDirection", 
+        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit."
       }, 
       {
-        "description": "Sentinel-3 spacecraft name: S3A, S3B", 
         "type": "STRING", 
-        "name": "spacecraft"
+        "name": "spacecraft", 
+        "description": "Sentinel-3 spacecraft name: S3A, S3B"
       }, 
       {
-        "description": "Status of the file", 
         "type": "STRING", 
-        "name": "status"
+        "name": "status", 
+        "description": "Status of the file"
       }, 
       {
-        "description": "Timeliness of processing being analysed", 
         "type": "STRING", 
-        "name": "timeliness"
+        "name": "timeliness", 
+        "description": "Timeliness of processing being analysed"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "salineWaterPixelsPercent"
+        "name": "salineWaterPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "coastalPixelsPercent"
+        "name": "coastalPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "freshInlandWaterPixelsPercent"
+        "name": "freshInlandWaterPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "tidalRegionPixelsPercent"
+        "name": "tidalRegionPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "brightPixelsPercent"
+        "name": "brightPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "invalidPixelsPercent"
+        "name": "invalidPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "cosmeticPixelsPercent"
+        "name": "cosmeticPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "duplicatedPixelsPercent"
+        "name": "duplicatedPixelsPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "dubiousSamplesPercent"
+        "name": "dubiousSamplesPercent", 
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
         "type": "DOUBLE", 
-        "name": "saturatedPixelsPercent"
+        "name": "saturatedPixelsPercent", 
+        "description": "Pixel quality information"
       }
     ]
   }, 
@@ -319,16 +319,16 @@
   "license": "proprietary", 
   "links": [
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S3_OLCI.json", 
-      "rel": "self"
+      "rel": "self", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S3_OLCI.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "parent"
+      "rel": "parent", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "root"
+      "rel": "root", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }
   ], 
   "keywords": [
@@ -342,19 +342,19 @@
   ], 
   "providers": [
     {
-      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci", 
+      "name": "European Union/ESA/Copernicus", 
       "roles": [
         "producer", 
         "licensor"
       ], 
-      "name": "European Union/ESA/Copernicus"
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci"
     }, 
     {
-      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI", 
-      "type": [
+      "name": "Google Earth Engine", 
+      "roles": [
         "host"
       ], 
-      "name": "Google Earth Engine"
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI"
     }
   ], 
   "extent": {

@@ -188,7 +188,20 @@ module.exports = class Data {
 		});
 		res.json({
 			collections: data,
-			links: [this.geeCatalogLink]
+			links: [
+				{
+					rel: "self",
+					href: Utils.getApiUrl("/collections")
+				},
+				{
+					rel: "alternate",
+					href: Utils.getApiUrl("/stac"),
+					title: "STAC API",
+					type: "application/json"
+				},
+				this.geeBrowsableCatalogLink,
+				this.geeSourceCatalogLink
+			]
 		});
 		return next();
 	}

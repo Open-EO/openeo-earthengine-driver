@@ -30,7 +30,9 @@ module.exports = class FilesAPI {
 			return next(new Errors.FilePathInvalid());
 		}
 
-		this.walk(path.normalize(p)).then(files => {
+		return fse.ensureDir(p)
+		.then(() => this.walk(path.normalize(p)))
+		.then(files => {
 			var output = files.map(file => {
 				return {
 					name: path.relative(this.getUserFolder(req.user._id), file.path),
