@@ -32,6 +32,7 @@ class Server {
 			handleUpgrades: true,
 			ignoreTrailingSlash: true
 		};
+		this.corsExposeHeaders = 'OpenEO-Identifier, OpenEO-Costs';
 
 		this.api = {};
 		this.api.capabilities = new CapabilitiesAPI(this.config);
@@ -96,12 +97,12 @@ class Server {
 	}
 
 	initServer(server) {
-		server.pre(this.preflight);
+		server.pre(this.preflight.bind(this));
 		server.use(this.populateGlobals.bind(this));
 		server.use(restify.plugins.queryParser());
 		server.use(restify.plugins.bodyParser());
 		server.use(restify.plugins.authorizationParser());
-		server.use(this.injectCorsHeader);
+		server.use(this.injectCorsHeader.bind(this));
 		server.use(this.api.users.checkRequestAuthToken.bind(this.api.users));
 	}
 
@@ -176,6 +177,7 @@ class Server {
 
 		res.setHeader('access-control-allow-origin', req.headers['origin']);
 		res.setHeader('access-control-allow-credentials', 'true');
+		res.setHeader('access-control-expose-headers', this.corsExposeHeaders);
 		return next();
 	}
 
@@ -187,6 +189,7 @@ class Server {
 		res.once('header', () => {
 			res.header('access-control-allow-origin', req.headers['origin'])
 			res.header('access-control-allow-credentials', 'true')
+			res.header('access-control-expose-headers', this.corsExposeHeaders);
 			res.header('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
 			res.header('access-control-allow-headers', 'Authorization, Content-Type');
 		});
