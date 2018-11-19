@@ -1,7 +1,22 @@
 # openeo-earthengine-driver
-Back-end driver for [Google Earth Engine](https://earthengine.google.com/).
+openEO back-end driver for [Google Earth Engine](https://earthengine.google.com/).
 
-## Configuration
+This back-end currently supports **openEO API version 0.3.1**. Legacy versions are available as releases.
+
+## Demo
+
+* The most recent instance (openEO API v0.3.1) is running at https://earthengine.openeo.org/v0.3
+* An older instance (openEO API v0.0.2) is running at https://earthengine-poc.openeo.org
+
+Multiple user accounts are available to be used (`group1`, `group2`, ... until `group15`), each with password `test123`.
+
+## Setting up an instance
+
+The driver is written in [node.js](https://nodejs.org/) and requires at least version 11.0.0. Install node.js and npm according to the official documentation of each software package. Often node.js is shipped together with npm.
+
+Afterwards either download the files in this repository or clone it. Run `npm install` to install the dependencies
+
+### Configuration
 
 There are several important configuration options in the file [config.json](config.json):
 
@@ -13,19 +28,19 @@ There are several important configuration options in the file [config.json](conf
     * `certificate`: If you want to create an HTTPS server, pass in a PEM-encoded certificate. Otherwise set to `null`.
 * `serviceAccountCredentialsFile`: See section 'Setting up GEE authentication'.
 
-### Setting up GEE authentication
+#### Setting up GEE authentication
 
 The server needs to authenticate with a [service accounts](https://developers.google.com/earth-engine/service_account) using a private key. The account need to have access rights for earth engine. You need to drop your private key file into a secure place specify the file path of the private key in the property `serviceAccountCredentialsFile` in the file [config.json](config.json).
 
 More information about authentication can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
 
+### Starting up the server
+
+After configuration, the server can be started. Run  `npm run start` to start the server. 
+
 ## Usage
 
-The driver is written in [node.js](https://nodejs.org/) and requires at least version 11.0.0.
-
-After configuration, the server can be started. Run `npm install` to install the dependencies and  `npm run start` to start the server. 
-
-Afterwards, you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
+For both the demo servers or your own instance you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 
 An exemplary process graph to create an on-demand XYZ web-service looks like this: 
 
