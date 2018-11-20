@@ -31,7 +31,7 @@ class SubscriptionConnection {
 	isSubscribed(topic, params) {
 		params.topic = topic;
 		var hash = Utils.hashJSON(params);
-		return (topics.get(hash) !== 'undefined');
+		return (this.topics.get(hash) !== 'undefined');
 	}
 
 	sendWelcomeMessage() {
@@ -50,7 +50,9 @@ class SubscriptionConnection {
 			payload: payload
 		};
 		
-		this.connection.send(JSON.stringify(message));
+		if (this.connection.readyState === this.connection.OPEN) {
+			this.connection.send(JSON.stringify(message));
+		}
 	}
 
 	sendMessageIfSubscribed(topic, params, payload) {
@@ -79,14 +81,6 @@ module.exports = class SubscriptionsAPI {
 
 	beforeServerStart(server) {
 		server.addEndpoint('get', '/subscription', this.getSubscription.bind(this));
-
-		// ToDo: Remove test topic once this is a bit more stable
-		if (global.server.config.debug) {
-			this.registerTopic("openeo.test");
-			setInterval(() => {
-				this.broadcast("openeo.test", {}, {message: 'test'})
-			}, 1000);
-		}
 
 		return Promise.resolve();
 	}

@@ -35,7 +35,7 @@ module.exports = class FilesAPI {
 		.then(files => {
 			var output = files.map(file => {
 				return {
-					name: path.relative(this.getUserFolder(req.user._id), file.path),
+					name: this.getFileName(req.user._id, file.path),
 					size: file.stat.size,
 					modified: file.stat.mtime.toISOString()
 				}
@@ -107,10 +107,10 @@ module.exports = class FilesAPI {
 				stream.end();
 				const payload = {
 					user_id: req.user._id,
-					path: p.replace('storage/user_files/' + req.user._id + '/', ''),
+					path: this.getFileName(req.user._id, p),
 					action: fileExists ? 'updated' : 'created'
 				};
-				req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
+				req.api.subscriptions.publish(req.user._id, 'openeo.files', payload, payload);
 				res.send(204);
 				return next();
 			});
@@ -137,10 +137,10 @@ module.exports = class FilesAPI {
 		.then(() => {
 			const payload = {
 				user_id: req.user._id,
-				path: p.replace('storage/user_files/'+req.user._id+'/', ''),
+				path: this.getFileName(req.user._id, p),
 				action: 'deleted'
 			};
-			req.api.subscriptions.publish(req, 'openeo.files', payload, payload);
+			req.api.subscriptions.publish(req.user._id, 'openeo.files', payload, payload);
 			res.send(204);
 			return next();
 		})
@@ -190,6 +190,10 @@ module.exports = class FilesAPI {
 			return filePath;
 		}
 		return null;
+	}
+
+	getFileName(user_id, p) {
+		return path.relative(this.getUserFolder(user_id), p);
 	}
 
 	isFile(path) {

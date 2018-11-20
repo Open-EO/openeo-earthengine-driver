@@ -229,7 +229,7 @@ module.exports = class JobsAPI {
 					parameters: processParams
 				};
 			}
-			req.api.subscriptions.publish(req, "openeo.jobs.debug", params, payload);
+			req.api.subscriptions.publish(req.user._id, "openeo.jobs.debug", params, payload);
 		} catch (e) {
 			console.log(e);
 		}
