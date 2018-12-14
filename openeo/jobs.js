@@ -308,7 +308,7 @@ module.exports = class JobsAPI {
 			format: req.config.outputFormats.default,
 			parameters: {}
 		};
-		if (Utils.isObject(req.body.output) && typeof req.body.output.format === 'string') {
+		if (typeof req.body === 'object' && Utils.isObject(req.body.output) && typeof req.body.output.format === 'string') {
 			if (req.config.isValidOutputFormat(req.body.output.format)) {
 				output.format = req.body.output.format;
 				// ToDo: We don't support any parameters yet, take and check input from req.body.output.parameters
@@ -346,7 +346,7 @@ module.exports = class JobsAPI {
 	}
 
 	postPreview(req, res, next) {
-		if (!Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
+		if (typeof req.body !== 'object' || !Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
 			return next(new Errors.ProcessGraphMissing());
 		}
 

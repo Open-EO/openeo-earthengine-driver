@@ -218,7 +218,7 @@ module.exports = class ServicesAPI {
 				title: req.body.title || null,
 				description: req.body.description || null,
 				process_graph: req.body.process_graph,
-				parameters: Utils.isObject(req.body.parameters) ? req.body.parameters : {},
+				parameters: (typeof req.body === 'object' && Utils.isObject(req.body.parameters)) ? req.body.parameters : {},
 				attributes: {},
 				type: req.body.type,
 				enabled: req.body.enabled || true,

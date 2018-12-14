@@ -108,7 +108,7 @@ module.exports = class Data {
 			c.provider = c.providers;
 			delete c.providers;
 			delete c.stac_version;
-			if (Utils.isObject(c.properties)) {
+			if (typeof c === 'object' && Utils.isObject(c.properties)) {
 				for(let key in c.properties) {
 					c[key] = c.properties[key];
 				}
