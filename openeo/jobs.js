@@ -447,7 +447,7 @@ module.exports = class JobsAPI {
 				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
 				var p = path.normalize(path.join(this.tempFolder, fileName));
 				var parent = path.dirname(p);
-				return fse.ensureDirSync(parent)
+				return fse.ensureDir(parent)
 				.then(() => fse.writeJsonSync(p, obj))
 				.then(() => Promise.resolve(Utils.getApiUrl("/temp/" + fileName)))
 			}
