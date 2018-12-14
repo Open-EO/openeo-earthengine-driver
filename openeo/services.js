@@ -55,7 +55,7 @@ module.exports = class ServicesAPI {
 
 			try {
 				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				req.processRegistry.executeProcessGraph(req, srvice.process_graph).then(obj => {
+				req.processRegistry.executeProcessGraph(req, service.process_graph).then(obj => {
 					var image = ProcessUtils.toImage(obj, req);
 					// Download image
 					// ToDo: Replace getThumbURL with getDownloadURL
