@@ -355,7 +355,7 @@ module.exports = class JobsAPI {
 		// ToDo: Validate data, handle budget and plan input
 	
 		this.sendDebugNotifiction(req, res, "Starting to process request");
-		this.execute(req, res, req.body.process_graph, req.body.output).then(url => {
+		this.execute(req, res, req.body.process_graph, req.body.output, true).then(url => {
 			this.sendDebugNotifiction(req, res, "Downloading " + url);
 			console.log("Downloading " + url);
 			return axios({
@@ -399,7 +399,7 @@ module.exports = class JobsAPI {
 		return response;
 	}
 
-	execute(req, res, processGraph, output) {
+	execute(req, res, processGraph, output, preview = false) {
 		// Check output format
 		var format;
 		if (Utils.isObject(output) && typeof output.format === 'string') {
@@ -421,26 +421,44 @@ module.exports = class JobsAPI {
 			if (format.toLowerCase() !== 'json') {
 				var image = ProcessUtils.toImage(obj, req);
 
-				// Download image
+				// Get bounding box
 				if (req.downloadRegion === null) {
 	//				req.downloadRegion = image.geometry();
 					throw new Errors.BoundingBoxMissing();
 				}
 				var bounds = req.downloadRegion.bounds().getInfo();
-				// ToDo: Replace getThumbURL with getDownloadURL
+
+				var size = preview ? 1000 : 2000;
 				return new Promise((resolve, reject) => {
-					image.getThumbURL({
-						format: this.translateOutputFormat(format),
-						dimensions: '512',
-						region: bounds
-					}, url => {
-						if (!url) {
-							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-						}
-						else {
-							resolve(url);
-						}
-					});
+//					if (preview) {
+						image.getThumbURL({
+							format: this.translateOutputFormat(format),
+							dimensions: size,
+							region: bounds
+						}, url => {
+							if (!url) {
+								reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+							}
+							else {
+								resolve(url);
+							}
+						});
+/*					}
+					else {
+						var options = {
+							name: "openeo",
+							dimensions: size,
+							region: bounds
+						};
+						image.getDownloadURL(options, url => {
+							if (!url) {
+								reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+							}
+							else {
+								resolve(url);
+							}
+						});
+					} */
 				});
 			}
 			else {

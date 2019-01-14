@@ -1,5 +1,6 @@
 const ProcessUtils = require('../processUtils');
 const axios = require('axios');
+const Errors = require('../errors');
 
 module.exports = {
 	process_id: "process_graph",
