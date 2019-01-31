@@ -194,6 +194,7 @@ module.exports = class JobsAPI {
 			this.sendDebugNotifiction(req, res, "Starting to process download request");
 			this.execute(req, res, job.process_graph, job.output).then(url => {
 				this.sendDebugNotifiction(req, res, "Executed processes, result available at " + url);
+				var mediaType = Utils.extensionToMediaType(job.output.format);
 				res.send({
 					job_id: job._id,
 					title: job.title,
@@ -201,7 +202,8 @@ module.exports = class JobsAPI {
 					updated: job.updated,
 					links: [
 						{
-							href: url
+							href: url,
+							type: mediaType
 						}
 					]
 				});

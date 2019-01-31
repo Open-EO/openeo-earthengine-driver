@@ -100,6 +100,19 @@ var Utils = {
 				break;
 		}
 		return feature;
+	},
+
+	extensionToMediaType(ext) {
+		switch(ext.toLowerCase()) {
+			case 'png':
+				return 'image/png';
+			case 'jpeg':
+				return 'image/jpeg';
+			case 'json':
+				return 'application/json';
+			default:
+				return 'application/octet-stream';
+		}
 	}
 
 };
