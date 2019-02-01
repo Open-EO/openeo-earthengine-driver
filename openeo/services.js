@@ -246,7 +246,7 @@ module.exports = class ServicesAPI {
 			title: service.title || null,
 			description: service.description || null,
 			url: this.makeServiceUrl(service),
-			type: service.type,
+			type: service.type.toLowerCase(),
 			enabled: service.enabled || true,
 			submitted: service.submitted,
 			plan: service.plan,
@@ -262,7 +262,7 @@ module.exports = class ServicesAPI {
 	}
 
 	makeServiceUrl(service) {
-		return Utils.getApiUrl('/' + service.type + '/' + service._id);
+		return Utils.getApiUrl('/' + service.type.toLowerCase() + '/' + service._id);
 	}
 	
 };
