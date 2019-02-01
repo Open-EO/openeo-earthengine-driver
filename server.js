@@ -87,7 +87,7 @@ class Server {
 
 	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
-			var https_options = Object.assign(this.serverOptions, {
+			var https_options = Object.assign({}, this.serverOptions, {
 				key: fse.readFileSync(this.config.ssl.key),
 				certificate: fse.readFileSync(this.config.ssl.certificate)
 			});
