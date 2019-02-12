@@ -6,6 +6,7 @@
 /storage/database/*.db
 /storage/user_files/*
 /storage/temp_files/*
+/storage/job_files/*
 /nbproject/
 /package-lock.json
 /.node-xmlhttprequest-sync-*

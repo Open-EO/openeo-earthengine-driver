@@ -9,6 +9,7 @@ module.exports = class JobsAPI {
 
 	constructor() {
 		this.tempFolder = './storage/temp_files';
+		this.jobFolder = './storage/job_files';
 		this.db = Utils.loadDB('jobs');
 		this.editableFields = ['title', 'description', 'process_graph', 'output', 'plan', 'budget'];
 		this.readOnlyFields = ['job_id', 'status', 'submitted', 'updated', 'costs'];
@@ -25,26 +26,44 @@ module.exports = class JobsAPI {
 
 		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
 		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
-		server.addEndpoint('delete', '/jobs/{job_id}/results', this.deleteJobResults.bind(this));
+		// It's currently not possible to cancel job processing as we can't interrupt the POST request.
 
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
+		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this));
 
 		server.createSubscriptions(['openeo.jobs.debug']);
 
 		return Promise.resolve();
 	}
 
+	makeFolder(baseFolder, dirs) {
+		var p = path.normalize(path.join(baseFolder, ...dirs));
+		if (!p || !p.startsWith(path.normalize(baseFolder))) {
+			return false;
+		}
+		return p;
+	}
+
 	getTempFile(req, res, next) {
-		var p = path.normalize(path.join(this.tempFolder, req.params.token, req.params.file));
-		if (!p || !p.startsWith(path.normalize(this.tempFolder))) {
+		var p = this.makeFolder(this.tempFolder, [req.params.token, req.params.file]);
+		if (!p) {
 			return next(new Errors.NotFound());
 		}
-		
-		req.api.files.isFile(p).then(() => {
-			if (p.endsWith('.json')) {
-				res.header('Content-Type', 'application/json');
-			}
-			var stream = fse.createReadStream(p);
+		this.deliverFile(req, res, next, p);
+	}
+
+	getStorageFile(req, res, next) {
+		var p = this.makeFolder(this.jobFolder, [req.params.job_id, req.params.file]);
+		if (!p) {
+			return next(new Errors.NotFound());
+		}
+		this.deliverFile(req, res, next, p);
+	}
+
+	deliverFile(req, res, next, path) {
+		req.api.files.isFile(path).then(() => {
+			res.header('Content-Type', Utils.extensionToMediaType(path));
+			var stream = fse.createReadStream(path);
 			stream.pipe(res);
 			stream.on('error', (e) => {
 				return next(new Errors.Internal(e));
@@ -55,6 +74,16 @@ module.exports = class JobsAPI {
 			});
 		})
 		.catch(err => next(new Errors.wrap(err)));
+	}
+
+	removeResults(jobId) {
+		var p = this.makeFolder(this.jobFolder, [jobId]);
+		if (!p) {
+			return Promise.reject(new Errors.NotFound());
+		}
+
+		return fse.pathExists(p)
+		.then((exists) => exists ? fse.remove(p) : Promise.resolve());
 	}
 
 	getJobs(req, res, next) {
@@ -97,49 +126,123 @@ module.exports = class JobsAPI {
 				return next(new Errors.JobNotFound());
 			}
 			else {
-				res.send(204);
-				return next();
-			}
-		});
-	}
-
-	deleteJobResults(req, res, next) {
-		// ToDo: This doesn't delete pre-computed data yet
-		var query = {
-			_id: req.params.job_id,
-			user_id: req.user._id
-		};
-		this.db.update(query, { $set: { status: 'canceled' } }, {}, function (err, numChanged) {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (numChanged === 0) {
-				return next(new Errors.JobNotFound());
-			}
-			else {
-				res.send(204);
-				return next();
+				this.removeResults(req.params.job_id)
+					.then(() => {
+						res.send(204);
+						return next();
+					})
+					.catch(e => next(Errors.wrap(e)));
 			}
 		});
 	}
 
 	postJobResults(req, res, next) {
-		// ToDo: This doesn't pre-compute data yet
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-		this.db.update(query, { $set: { status: 'finished' } }, {}, function (err, numChanged) {
-			if (err) {
-				return next(new Errors.Internal(err));
+
+		var fileName;
+		var filePath;
+		this.findJob(query)
+		.then(job => {
+			if (job.status === 'queued' || job.status === 'running') {
+				throw new Errors.JobNotFinished();
 			}
-			else if (numChanged === 0) {
-				return next(new Errors.JobNotFound());
-			}
-			else {
+
+			return this.removeResults(job._id)
+			.then(() => this.updateJobStatus(query, 'queued'))
+			.then(() => {
 				res.send(202);
-				return next();
+				next();
+	
+				var jobFormat = this.translateOutputFormat(job.output.format);
+				fileName = Utils.generateHash() +  "." + jobFormat;
+				filePath = path.normalize(path.join(this.jobFolder, job._id, fileName));
+	
+				this.sendDebugNotifiction(req, res, "Queueing batch job");
+				return this.execute(req, res, job.process_graph, job.output);
+			})
+		})
+		.then(url => {
+			this.sendDebugNotifiction(req, res, "Downloading " + url);
+			return axios({
+				method: 'get',
+				url: url,
+				responseType: 'stream'
+			});
+		})
+		.then(stream => {
+			this.sendDebugNotifiction(req, res, "Download finished, storing result to " + filePath);
+			return fse.ensureDir(path.dirname(filePath))
+				.then(() => {
+					var writer = fse.createWriteStream(filePath);
+					stream.data.pipe(writer);
+				});
+		})
+		.then(() => this.updateJobStatus(query, 'finished'))
+		.catch(e => {
+			this.updateJobStatus(query, 'error');
+			this.sendDebugNotifiction(req, res, e);
+			next(Errors.wrap(e));
+		});
+	}
+
+	getJobResults(req, res, next) {
+		var query = {
+			_id: req.params.job_id,
+			user_id: req.user._id
+		};
+
+
+		this.findJob(query)
+		.then(job => {
+			if (job.status === 'queued' || job.status === 'running') {
+				throw new Errors.JobNotFinished();
 			}
+			else if (job.status !== 'finished') {
+				throw new Errors.JobNotStarted();
+			}
+
+			var folder = path.normalize(path.join(this.jobFolder, job._id));
+			return Utils.walk(folder)
+				.then(files => {
+					var links = [];
+					for(var i in files) {
+						var file = files[i].path;
+						var fileName = path.relative(folder, file);
+						var mediaType = Utils.extensionToMediaType(fileName);
+						links.push({
+							href: Utils.getApiUrl("/storage/" + job._id + "/" + fileName),
+							type: mediaType
+						});
+					}
+					res.send({
+						job_id: job._id,
+						title: job.title,
+						description: job.description,
+						updated: job.updated,
+						links: links
+					});
+					next();
+				});
+		})
+		.catch(e => next(Errors.wrap(e)));
+	}
+
+	updateJobStatus(query, status) {
+		return new Promise((resolve, reject) => {
+			this.db.update(query, { $set: { status: status } }, {}, function (err, numChanged) {
+				if (err) {
+					reject(new Errors.Internal(err));
+				}
+				else if (numChanged === 0) {
+					reject(new Errors.JobNotFound());
+				}
+				else {
+					resolve();
+				}
+			});
 		});
 	}
 
@@ -172,51 +275,6 @@ module.exports = class JobsAPI {
 		});
 	}
 
-	getJobResults(req, res, next) {
-		var query = {
-			_id: req.params.job_id,
-			user_id: req.user._id
-		};
-		this.db.findOne(query, {}, (err, job) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (job === null) {
-				return next(new Errors.JobNotFound());
-			}
-			else if (job.status === 'queued' || job.status === 'running') {
-				return next(new Errors.JobNotFinished());
-			}
-			else if (job.status === 'canceled') {
-				return next(new Errors.JobNotStarted());
-			}
-
-			this.sendDebugNotifiction(req, res, "Starting to process download request");
-			this.execute(req, res, job.process_graph, job.output).then(url => {
-				this.sendDebugNotifiction(req, res, "Executed processes, result available at " + url);
-				var mediaType = Utils.extensionToMediaType(job.output.format);
-				res.send({
-					job_id: job._id,
-					title: job.title,
-					description: job.description,
-					updated: job.updated,
-					links: [
-						{
-							href: url,
-							type: mediaType
-						}
-					]
-				});
-				next();
-			})
-			.catch(e => {
-				e = Errors.wrap(e);
-				this.sendDebugNotifiction(req, res, e);
-				next(e);
-			});
-		});
-	}
-
 	sendDebugNotifiction(req, res, message, processName = null, processParams = {}) {
 		try {
 			var params = {
@@ -232,6 +290,7 @@ module.exports = class JobsAPI {
 				};
 			}
 			req.api.subscriptions.publish(req.user._id, "openeo.jobs.debug", params, payload);
+			console.log(req.params.job_id + ": " + message);
 		} catch (e) {
 			console.log(e);
 		}
@@ -242,15 +301,9 @@ module.exports = class JobsAPI {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-		this.db.findOne(query, {}, (err, job) => {
-			if (err) {
-				return next(new Errors.Internal(err));
-			}
-			else if (job === null) {
-				return next(new Errors.JobNotFound());
-			}
-			else if (job.status === 'queued' || job.status === 'running') {
-				return next(new Errors.JobLocked());
+		this.findJob(query).then(job => {
+			if (job.status === 'queued' || job.status === 'running') {
+				throw new Errors.JobLocked();
 			}
 
 			var data = {};
@@ -287,22 +340,23 @@ module.exports = class JobsAPI {
 				return next(new Errors.NoDataForUpdate());
 			}
 
-			Promise.all(promises).then(() => {
-				this.db.update(query, { $set: data }, {}, function (err, numChanged) {
-					if (err) {
-						return next(new Errors.Internal(err));
-					}
-					else if (numChanged === 0) {
-						return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
-					}
-					else {
-						res.send(204);
-						return next();
-					}
-				});
-			})
-			.catch(e => next(Errors.wrap(e)));
-		});
+			return Promise.all(promises).then(() => data);
+		})
+		.then(data => {
+			this.db.update(query, { $set: data }, {}, function (err, numChanged) {
+				if (err) {
+					return next(new Errors.Internal(err));
+				}
+				else if (numChanged === 0) {
+					return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+				}
+				else {
+					res.send(204);
+					return next();
+				}
+			});
+		})
+		.catch(e => next(Errors.wrap(e)));
 	}
 
 	postJob(req, res, next) {
@@ -359,7 +413,6 @@ module.exports = class JobsAPI {
 		this.sendDebugNotifiction(req, res, "Starting to process request");
 		this.execute(req, res, req.body.process_graph, req.body.output, true).then(url => {
 			this.sendDebugNotifiction(req, res, "Downloading " + url);
-			console.log("Downloading " + url);
 			return axios({
 				method: 'get',
 				url: url,
@@ -391,7 +444,6 @@ module.exports = class JobsAPI {
 			costs: job.costs || 0,
 			budget: job.budget || null
 		};
-		if (job.budget)
 		if (full) {
 			response.process_graph = job.process_graph;
 			if (job.output) {
@@ -468,8 +520,8 @@ module.exports = class JobsAPI {
 				var p = path.normalize(path.join(this.tempFolder, fileName));
 				var parent = path.dirname(p);
 				return fse.ensureDir(parent)
-				.then(() => fse.writeJsonSync(p, obj))
-				.then(() => Promise.resolve(Utils.getApiUrl("/temp/" + fileName)))
+					.then(() => fse.writeJson(p, obj))
+					.then(() => Promise.resolve(Utils.getApiUrl("/temp/" + fileName)));
 			}
 		});
 	}

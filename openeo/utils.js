@@ -1,6 +1,8 @@
 const Datastore = require('nedb');
 const crypto = require("crypto");
 const objectHash = require('object-hash');
+const fse = require('fs-extra');
+const path = require('path');
 
 var Utils = {
 
@@ -102,7 +104,12 @@ var Utils = {
 		return feature;
 	},
 
+	getFileExtension(file) {
+		return file.split('.').pop();
+	},
+
 	extensionToMediaType(ext) {
+		ext = this.getFileExtension(ext);
 		switch(ext.toLowerCase()) {
 			case 'png':
 				return 'image/png';
@@ -113,6 +120,28 @@ var Utils = {
 			default:
 				return 'application/octet-stream';
 		}
+	},
+
+	walk(dir) {
+		return fse.readdir(dir).then(files => {
+			return Promise.all(files.map(file => {
+				const filepath = path.join(dir, file);
+				return fse.stat(filepath).then(stats => {
+					if (stats.isDirectory()) {
+						return walk(filepath);
+					}
+					else if (stats.isFile()) {
+						return Promise.resolve({
+							path: filepath,
+							stat: stats
+						});
+					}
+				});
+			}))
+			.then((foldersContents) => {
+				return Promise.resolve(foldersContents.reduce((all, folderContents) => all.concat(folderContents), []));
+			});
+		});
 	}
 
 };

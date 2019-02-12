@@ -1,6 +1,7 @@
 const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('./errors');
+const Utils = require('./utils');
 
 // ToDo: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
 module.exports = class FilesAPI {
@@ -31,7 +32,7 @@ module.exports = class FilesAPI {
 		}
 
 		return fse.ensureDir(p)
-		.then(() => this.walk(path.normalize(p)))
+		.then(() => Utils.walk(path.normalize(p)))
 		.then(files => {
 			var output = files.map(file => {
 				return {
@@ -47,28 +48,6 @@ module.exports = class FilesAPI {
 			return next();
 		})
 		.catch(e => next(new Errors.Internal(e)));
-	}
-
-	walk(dir) {
-		return fse.readdir(dir).then(files => {
-			return Promise.all(files.map(file => {
-				const filepath = path.join(dir, file);
-				return fse.stat(filepath).then(stats => {
-					if (stats.isDirectory()) {
-						return walk(filepath);
-					}
-					else if (stats.isFile()) {
-						return Promise.resolve({
-							path: filepath,
-							stat: stats
-						});
-					}
-				});
-			}))
-			.then((foldersContents) => {
-				return Promise.resolve(foldersContents.reduce((all, folderContents) => all.concat(folderContents), []));
-			});
-		});
 	}
 
 	putFileByPath(req, res, next) {
