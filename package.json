@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "nodemon server.js",
-    "up": "rm -f *.eelog && forever start -l forever.eelog -o out.eelog -e err.eelog server.js",
+    "up": "forever start -a -l forever.eelog -o out.eelog -e err.eelog server.js",
     "down": "forever stop server.js"
   },
   "author": "Matthias Mohr",
