@@ -14,7 +14,6 @@ for(var name in errors) {
 		originalError: null,
 		url: "https://open-eo.github.io/openeo-api/errors/#openeo-error-codes",
 		toJSON() {
-			// ToDo: Remove console logging once this is a bit more stable
 			if (global.server.config.debug) {
 				if (this.originalError !== null) {
 					console.log(this.originalError);
@@ -23,14 +22,10 @@ for(var name in errors) {
 					console.log(this);
 				}
 			}
-			let message = this.message;
-			for(var placeholder in this.info) {
-				message = message.replace('{' + placeholder + '}', this.info[placeholder]);
-			}
 			return {
 				id: this.id,
 				code: this.restCode,
-				message: message,
+				message: this.message,
 				url: this.url
 			}
 		}
@@ -47,8 +42,11 @@ for(var name in errors) {
 		else if (Utils.isObject(obj)) {
 			args = obj;
 		}
-
 		this.info = args;
+
+		for(var placeholder in this.info) {
+			this.message = this.message.replace('{' + placeholder + '}', this.info[placeholder]);
+		}
 	};
 	restify_errors[name].prototype = old;
 }
