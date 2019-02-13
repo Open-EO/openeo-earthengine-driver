@@ -278,7 +278,7 @@ module.exports = class JobsAPI {
 	sendDebugNotifiction(req, res, message, processName = null, processParams = {}) {
 		try {
 			var params = {
-				job_id: req.params.job_id
+				job_id: req.params.job_id || "preview"
 			};
 			var payload = {
 				message: message,
@@ -290,7 +290,7 @@ module.exports = class JobsAPI {
 				};
 			}
 			req.api.subscriptions.publish(req.user._id, "openeo.jobs.debug", params, payload);
-			console.log(req.params.job_id + ": " + message);
+			console.log(params.job_id + ": " + message);
 		} catch (e) {
 			console.log(e);
 		}

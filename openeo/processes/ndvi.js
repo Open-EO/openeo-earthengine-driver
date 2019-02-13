@@ -41,7 +41,10 @@ module.exports = {
 	},
 	execute(req, args) {
 		var obj = ProcessUtils.toImageCollection(args.imagery).map((image) => {
-			return image.normalizedDifference([args.nir, args.red]);
+			var ndvi = image.normalizedDifference([args.nir, args.red]).rename('ndvi');
+			// normalizedDifference removed the properties, which are required for zonal_statistics and other processes.
+			// To maintain the properties add the ndvi to the image and then select the band to remove the other bands again.
+			return image.addBands(ndvi).select('ndvi');
 		});
 		return Promise.resolve(obj);
 	}

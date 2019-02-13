@@ -5,7 +5,7 @@ const Errors = require('../errors');
 module.exports = {
 	process_id: "zonal_statistics",
 	summary: "Calculates zonal statistics.",
-	description: "Calculates statistics for each zone specified in a file.",
+	description: "Calculates statistics for each zone specified in a file.\n\nWorks only on a single band so `filter_bands` may be used beforehand to reduce the data to a single band.",
 	parameters: {
 		imagery: {
 			description: "EO data to process.",
@@ -118,7 +118,7 @@ module.exports = {
 	},
 
 	_groupImageCollectionByInterval(imagery, interval) {
-		interval = (interval == 'day' || interval == 'week' || interval == 'month' || interval == 'year') ? interval : 'day';
+		interval = (interval == 'week' || interval == 'month' || interval == 'year') ? interval : 'day';
 		var sortedImagery = imagery.sort('system:time_start').toList(imagery.size());
 		var firstImage = ee.Image(sortedImagery.get(0));
 		var start = ee.Date(firstImage.get('system:time_start'));
@@ -171,26 +171,18 @@ module.exports = {
 			});
 		}
 
-		var multiRegionCalculator = function(image, list) {
-			var result = image.reduceRegions({
+		var multiRegionCalculator = function(image, dict) {
+			var results = image.reduceRegions({
 				reducer: reducer,
 				collection: features,
 				scale: scale
 			});
-			// ToDo: Don't reduce, but create a result for each input feature individually
-			var value = result.reduceColumns(reducer, ee.List([args.func])).get(args.func);
-			return ee.List(list).add(ee.Dictionary({
-				date: ee.Date(image.get('date')).format('y-MM-dd'),
-				result: {
-					// ToDo: Try to find a way to fill the missing values for valid/total number of pixels
-					totalCount: null,
-					validCount: null,
-					value: value
-				}
-			}));
+			var values = results.aggregate_array(args.func);
+			var date = ee.Date(image.get('date')).format('y-MM-dd'); // Would it be enough to call image.get('date')?
+			return ee.Dictionary(dict).set(date, values);
 		};
 
-		var data = ee.List([]);
+		var data = ee.Dictionary({});
 		return imagery.iterate(multiRegionCalculator, data);
 	}
 };
