@@ -180,7 +180,7 @@ module.exports = {
 			// ToDo: Don't reduce, but create a result for each input feature individually
 			var value = result.reduceColumns(reducer, ee.List([args.func])).get(args.func);
 			return ee.List(list).add(ee.Dictionary({
-				date: ee.Date(image.get('date')).format('y-MM-DD'),
+				date: ee.Date(image.get('date')).format('y-MM-dd'),
 				result: {
 					// ToDo: Try to find a way to fill the missing values for valid/total number of pixels
 					totalCount: null,
