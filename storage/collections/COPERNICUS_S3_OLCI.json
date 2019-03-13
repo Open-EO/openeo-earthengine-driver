@@ -161,154 +161,154 @@
     "gee:revisit_interval": "days", 
     "gee:asset_schema": [
       {
-        "type": "STRING", 
         "name": "SNAP_Graph_Processing_Framework_GPF_vers", 
-        "description": "Sentinel Application Platform (SNAP) version"
+        "description": "Sentinel Application Platform (SNAP) version", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SNAP_Raster_Operators_vers", 
-        "description": "SNAP version"
+        "description": "SNAP version", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "processing_facility_country", 
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "processing_facility_name", 
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "processing_facility_organisation", 
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "processing_facility_site", 
-        "description": "Geographical location of the facility. This element is configurable within the IPF."
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "processing_hardware", 
-        "description": "Name of the hardware in the facility used for the processing."
+        "description": "Name of the hardware in the facility used for the processing.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "processing_software_name", 
-        "description": "Name of the software component."
+        "description": "Name of the software component.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "processing_software_version", 
-        "description": "The version or release identifier of the software"
+        "description": "The version or release identifier of the software", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "processing_time", 
-        "description": "The time the product was processed in 'epoch' format"
+        "description": "The time the product was processed in 'epoch' format", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "product", 
-        "description": "This is always OL_1_EFR__"
+        "description": "This is always OL_1_EFR__", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "PRODUCT_ID", 
-        "description": "The full id of the original Sentinel-3 product"
+        "description": "The full id of the original Sentinel-3 product", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "productQuality", 
-        "description": "PASSED or empty"
+        "description": "PASSED or empty", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "cycle_num", 
-        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days."
+        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "orbitNumber", 
-        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch."
+        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "relative_orbit_num", 
-        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero."
+        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "groundTrackDirection", 
-        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit."
+        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "spacecraft", 
-        "description": "Sentinel-3 spacecraft name: S3A, S3B"
+        "description": "Sentinel-3 spacecraft name: S3A, S3B", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "status", 
-        "description": "Status of the file"
+        "description": "Status of the file", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "timeliness", 
-        "description": "Timeliness of processing being analysed"
+        "description": "Timeliness of processing being analysed", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "salineWaterPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "coastalPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "freshInlandWaterPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "tidalRegionPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "brightPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "invalidPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "cosmeticPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "duplicatedPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "dubiousSamplesPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "saturatedPixelsPercent", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }
     ]
   }, 

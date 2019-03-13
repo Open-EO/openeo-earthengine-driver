@@ -39,329 +39,329 @@
     "gee:revisit_interval": "days", 
     "gee:asset_schema": [
       {
-        "type": "STRING", 
         "name": "GRD_Post_Processing_facility_country", 
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "GRD_Post_Processing_facility_name", 
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "GRD_Post_Processing_facility_organisation", 
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "GRD_Post_Processing_facility_site", 
-        "description": "Geographical location of the facility. This element is configurable within the IPF."
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "GRD_Post_Processing_software_name", 
-        "description": "Name of the software."
+        "description": "Name of the software.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "GRD_Post_Processing_software_version", 
-        "description": "Software version identification."
+        "description": "Software version identification.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "GRD_Post_Processing_start", 
-        "description": "Processing start time."
+        "description": "Processing start time.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "GRD_Post_Processing_stop", 
-        "description": "Processing stop time."
+        "description": "Processing stop time.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "SLC_Processing_facility_country", 
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SLC_Processing_facility_name", 
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SLC_Processing_facility_organisation", 
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SLC_Processing_facility_site", 
-        "description": "Geographical location of the facility. This element is configurable within the IPF."
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SLC_Processing_software_name", 
-        "description": "Name of the software."
+        "description": "Name of the software.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SLC_Processing_software_version", 
-        "description": "Software version identification."
+        "description": "Software version identification.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "SLC_Processing_start", 
-        "description": "Processing start time."
+        "description": "Processing start time.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "SLC_Processing_stop", 
-        "description": "Processing stop time."
+        "description": "Processing stop time.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "S1TBX_Calibration_Operator_version", 
-        "description": "Sentinel-1 Toolbox calibration tool version."
+        "description": "Sentinel-1 Toolbox calibration tool version.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "S1TBX_SAR_Processing_version", 
-        "description": "Sentinel-1 Toolbox SAR processing tool version."
+        "description": "Sentinel-1 Toolbox SAR processing tool version.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "SNAP_Graph_Processing_Framework_GPF_version", 
-        "description": "Sentinel Application Platform (SNAP) version."
+        "description": "Sentinel Application Platform (SNAP) version.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HH_log_bias", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HH_log_gain", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HH_original_max", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HH_original_min", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HV_log_bias", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HV_log_gain", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HV_original_max", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "HV_original_min", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VV_log_bias", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VV_log_gain", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VV_original_max", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VV_original_min", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VH_log_bias", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VH_log_gain", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VH_original_max", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "VH_original_min", 
-        "description": ""
+        "description": "", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "startTimeANX", 
-        "description": "Sensing start time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms]."
+        "description": "Sensing start time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms].", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "stopTimeANX", 
-        "description": "Sensing stop time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms]."
+        "description": "Sensing stop time of the input data relative to the ascending node crossing. This is a count of the time elapsed since the orbit ascending node crossing [ms].", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "nssdcIdentifier", 
-        "description": "Uniquely identifies the mission according to standards defined by the World Data Center for Satellite Information (WDC-SI), available at [http://nssdc.gsfc.nasa.gov/nmc/scquery.html](http://nssdc.gsfc.nasa.gov/nmc/scquery.html)"
+        "description": "Uniquely identifies the mission according to standards defined by the World Data Center for Satellite Information (WDC-SI), available at [http://nssdc.gsfc.nasa.gov/nmc/scquery.html](http://nssdc.gsfc.nasa.gov/nmc/scquery.html)", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "familyName", 
-        "description": "The full mission name. E.g. \u201cSENTINEL-1\u201d"
+        "description": "The full mission name. E.g. \u201cSENTINEL-1\u201d", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "platform_number", 
-        "description": "The alphanumeric identifier of the platform within the mission."
+        "description": "The alphanumeric identifier of the platform within the mission.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "instrument", 
-        "description": "Information related to the instrument on the platform to which acquired the data."
+        "description": "Information related to the instrument on the platform to which acquired the data.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "instrumentMode", 
-        "description": "IW ([Interferometric Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/interferometric-wide-swath)), EW ([Extra Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/extra-wide-swath)) or SM ([Strip Map](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/stripmap))"
+        "description": "IW ([Interferometric Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/interferometric-wide-swath)), EW ([Extra Wide Swath](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/extra-wide-swath)) or SM ([Strip Map](https://sentinel.esa.int/web/sentinel/user-guides/sentinel-1-sar/acquisition-modes/stripmap))", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "instrumentSwath", 
-        "description": "List of the swaths contained within a product. Most products will contain only one swath, except for TOPS SLC products which include 3 or 5 swaths."
+        "description": "List of the swaths contained within a product. Most products will contain only one swath, except for TOPS SLC products which include 3 or 5 swaths.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "orbitNumber_start", 
-        "description": "Absolute orbit number of the oldest line within the image data."
+        "description": "Absolute orbit number of the oldest line within the image data.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "orbitNumber_stop", 
-        "description": "Absolute orbit number of the most recent line within the image data."
+        "description": "Absolute orbit number of the most recent line within the image data.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "relativeOrbitNumber_start", 
-        "description": "Relative orbit number of the oldest line within the image data."
+        "description": "Relative orbit number of the oldest line within the image data.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "relativeOrbitNumber_stop", 
-        "description": "Relative orbit number of the most recent line within the image data."
+        "description": "Relative orbit number of the most recent line within the image data.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "cycleNumber", 
-        "description": "Absolute sequence number of the mission cycle to which the oldest image data applies."
+        "description": "Absolute sequence number of the mission cycle to which the oldest image data applies.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "phaseIdentifier", 
-        "description": "Id of the mission phase to which the oldest image data applies."
+        "description": "Id of the mission phase to which the oldest image data applies.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "orbitProperties_pass", 
-        "description": "Direction of the orbit ('ASCENDING' or 'DESCENDING') for the oldest image data in the product (the start of the product)."
+        "description": "Direction of the orbit ('ASCENDING' or 'DESCENDING') for the oldest image data in the product (the start of the product).", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "orbitProperties_ascendingNodeTime", 
-        "description": "UTC time of the ascending node of the orbit. This element is present for all products except ASAR L2 OCN products which are generated from an ASAR L1 input."
+        "description": "UTC time of the ascending node of the orbit. This element is present for all products except ASAR L2 OCN products which are generated from an ASAR L1 input.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "resolution", 
-        "description": " H for high or M for medium."
+        "description": " H for high or M for medium.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "resolution_meters", 
-        "description": "Resolution in meters."
+        "description": "Resolution in meters.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "instrumentConfigurationID", 
-        "description": "The instrument configuration ID (Radar database ID) for this data."
+        "description": "The instrument configuration ID (Radar database ID) for this data.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "missionDataTakeID", 
-        "description": "Unique ID of the datatake within the mission."
+        "description": "Unique ID of the datatake within the mission.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "transmitterReceiverPolarisation", 
-        "description": "Transmit/Receive polarisation for the data. There is one element for each Tx/Rx combination: ['VV'], ['HH'], ['VV', 'VH'], or ['HH', 'HV']."
+        "description": "Transmit/Receive polarisation for the data. There is one element for each Tx/Rx combination: ['VV'], ['HH'], ['VV', 'VH'], or ['HH', 'HV'].", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "STRING", 
         "name": "productClass", 
-        "description": "Output product class \u201cA\u201d for Annotation or \u201cS\u201d for Standard."
+        "description": "Output product class \u201cA\u201d for Annotation or \u201cS\u201d for Standard.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "productClassDescription", 
-        "description": "Textual description of the output product class."
+        "description": "Textual description of the output product class.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "productComposition", 
-        "description": "The composition type of this product: \u201cIndividual\u201d, \u201cSlice\u201d or \u201cAssembled\u201d."
+        "description": "The composition type of this product: \u201cIndividual\u201d, \u201cSlice\u201d or \u201cAssembled\u201d.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "productType", 
-        "description": "The product type (correction level) of this product."
+        "description": "The product type (correction level) of this product.", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "productTimelinessCategory", 
-        "description": "Describes the required timeliness of the processing. One of: NRT-10m, NRT-1h, NRT-3h, Fast-24h, Off-line, or Reprocessing"
+        "description": "Describes the required timeliness of the processing. One of: NRT-10m, NRT-1h, NRT-3h, Fast-24h, Off-line, or Reprocessing", 
+        "type": "STRING"
       }, 
       {
-        "type": "STRING", 
         "name": "sliceProductFlag", 
-        "description": "True if this is a slice from a larger product or false if this is a complete product."
+        "description": "True if this is a slice from a larger product or false if this is a complete product.", 
+        "type": "STRING"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "segmentStartTime", 
-        "description": "Sensing start time of the segment to which this slice belongs. This field is only present if sliceProductFlag = true."
+        "description": "Sensing start time of the segment to which this slice belongs. This field is only present if sliceProductFlag = true.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "sliceNumber", 
-        "description": "Absolute slice number of this slice starting at 1. This field is only present if sliceProductFlag = true."
+        "description": "Absolute slice number of this slice starting at 1. This field is only present if sliceProductFlag = true.", 
+        "type": "DOUBLE"
       }, 
       {
-        "type": "DOUBLE", 
         "name": "totalSlices", 
-        "description": "Total number of slices in the complete data take. This field is only present if sliceProductFlag = true."
+        "description": "Total number of slices in the complete data take. This field is only present if sliceProductFlag = true.", 
+        "type": "DOUBLE"
       }
     ]
   }, 
