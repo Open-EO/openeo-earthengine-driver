@@ -31,7 +31,7 @@ module.exports = class CapabilitiesAPI {
 	}
 
 	getVersions(req, res, next) {
-		var versions = req.config.otherVersions;
+		var versions = req.config.otherVersions.slice(0); // Make sure to clone it
 		versions.push({
 			url: Utils.getApiUrl(),
 			production: !req.config.debug,
