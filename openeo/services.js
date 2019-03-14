@@ -90,6 +90,9 @@ module.exports = class ServicesAPI {
 	}
 
 	getServices(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			user_id: req.user._id
 		};
@@ -109,6 +112,9 @@ module.exports = class ServicesAPI {
 	}
 	  
 	deleteService(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -128,6 +134,9 @@ module.exports = class ServicesAPI {
 	}
 
 	patchService(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -190,6 +199,9 @@ module.exports = class ServicesAPI {
 	}
 
 	getService(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -208,6 +220,9 @@ module.exports = class ServicesAPI {
 	}
 
 	postService(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		if (!req.config.isValidServiceType(req.body.type)) {
 			return next(new Errors.ServiceUnsupported());
 		}

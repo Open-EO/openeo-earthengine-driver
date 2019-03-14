@@ -28,6 +28,9 @@ module.exports = class ProcessGraphs {
 	}
 
 	getProcessGraphs(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			user_id: req.user._id
 		};
@@ -47,6 +50,9 @@ module.exports = class ProcessGraphs {
 	}
 
 	postProcessGraph(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
 			var data = {
 				title: req.body.title || null,
@@ -69,6 +75,9 @@ module.exports = class ProcessGraphs {
 	}
 
 	patchProcessGraph(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.process_graph_id,
 			user_id: req.user._id
@@ -122,6 +131,9 @@ module.exports = class ProcessGraphs {
 	}
 
 	deleteProcessGraph(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.process_graph_id,
 			user_id: req.user._id
@@ -141,6 +153,9 @@ module.exports = class ProcessGraphs {
 	}
 
 	getProcessGraph(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		// ToDo: Implement process graph variables
 		this.getById(req.params.process_graph_id, req.user._id).then(pg => {
 			res.json(this.makeResponse(pg));

@@ -87,6 +87,9 @@ module.exports = class JobsAPI {
 	}
 
 	getJobs(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			user_id: req.user._id
 		};
@@ -106,6 +109,9 @@ module.exports = class JobsAPI {
 	}
 
 	getJob(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		this.findJobForUserById(req.params.job_id, req.user._id).then(job => {
 			res.json(this.makeJobResponse(job));
 			return next();
@@ -114,6 +120,9 @@ module.exports = class JobsAPI {
 	}
 
 	deleteJob(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
@@ -137,6 +146,10 @@ module.exports = class JobsAPI {
 	}
 
 	postJobResults(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
+
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
@@ -189,11 +202,14 @@ module.exports = class JobsAPI {
 	}
 
 	getJobResults(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
+
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-
 
 		this.findJob(query)
 		.then(job => {
@@ -299,6 +315,9 @@ module.exports = class JobsAPI {
 	}
 
 	patchJob(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
@@ -362,6 +381,9 @@ module.exports = class JobsAPI {
 	}
 
 	postJob(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
 		let output = {
 			format: req.config.outputFormats.default,
 			parameters: {}
@@ -404,6 +426,10 @@ module.exports = class JobsAPI {
 	}
 
 	postPreview(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
+
 		if (typeof req.body !== 'object' || !Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
 			return next(new Errors.ProcessGraphMissing());
 		}
