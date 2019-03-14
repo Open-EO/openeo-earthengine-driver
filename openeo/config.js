@@ -7,8 +7,8 @@ module.exports = class Config {
 		this.debug = false;
 
 		this.hostname = "127.0.0.1";
-		this.apiPath = "/v0.3";
-		this.apiVersion = "0.3.1";
+		this.apiPath = "/";
+		this.apiVersion = "0.4.0";
 
 		this.port = 80;
 		this.exposePort = null;

@@ -3,6 +3,7 @@
   "hostname": "127.0.0.1",
   "port": 80,
   "exposePort": null,
+  "apiPath": "/v0.4",
   "ssl": {
     "port": 443,
     "exposePort": null,

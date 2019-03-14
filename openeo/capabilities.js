@@ -1,7 +1,7 @@
 module.exports = class CapabilitiesAPI {
 
 	constructor(config) {
-		this.apiVersion = '0.3.1';
+		this.apiVersion = '0.4.0';
 		this.endpoints = [];
 	}
 
