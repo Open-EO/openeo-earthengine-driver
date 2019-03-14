@@ -6,7 +6,6 @@ This back-end currently supports **openEO API version 0.3.1**. Legacy versions a
 ## Demo
 
 * The most recent instance (openEO API v0.3.1) is running at https://earthengine.openeo.org/v0.3
-* An older instance (openEO API v0.0.2) is running at https://earthengine-poc.openeo.org
 
 Multiple user accounts are available to be used (`group1`, `group2`, ... until `group15`), each with password `test123`.
 
