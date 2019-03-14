@@ -1,4 +1,5 @@
 const Utils = require('./utils');
+const packageInfo = require('../package.json');
 
 module.exports = class CapabilitiesAPI {
 
@@ -45,13 +46,34 @@ module.exports = class CapabilitiesAPI {
 
 	getCapabilities(req, res, next) {
 		res.json({
-			version: this.apiVersion,
+			api_version: this.apiVersion,
+			backend_version: packageInfo.version,
+			title: req.config.title,
+			description: req.config.description,
 			endpoints: this.endpoints,
 			billing: {
 				currency: req.config.currency,
 				default_plan: req.config.plans.default,
 				plans: req.config.plans.options
-			}
+			},
+			links: [
+				{
+					rel: 'about',
+					href: 'https://earthengine.google.com/',
+					title: 'Google Earth Engine Homepage'
+				},
+				{
+					rel: 'related',
+					href: 'https://github.com/Open-EO/openeo-earthengine-driver',
+					title: 'GitHub repository'
+				},
+				{
+					rel: 'version-history',
+					href: Utils.getServerUrl() + '/.well-known/openeo',
+					type: 'application/json',
+					title: 'Supported API versions'
+				}
+			]
 		});
 		return next();
 	}

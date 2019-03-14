@@ -10,6 +10,9 @@ module.exports = class Config {
 		this.apiPath = "/";
 		this.apiVersion = "0.4.0";
 
+		this.title = "Google Earth Engine";
+		this.description = "This is the Google Earth Engine Driver for openEO.";
+
 		this.port = 80;
 		this.exposePort = null;
 		this.ssl = {
