@@ -65,6 +65,9 @@ module.exports = class Config {
 			'zonal_statistics'
 		];
 
+		this.otherVersions = [];
+		// Example to add: {url: 'http://xyz.de', production: false, version: '1.0.0'}
+
 		let config = require('../config.json');
 		for(var c in config) {
 			this[c] = config[c];

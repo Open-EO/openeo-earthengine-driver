@@ -59,20 +59,23 @@ class Server {
 		);
 	}
 
-	addEndpoint(method, path, callback) {
+	addEndpoint(method, path, callback, root = false) {
 		if (!Array.isArray(path)) {
 			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
 		}
 
-		this.api.capabilities.addEndpoint(method, path[0]);
+		if (!root) {
+			this.api.capabilities.addEndpoint(method, path[0]);
+		}
+		var apiPath = root ? '' : this.config.apiPath;
 
 		if (method === 'delete') {
 			method = 'del';
 		}
 
-		this.http_server[method](this.config.apiPath + path[1], callback);
+		this.http_server[method](apiPath + path[1], callback);
 		if (this.isHttpsEnabled()) {
-			this.https_server[method](this.config.apiPath + path[1], callback);
+			this.https_server[method](apiPath + path[1], callback);
 		}
 	}
 

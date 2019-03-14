@@ -8,7 +8,7 @@ var Utils = {
 
 	serverUrl: null,
 
-	getApiUrl(path) {
+	getApiUrl(path = '') {
 		if (this.serverUrl === null) {
 			console.log('WARN: Server has not started yet, Utils.getApiUrl() is not available yet.');
 		}

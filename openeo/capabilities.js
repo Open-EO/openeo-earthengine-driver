@@ -1,3 +1,5 @@
+const Utils = require('./utils');
+
 module.exports = class CapabilitiesAPI {
 
 	constructor(config) {
@@ -6,6 +8,7 @@ module.exports = class CapabilitiesAPI {
 	}
 
 	beforeServerStart(server) {
+		server.addEndpoint('get', '/.well-known/openeo', this.getVersions.bind(this), true);
 		server.addEndpoint('get', '/', this.getCapabilities.bind(this));
 		server.addEndpoint('get', '/service_types', this.getServices.bind(this));
 		server.addEndpoint('get', '/output_formats', this.getOutputFormats.bind(this));
@@ -25,6 +28,19 @@ module.exports = class CapabilitiesAPI {
 			path: path,
 			methods: [method]
 		});
+	}
+
+	getVersions(req, res, next) {
+		var versions = req.config.otherVersions;
+		versions.push({
+			url: Utils.getApiUrl(),
+			production: !req.config.debug,
+			version: req.config.apiVersion
+		});
+		res.json({
+			versions: versions
+		});
+		return next();
 	}
 
 	getCapabilities(req, res, next) {
