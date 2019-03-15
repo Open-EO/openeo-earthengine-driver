@@ -36,13 +36,13 @@ module.exports = class FilesAPI {
 		.then(files => {
 			var output = files.map(file => {
 				return {
-					name: this.getFileName(req.user._id, file.path),
+					path: this.getFileName(req.user._id, file.path),
 					size: file.stat.size,
 					modified: file.stat.mtime.toISOString()
 				}
 			});
 			res.json( {
-				files:output,
+				files: output,
 				links:[]
 			});
 			return next();
@@ -84,17 +84,36 @@ module.exports = class FilesAPI {
 			});
 			req.on('end', () => {
 				stream.end();
-				const payload = {
-					user_id: req.user._id,
-					path: this.getFileName(req.user._id, p),
-					action: fileExists ? 'updated' : 'created'
-				};
-				req.api.subscriptions.publish(req.user._id, 'openeo.files', payload, payload);
-				res.send(204);
-				return next();
 			});
 			req.on('error', (e) => {
 				stream.end();
+				fse.exists(p).then(() => fse.unlink(p));
+				return next(new Errors.Internal(e));
+			});
+			stream.on('close', () => {
+				var filePath = this.getFileName(req.user._id, p);
+				const payload = {
+					user_id: req.user._id,
+					path: filePath,
+					action: fileExists ? 'updated' : 'created'
+				};
+				req.api.subscriptions.publish(req.user._id, 'openeo.files', payload, payload);
+				fse.stat(p).then(newFileStat => {
+					res.send(200, {
+						path: filePath,
+						size: newFileStat.size,
+						modified: newFileStat.mtime.toISOString()
+					});
+					return next();
+				}).catch(e => {
+					console.log(e);
+					res.send(200, {
+						path: filePath
+					});
+					return next();
+				});
+			});
+			stream.on('error', (e) => {
 				fse.exists(p).then(() => fse.unlink(p));
 				return next(new Errors.Internal(e));
 			});

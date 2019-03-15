@@ -11,11 +11,11 @@ module.exports = class ServicesAPI {
 
 	beforeServerStart(server) {
 		// Add endpoints
-		server.addEndpoint('get', '/services', this.getServices.bind(this));
-		server.addEndpoint('post', '/services', this.postService.bind(this));
-		server.addEndpoint('get', '/services/{service_id}', this.getService.bind(this));
-		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
-		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
+//		server.addEndpoint('get', '/services', this.getServices.bind(this));
+//		server.addEndpoint('post', '/services', this.postService.bind(this));
+//		server.addEndpoint('get', '/services/{service_id}', this.getService.bind(this));
+//		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
+//		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
 		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
 
 		return Promise.resolve();
@@ -257,7 +257,7 @@ module.exports = class ServicesAPI {
 
 	makeServiceResponse(service, full = true) {
 		var response = {
-			service_id: service._id,
+			id: service._id,
 			title: service.title || null,
 			description: service.description || null,
 			url: this.makeServiceUrl(service),

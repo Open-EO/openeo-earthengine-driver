@@ -9,6 +9,7 @@ module.exports = class Data {
 		this.dataFolder = 'storage/collections/';
 
 		this.collections = {};
+		this.collections_fixed = false;
 
 		this.geeSourceCatalogLink = {
 			href: 'https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json', 
@@ -85,64 +86,54 @@ module.exports = class Data {
 		});
 	}
 
-	getData(id = null, isSTAC = false) {
+	getData(id = null) {
+		this.fixData();
 		if (id !== null) {
 			if (typeof this.collections[id] !== 'undefined') {
-				return this.fixData(this.collections[id], isSTAC);
+				return this.collections[id];
 			}
 			else {
 				return null;
 			}
 		}
 		else {
-			return Object.values(this.collections).map(collection => {
-				return this.fixData(collection, isSTAC);
-			})
+			return Object.values(this.collections);
 		}
 	}
 
-	fixData(collection, isSTAC = false) {
-		var c = Object.assign({}, collection);
-		if (!isSTAC) {
-			c.name = c.id;
-			c.provider = c.providers;
-			delete c.providers;
-			delete c.stac_version;
-			if (typeof c === 'object' && Utils.isObject(c.properties)) {
-				for(let key in c.properties) {
-					c[key] = c.properties[key];
-				}
-				delete c.properties;
-			}
-			if (c['eo:bands'] && Array.isArray(c['eo:bands'])) {
-				let bands = {};
-				for(let i in c['eo:bands']) {
-					let b = c['eo:bands'][i];
-					let name = typeof b.name === 'string' ? b.name : i;
-					bands[name] = b;
-				}
-				c['eo:bands'] = bands;
-			}
+	fixData() {
+		if (this.collections_fixed) {
+			return;
 		}
-		c.links = c.links.map(l => {
-			let stacSuffix = isSTAC ? "?stac": "";
-			switch(l.rel) {
-				case 'self':
-					l.href = Utils.getApiUrl("/collections/" + c.id + stacSuffix);
-					break;
-				case 'parent':
-				case 'root':
-					l.href = Utils.getApiUrl((isSTAC ? "/stac" : "/collections") + stacSuffix);
-					break;
+		for(var i in this.collections) {
+			let c = this.collections[i];
+			c.stac_version = "0.6.2";
+			if (Array.isArray(c.properties["eo:bands"])) {
+				for(let i in c.properties["eo:bands"]) {
+					// This entry currently holds invalid information
+					delete c.properties["eo:bands"][i].gsd;
+				}
 			}
-			return l;
-		});
-		return c;
+			c.links = c.links.map(l => {
+				switch(l.rel) {
+					case 'self':
+						l.href = Utils.getApiUrl("/collections/" + c.id);
+						break;
+					case 'parent':
+					case 'root':
+						l.href = Utils.getApiUrl("/collections");
+						break;
+				}
+				return l;
+			});
+			this.collections[i] = c;
+		}
+		this.collections_fixed = true;
 	}
 	
 	getStacRootCatalog(req, res, next) {
 		var response = {
-			stac_version: "0.6.0",
+			stac_version: "0.6.2",
 			id: "openeo-earthengine-driver",
 			description: "Google Earth Engine catalog for openEO.",
 			links: [
@@ -161,10 +152,10 @@ module.exports = class Data {
 			]
 		};
 
-		this.getData(null, true).map(d => {
+		this.getData().map(d => {
 			response.links.push({
 				rel: "child",
-				href: Utils.getApiUrl("/collections/" + d.id + "?stac"),
+				href: Utils.getApiUrl("/collections/" + d.id),
 				title: d.title,
 				type: "application/json"
 			});
@@ -213,8 +204,7 @@ module.exports = class Data {
 			return this.getCollections(req, res, next);
 		}
 
-		var isSTAC = (typeof req.query.stac !== 'undefined');
-		var collection = this.getData(id, isSTAC);
+		var collection = this.getData(id);
 		if (collection !== null) {
 			res.json(collection);
 			return next();

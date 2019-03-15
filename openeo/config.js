@@ -31,17 +31,14 @@ module.exports = class Config {
 		};
 
 		this.outputFormats = {
-			default: "PNG",
-			options: {
-				PNG: {
-					gis_data_types: ['raster']
-				},
-				JPEG: {
-					gis_data_types: ['raster']
-				},
-				JSON: {
-					gis_data_types: ['raster', 'vector', 'table', 'other']
-				}
+			PNG: {
+				gis_data_types: ['raster']
+			},
+			JPEG: {
+				gis_data_types: ['raster']
+			},
+			JSON: {
+				gis_data_types: ['raster', 'vector', 'table', 'other']
 			}
 		};
 
@@ -81,7 +78,7 @@ module.exports = class Config {
 	}
 
 	isValidOutputFormat(format) {
-		return (typeof format === 'string' && Utils.isObject(this.outputFormats.options[format.toUpperCase()]));
+		return (typeof format === 'string' && Utils.isObject(this.outputFormats[format.toUpperCase()]));
 	}
 
 	isValidServiceType(service_type) {

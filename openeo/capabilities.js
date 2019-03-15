@@ -84,10 +84,7 @@ module.exports = class CapabilitiesAPI {
 	}
 
 	getOutputFormats(req, res, next) {
-		res.json({
-			default: req.config.outputFormats.default,
-			formats: req.config.outputFormats.options
-		});
+		res.json(req.config.outputFormats);
 		return next();
 	}
 };

@@ -21,10 +21,19 @@ module.exports = class ProcessGraphs {
 
 	postValidation(req, res, next) {
 		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
-			res.send(204);
+			res.send(200, {
+				errors: []
+			});
 			next();
 		})
-		.catch(e => next(e));
+		.catch(e => {
+			res.send(200, {
+				errors: [
+					Errors.wrap(e).toJSON()
+				]
+			});
+			next();
+		});
 	}
 
 	getProcessGraphs(req, res, next) {
@@ -156,7 +165,6 @@ module.exports = class ProcessGraphs {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-		// ToDo: Implement process graph variables
 		this.getById(req.params.process_graph_id, req.user._id).then(pg => {
 			res.json(this.makeResponse(pg));
 			next();
@@ -182,7 +190,7 @@ module.exports = class ProcessGraphs {
 
 	makeResponse(pg, full = true) {
 		var response = {
-			process_graph_id: pg._id,
+			id: pg._id,
 			title: pg.title || null,
 			description: pg.description || null,
 			public: pg.public || false

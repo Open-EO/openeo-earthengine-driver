@@ -7,7 +7,7 @@ const errors = Object.assign(openeo_errors, custom_errors);
 
 for(var name in errors) {
 	restify_errors.makeConstructor(name, {
-		restCode: errors[name].code,
+		openEOCode: name,
 		statusCode: errors[name].http,
 		message: errors[name].message,
 		id: (new Date()).getTime().toString(),
@@ -24,7 +24,7 @@ for(var name in errors) {
 			}
 			return {
 				id: this.id,
-				code: this.restCode,
+				code: this.openEOCode,
 				message: this.message,
 				url: this.url
 			}
@@ -52,7 +52,7 @@ for(var name in errors) {
 }
 
 restify_errors['wrap'] = function(e, callback) {
-	if (typeof e.restCode !== 'undefined') {
+	if (typeof e.openEOCode !== 'undefined') {
 		return e; // An openEO error
 	}
 	else {

@@ -11,22 +11,22 @@ module.exports = class JobsAPI {
 		this.tempFolder = './storage/temp_files';
 		this.jobFolder = './storage/job_files';
 		this.db = Utils.loadDB('jobs');
-		this.editableFields = ['title', 'description', 'process_graph', 'output', 'plan', 'budget'];
+		this.editableFields = ['title', 'description', 'process_graph', 'plan', 'budget'];
 		this.readOnlyFields = ['job_id', 'status', 'submitted', 'updated', 'costs'];
 	}
 
 	beforeServerStart(server) {
-		server.addEndpoint('post', '/preview', this.postPreview.bind(this));
+//		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
 
-		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
-		server.addEndpoint('get', '/jobs', this.getJobs.bind(this));
-		server.addEndpoint('get', '/jobs/{job_id}', this.getJob.bind(this));
-		server.addEndpoint('patch', '/jobs/{job_id}', this.patchJob.bind(this));
-		server.addEndpoint('delete', '/jobs/{job_id}', this.deleteJob.bind(this));
+//		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
+//		server.addEndpoint('get', '/jobs', this.getJobs.bind(this));
+//		server.addEndpoint('get', '/jobs/{job_id}', this.getJob.bind(this));
+//		server.addEndpoint('patch', '/jobs/{job_id}', this.patchJob.bind(this));
+//		server.addEndpoint('delete', '/jobs/{job_id}', this.deleteJob.bind(this));
 
-		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
-		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
-		// It's currently not possible to cancel job processing as we can't interrupt the POST request.
+//		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
+//		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
+		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
 
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
 		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this));
@@ -195,7 +195,7 @@ module.exports = class JobsAPI {
 		})
 		.then(() => this.updateJobStatus(query, 'finished'))
 		.catch(e => {
-			this.updateJobStatus(query, 'error');
+			this.updateJobStatus(query, 'error', e);
 			this.sendDebugNotifiction(req, res, e);
 			next(Errors.wrap(e));
 		});
@@ -213,7 +213,11 @@ module.exports = class JobsAPI {
 
 		this.findJob(query)
 		.then(job => {
-			if (job.status === 'queued' || job.status === 'running') {
+			if (job.status === 'error') {
+				res.send(424, job.error);
+				return next();
+			}
+			else if (job.status === 'queued' || job.status === 'running') {
 				throw new Errors.JobNotFinished();
 			}
 			else if (job.status !== 'finished') {
@@ -234,7 +238,7 @@ module.exports = class JobsAPI {
 						});
 					}
 					res.send({
-						job_id: job._id,
+						id: job._id,
 						title: job.title,
 						description: job.description,
 						updated: job.updated,
@@ -246,9 +250,12 @@ module.exports = class JobsAPI {
 		.catch(e => next(Errors.wrap(e)));
 	}
 
-	updateJobStatus(query, status) {
+	updateJobStatus(query, status, error = null) {
 		return new Promise((resolve, reject) => {
-			this.db.update(query, { $set: { status: status } }, {}, function (err, numChanged) {
+			if (error !== null) {
+				error = Error.wrap(error).toJson();
+			}
+			this.db.update(query, { $set: { status: status, error: error } }, {}, function (err, numChanged) {
 				if (err) {
 					reject(new Errors.Internal(err));
 				}
@@ -294,7 +301,7 @@ module.exports = class JobsAPI {
 	sendDebugNotifiction(req, res, message, processName = null, processParams = {}) {
 		try {
 			var params = {
-				job_id: req.params.job_id || "preview"
+				job_id: req.params.job_id || "synchronous-result"
 			};
 			var payload = {
 				message: message,
@@ -425,7 +432,7 @@ module.exports = class JobsAPI {
 		.catch(e => next(Errors.wrap(e)));
 	}
 
-	postPreview(req, res, next) {
+	postSyncResult(req, res, next) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
@@ -462,10 +469,11 @@ module.exports = class JobsAPI {
 
 	makeJobResponse(job, full = true) {
 		var response = {
-			job_id: job._id,
+			id: job._id,
 			title: job.title,
 			description: job.description,
 			status: job.status,
+			error: job.error,
 			submitted: job.submitted,
 			updated: job.updated,
 			plan: job.plan,
@@ -481,7 +489,7 @@ module.exports = class JobsAPI {
 		return response;
 	}
 
-	execute(req, res, processGraph, output, preview = false) {
+	execute(req, res, processGraph, output, syncResult = false) {
 		// Check output format
 		var format;
 		if (Utils.isObject(output) && typeof output.format === 'string') {
@@ -493,7 +501,7 @@ module.exports = class JobsAPI {
 			}
 		}
 		else {
-			format = req.config.outputFormats.default;
+			return Promise.reject(new Errors.FormatMissing());
 		}
 
 		// Execute graph
@@ -510,9 +518,9 @@ module.exports = class JobsAPI {
 				}
 				var bounds = req.downloadRegion.bounds().getInfo();
 
-				var size = preview ? 1000 : 2000;
+				var size = syncResult ? 1000 : 2000;
 				return new Promise((resolve, reject) => {
-//					if (preview) {
+//					if (syncResult) {
 						image.getThumbURL({
 							format: this.translateOutputFormat(format),
 							dimensions: size,
