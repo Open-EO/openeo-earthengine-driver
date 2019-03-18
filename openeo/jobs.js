@@ -166,6 +166,8 @@ module.exports = class JobsAPI {
 			return this.removeResults(job._id)
 			.then(() => this.updateJobStatus(query, 'queued'))
 			.then(() => {
+				this.sendDebugNotifiction(req, res, "Queueing batch job");
+
 				res.send(202);
 				next();
 	
@@ -173,12 +175,12 @@ module.exports = class JobsAPI {
 				fileName = Utils.generateHash() +  "." + jobFormat;
 				filePath = path.normalize(path.join(this.jobFolder, job._id, fileName));
 	
-				this.sendDebugNotifiction(req, res, "Queueing batch job");
 				return this.execute(req, res, job.process_graph, job.output);
-			})
+			});
 		})
 		.then(url => {
 			this.sendDebugNotifiction(req, res, "Downloading " + url);
+			this.updateJobStatus(query, 'running').catch(() => {});
 			return axios({
 				method: 'get',
 				url: url,
