@@ -11,3 +11,7 @@
 /package-lock.json
 /.node-xmlhttprequest-sync-*
 /privatekey.json
+/.vscode
+coverage/
+/test-report.html
+/logs

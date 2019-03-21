@@ -39,5 +39,61 @@
 		"tags": [
 			"Job Management"
 		]
+	},
+	"MultipleResultNodes": {
+		"description": null,
+		"message": "Multiple result nodes specified for process graph.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"StartNodeMissing": {
+		"description": null,
+		"message": "No start nodes found for process graph.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"ResultNodeMissing": {
+		"description": null,
+		"message": "No result node found for process graph.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"MultipleResultNodesCallback": {
+		"description": null,
+		"message": "Multiple result nodes specified for the callback in the process '{process_id}' with node id '{node_id}'.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"StartNodeMissingCallback": {
+		"description": null,
+		"message": "No start nodes found for the callback in the process '{process_id}' with node id '{node_id}'.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"ResultNodeMissingCallback": {
+		"description": null,
+		"message": "No result node found for the callback in the process '{process_id}' with node id '{node_id}'.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"ReferencedNodeMissing": {
+		"description": null,
+		"message": "Referenced node '{node_id}' doesn't exist.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
 	}
 }

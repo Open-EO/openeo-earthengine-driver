@@ -4,9 +4,10 @@
   "description": "An openEO driver for Google Earth Engine.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "dev": "nodemon server.js",
     "up": "forever start -a -l forever.eelog -o out.eelog -e err.eelog server.js",
-    "down": "forever stop server.js"
+    "down": "forever stop server.js",
+    "test": "jest --env=node"
   },
   "author": "Matthias Mohr",
   "license": "Apache-2.0",
@@ -19,8 +20,10 @@
     "url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
   },
   "devDependencies": {
-    "nodemon": "^1.18.7",
-    "forever": "^0.15.3"
+    "forever": "^0.15.3",
+    "jest": "^24.5.0",
+    "jest-html-reporter": "^2.4.2",
+    "nodemon": "^1.18.7"
   },
   "dependencies": {
     "@google-cloud/storage": "^2.1.0",

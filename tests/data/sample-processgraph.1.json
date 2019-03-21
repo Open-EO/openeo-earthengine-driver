@@ -1,0 +1,129 @@
+{
+    "loadco1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": "Sentinel-2"
+      }
+    },
+    "filter1": {
+      "process_id": "filter_temporal",
+      "arguments": {
+        "data": {
+          "from_node": "loadco1"
+        },
+        "from": "2017-01-01",
+        "to": "2017-01-31"
+      }
+    },
+    "filter2": {
+      "process_id": "filter_temporal",
+      "arguments": {
+        "data": {
+          "from_node": "loadco1"
+        },
+        "from": "2018-01-01",
+        "to": "2018-01-31"
+      }
+    },
+    "mergec1": {
+      "process_id": "merge_collections",
+      "arguments": {
+        "data1": {
+          "from_node": "filter1"
+        },
+        "data2": {
+          "from_node": "filter2"
+        }
+      }
+    },
+    "export1": {
+      "process_id": "export",
+      "arguments": {
+        "data": {
+          "from_node": "mergec1"
+        },
+        "format": "png"
+      }
+    },
+    "reduce1": {
+      "process_id": "reduce",
+      "arguments": {
+        "data": {
+          "from_node": "mergec1"
+        },
+        "dimension": "temporal",
+        "reducer": {
+          "callback": {
+            "min1": {
+              "process_id": "min",
+              "arguments": {},
+              "result": true
+            }
+          }
+        }
+      }
+    },
+    "filter3": {
+      "process_id": "filter_bands",
+      "arguments": {
+        "data": {
+          "from_node": "reduce1"
+        },
+        "bands": [
+          "nir",
+          "red"
+        ]
+      }
+    },
+    "reduce2": {
+      "process_id": "reduce",
+      "arguments": {
+        "data": {
+          "from_node": "filter3"
+        },
+        "dimension": "spectral",
+        "reducer": {
+          "callback": {
+            "substr1": {
+              "process_id": "substract",
+              "arguments": {}
+            },
+            "sum1": {
+              "process_id": "sum",
+              "arguments": {}
+            },
+            "divide1": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "substr1"
+                },
+                "y": {
+                  "from_node": "sum1"
+                }
+              },
+              "result": true
+            },
+            "output1": {
+              "process_id": "output",
+              "arguments": {
+                "data": {
+                  "from_node": "divide1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "export2": {
+      "process_id": "export",
+      "arguments": {
+        "data": {
+          "from_node": "reduce2"
+        },
+        "format": "png"
+      },
+      "result": true
+    }
+  }

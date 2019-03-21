@@ -1,0 +1,35 @@
+{
+	"id": "process_graph",
+	"deprecated": true,
+	"summary": "Process data with a stored process graph.",
+	"description": "Loads a process graph that is stored on this or another back-end and processes data according to the process graph.",
+	"parameter_order": ["id", "url", "variables"],
+	"parameters": {
+		"id": {
+			"description": "ID of the locally stored process graph.",
+			"schema": {
+				"type": "string"
+			}
+		},
+		"url": {
+			"description": "URL of the externally stored process graph.",
+			"schema": {
+				"type": "string",
+				"format": "url"
+			}
+		},
+		"variables": {
+			"description": "Process graph variables",
+			"schema": {
+				"type": "object"
+			}
+		}
+	},
+	"returns": {
+		"description": "Processed EO data.",
+		"schema": {
+			"type": "object",
+			"format": "raster-cube"
+		}
+	}
+}

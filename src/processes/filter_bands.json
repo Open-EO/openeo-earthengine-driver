@@ -1,0 +1,37 @@
+{
+	"id": "filter_bands",
+	"deprecated": true,
+	"summary": "Filters by bands.",
+	"description": "Allows to extract one or multiple bands of multi-band raster image collection.\nBands can be chosen either by band id.",
+	"parameter_order": ["imagery", "bands"],
+	"parameters": {
+		"imagery": {
+			"description": "EO data to process.",
+			"required": true,
+			"schema": {
+				"type": "object",
+				"format": "raster-cube"
+			}
+		},
+		"bands": {
+			"description": "string or array of strings containing band ids.",
+			"required": true,
+			"schema": {
+				"type": [
+					"string",
+					"array"
+				],
+				"items": {
+					"type": "string"
+				}
+			}
+		}
+	},
+	"returns": {
+		"description": "Processed EO data.",
+		"schema": {
+			"type": "object",
+			"format": "raster-cube"
+		}
+	}
+}

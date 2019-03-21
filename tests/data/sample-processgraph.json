@@ -1,0 +1,50 @@
+{
+    "loadco1": {
+      "process_id": "get_collection",
+      "arguments": {
+        "name": "Sentinel-2"
+      }
+    },
+    "filter1": {
+      "process_id": "filter_daterange",
+      "arguments": {
+        "data": {
+          "from_node": "loadco1"
+        },
+        "extent": ["2018-01-01","2018-01-31"]
+      }
+    },
+    "filter2": {
+      "process_id": "filter_bbox",
+      "arguments": {
+        "data": {
+          "from_node": "filter1"
+        },
+        "extent": {
+          "west": 16.1,
+          "east": 16.6,
+          "north": 48.6,
+          "south": 47.2
+        }
+      }
+    },
+    "ndvi1": {
+      "process_id": "NDVI",
+      "arguments": {
+        "data": {
+          "from_node": "filter2"
+        },
+        "red": "B4",
+        "nir": "B8"
+      }
+    },
+    "mint1": {
+      "process_id": "min_time",
+      "arguments": {
+        "data": {
+          "from_node": "ndvi1"
+        }
+      },
+      "result": true
+    }
+  }
