@@ -96,77 +96,52 @@ module.exports = class JobStore {
 		return p;
 	}
 
-	execute(req, res, processGraph, output, syncResult = false) {
-		// Check output format
-		var format;
-		if (Utils.isObject(output) && typeof output.format === 'string') {
-			if (global.server.serverContext.isValidOutputFormat(output.format)) {
-				format = output.format;
-				// ToDo: We don't support any parameters yet, take and check input from output.parameters
-			} else {
-				return Promise.reject(new Errors.FormatUnsupported());
-			}
+	async retrieveResults(dataCube, context) {
+		// Execute graph
+		var format = dataCube.getOutputFormat();
+		if (format.toLowerCase() !== 'json') {
+			var bounds = dataCube.getSpatialExtentAsGeeGeometry().bounds().getInfo();
+			var size = context.isSynchronousRequest() ? 1000 : 2000;
+//			if (syncResult) {
+				return new Promise((resolve, reject) => {
+					dataCube.image().getThumbURL({
+						format: this.translateOutputFormat(format),
+						dimensions: size,
+						region: bounds
+					}, url => {
+						if (!url) {
+							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+						}
+						else {
+							resolve(url);
+						}
+					});
+				});
+/*			}
+			else {
+				var options = {
+					name: "openeo",
+					dimensions: size,
+					region: bounds
+				};
+				image.getDownloadURL(options, url => {
+					if (!url) {
+						reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+					}
+					else {
+						resolve(url);
+					}
+				});
+			} */
 		}
 		else {
-			return Promise.reject(new Errors.FormatMissing());
+			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
+			var p = path.normalize(path.join(this.tempFolder, fileName));
+			var parent = path.dirname(p);
+			await fse.ensureDir(parent);
+			await fse.writeJson(p, dataCube.getData());
+			return Utils.getApiUrl("/temp/" + fileName);
 		}
-
-		// Execute graph
-		// ToDo: req.downloadRegion a hack. Search for all occurances and remove them once a solution is available.
-		req.downloadRegion = null;
-		return req.processRegistry.executeProcessGraph(req, processGraph).then(obj => {
-			if (format.toLowerCase() !== 'json') {
-				var image = Utils.toImage(obj, req);
-
-				// Get bounding box
-				if (req.downloadRegion === null) {
-	//				req.downloadRegion = image.geometry();
-					throw new Errors.BoundingBoxMissing();
-				}
-				var bounds = req.downloadRegion.bounds().getInfo();
-
-				var size = syncResult ? 1000 : 2000;
-				return new Promise((resolve, reject) => {
-//					if (syncResult) {
-						image.getThumbURL({
-							format: this.translateOutputFormat(format),
-							dimensions: size,
-							region: bounds
-						}, url => {
-							if (!url) {
-								reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-							}
-							else {
-								resolve(url);
-							}
-						});
-/*					}
-					else {
-						var options = {
-							name: "openeo",
-							dimensions: size,
-							region: bounds
-						};
-						image.getDownloadURL(options, url => {
-							if (!url) {
-								reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-							}
-							else {
-								resolve(url);
-							}
-						});
-					} */
-				});
-			}
-			else {
-				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
-				var p = path.normalize(path.join(this.tempFolder, fileName));
-				var parent = path.dirname(p);
-				return fse.ensureDir(parent)
-					.then(() => fse.writeJson(p, obj))
-					.then(() => Promise.resolve(Utils.getApiUrl("/temp/" + fileName)));
-			}
-		});
 	}
 
 	translateOutputFormat(format) {

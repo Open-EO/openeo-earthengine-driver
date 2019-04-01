@@ -4,7 +4,7 @@ const Errors = require('../errors');
 
 module.exports = class ProcessGraphRunner {
 
-	constructor(processGraph, registry) {
+	constructor(processGraph, registry) { 
 		if (processGraph instanceof ProcessGraph) {
 			this.processGraph = processGraph;
 		}
@@ -18,55 +18,122 @@ module.exports = class ProcessGraphRunner {
 		return this.processGraph;
 	}
 
-	createContextFromRequest(req) {
-		return new ProcessingContext(global.server.serverContext, req.user._id);
+	createContextFromRequest(req, synchronousRequest = false) {
+		return new ProcessingContext(this.registry.getServerContext(), req.user._id, synchronousRequest);
 	}
 
-	validate(context = null) {
+	async validate(context = null) {
 		if (context === null) {
-			context = new ProcessingContext(global.server.serverContext);
+			context = new ProcessingContext(this.registry.getServerContext());
 		}
-		return this.walkNodes(this.processGraph.getStartNodes(), context);
+
+		this.processGraph.parse();
+		return this.validateNodes(this.processGraph.getStartNodes(), context);
 	}
 
-	execute(context = null) {
+	async execute(context = null) {
 		if (context === null) {
-			context = new ProcessingContext(global.server.serverContext);
+			context = new ProcessingContext(this.registry.getServerContext());
 		}
-		return this.walkNodes(this.processGraph.getStartNodes(), context, true);
+
+		this.processGraph.reset();
+		await this.executeNodes(this.processGraph.getStartNodes(), context);
+		return this.processGraph.getResultNode();
 	}
 
-	walkNodes(nodes, context, execute = false) {
-		var promises = [];
-		for(var i in nodes) {
-			var node = this.processGraph.nodes[nodes[i]];
-			var index = node.expectsFrom.indexOf(nodes[i]);
-			node.expectsFrom.splice(index, 1);
-			if (node.expectsFrom.length === 0) {
-				var process = this.registry.get(node.process_id);
-				if (process === null) {
-					throw new Errors.ProcessUnsupported({process: node.process_id});
-				}
+	async validateNodes(nodes, context, previousNode = null, errorList = new ErrorList()) {
+		if (nodes.length === 0) {
+			return errorList;
+		}
 
-				console.log("calling " + node.process_id);
-				var promise = process.validate(node.arguments, context)
-				if (execute) {
-					promise = promise.then(() => process.execute(node.arguments, context));
-				}
-				promise.then(() => {
-					console.log("returning from " + node.process_id + " with " + JSON.stringify(node.arguments))
-					
-					if (Array.isArray(node.passesTo) && node.passesTo.length > 0) {
-						return this.walkNodes(node.passesTo);
-					}
-					else {
-						return Promise.resolve();
-					}
-				});
-				promises.push(promise);
+		var promises = nodes.map(node => {
+			// Validate this node after all dependencies are available
+			if (!node.solveDependency(previousNode)) {
+				return;
 			}
+			// Load process
+			var process;
+			try {
+				process = this.getProcess(node);
+			} catch (e) {
+				errorList.add(e);
+				return;
+			}
+			// Validate process
+			return process.validate(node, context)
+				.catch(e => errorList.add(e))
+				// Validate next nodes in chain regardless of a vaildation failure above
+				.then(() => this.validateNodes(node.getNextNodes(), context, node, errorList));
+		});
+
+		await Promise.all(promises);
+		return errorList;
+	}
+
+	async executeNodes(nodes, context, previousNode = null) {
+		if (nodes.length === 0) {
+			return;
 		}
+
+		var promises = nodes.map(async (node) => {
+			// Execute this node after all dependencies are available
+			if (!node.solveDependency(previousNode)) {
+				return;
+			}
+
+			if (context.server().debug) {
+				console.log("calling " + node.process_id);
+			}
+
+			var process = this.getProcess(node);
+			var result = await process.execute(node, context);
+			node.setResult(result);
+			
+			if (context.server().debug) {
+				console.log("returning from " + node.process_id);
+			}
+
+			// Execute next nodes in chain
+			await this.executeNodes(node.getNextNodes(), context, node);
+		});
+
 		return Promise.all(promises);
 	}
 
+	getProcess(node) {
+		var process = this.registry.get(node.process_id);
+		if (process === null) {
+			throw new Errors.ProcessUnsupported({process: node.process_id});
+		}
+		return process;
+	}
+
 };
+
+class ErrorList {
+
+	constructor() {
+		this.errors = [];
+	}
+
+	first() {
+		return this.errors[0];
+	}
+	
+	add(error) {
+		this.errors.push(Errors.wrap(error));
+	}
+
+	empty() {
+		return (this.errors.length === 0);
+	}
+
+	toJSON() {
+		return this.errors.map(e => e.toJSON());
+	}
+
+	getAll() {
+		return this.errors;
+	}
+
+}

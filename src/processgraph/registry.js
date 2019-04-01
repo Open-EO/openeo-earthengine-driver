@@ -5,9 +5,10 @@ const ProcessGraphRunner = require('./runner');
 
 module.exports = class ProcessRegistry {
 
-	constructor() {
+	constructor(serverContext) {
 		// Keys added to this object must be lowercase!
 		this.processes = {};
+		this.serverContext = serverContext;
 	}
 
 	addFromFolder(folder) {
@@ -42,6 +43,10 @@ module.exports = class ProcessRegistry {
 
 	createRunner(processGraph) {
 		return new ProcessGraphRunner(processGraph, this);
+	}
+
+	getServerContext() {
+		return this.serverContext;
 	}
 
 };

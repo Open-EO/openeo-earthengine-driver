@@ -26,33 +26,6 @@ var Utils = {
 	toISODate(timestamp) {
 		return (new Date(timestamp)).toISOString();
 	},
-
-	toImage(obj) {
-		if (obj instanceof ee.Image) {
-			return obj;
-		}
-		else if (obj instanceof ee.ComputedObject) {
-			// ToDo: Send warning via subscriptions
-			console.log("WARN: Casting to Image might be unintentional.");
-			return ee.Image(obj);
-		}
-		else if (obj instanceof ee.ImageCollection) {
-			// ToDo: Send warning via subscriptions
-			console.log("WARN: Compositing the image collection to a single image.");
-			return obj.mosaic();
-		}
-		return null;
-	},
-	
-	toImageCollection(obj) {
-		if (obj instanceof ee.ImageCollection) {
-			return obj;
-		}
-		else if (obj instanceof ee.Image || obj instanceof ee.ComputedObject) {
-			return ee.ImageCollection(obj);
-		}
-		return null;
-	},
 	
 	encodeQueryParams(data) {
 		let ret = [];
@@ -93,6 +66,51 @@ var Utils = {
 
 	getISODateTime() {
 		return (new Date()).toISOString().replace(/\.\d{3}/, '');
+	},
+
+	geoJsonBbox(geojson) {
+		var getCoordinatesDump = function(gj) {
+			switch(gj.type) {
+				case 'Point':
+					return [gj.coordinates];
+				case 'MultiPoint':
+				case 'LineString':
+					return gj.coordinates;
+				case 'MultiLineString':
+				case 'Polygon':
+					return gj.coordinates.reduce(function(dump,part) {
+						return dump.concat(part);
+					}, []);
+				case 'MultiPolygon':
+					return gj.coordinates.reduce(function(dump,poly) {
+						return dump.concat(poly.reduce(function(points,part) {
+							return points.concat(part);
+						},[]));
+					},[]);
+				case 'GeometryCollection':
+					return gj.geometries.reduce(function(dump,g) {
+						return dump.concat(getCoordinatesDump(g));
+					},[]);
+				case 'Feature':
+					return getCoordinatesDump(gj.geometry);
+				case 'FeatureCollection':
+					return gj.features.reduce(function(dump,f) {
+						return dump.concat(getCoordinatesDump(f));
+					},[]);
+				default:
+					throw "Invalid GeoJSON type.";
+			}
+		};
+		var coords = getCoordinatesDump(geojson);
+		var bbox = [Number.POSITIVE_INFINITY,Number.POSITIVE_INFINITY,Number.NEGATIVE_INFINITY,Number.NEGATIVE_INFINITY];
+		return coords.reduce(function(prev,coord) {
+			return [
+				Math.min(coord[0], prev[0]),
+				Math.min(coord[1], prev[1]),
+				Math.max(coord[0], prev[2]),
+				Math.max(coord[1], prev[3])
+			];
+		}, bbox);
 	},
 
 	geoJsonToFeatureCollection(geojson) {

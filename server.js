@@ -133,6 +133,7 @@ class Server {
 
 	populateGlobals(req, res, next) {
 		req.user = this.serverContext.users().emptyUser();
+		req.serverContext = this.serverContext;
 		return next();
 	}
 

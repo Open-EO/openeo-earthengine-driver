@@ -232,6 +232,15 @@
 			"Job Management"
 		]
 	},
+	"VariableValueTypeInvalid": {
+		"description": null,
+		"message": "The value specified for the process graph variable '{variable_id}' is not of type '{type}'.",
+		"http": 400,
+		"tags": [
+			"Process Graph Management",
+			"Job Management"
+		]
+	},
 	"VariableIdInvalid": {
 		"description": null,
 		"message": "A specified variable ID is not valid.",

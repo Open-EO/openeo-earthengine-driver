@@ -4,11 +4,12 @@ const Process = require('../processgraph/process');
 
 module.exports = class filter_bbox extends Process {
 
-	execute(args, context) {
+	async execute(node, context) {
+		var dc = node.getData("imagery");
 		var geom;
 		try {
-			context.setBoundinBox(args.extent);
-			geom = context.getSpatialExtent();
+			dc.setSpatialExtent(node.getArgument("extent"));
+			geom = dc.getSpatialExtentAsGeeGeometry();
 		} catch (e) {
 			return Promise.reject(new Errors.ProcessArgumentInvalid({
 				process: this.schema.id,
@@ -17,8 +18,8 @@ module.exports = class filter_bbox extends Process {
 			}));
 		}
 		try {
-			var obj = Utils.toImageCollection(args.imagery).filterBounds(geom);
-			return Promise.resolve(obj);
+			dc.imageCollection(ic => ic.filterBounds(geom));
+			return dc;
 		} catch (e) {
 			return Promise.reject(new Errors.EarthEngineError(e, {process: this.schema.id}));
 		}

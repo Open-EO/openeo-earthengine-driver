@@ -1,7 +1,7 @@
 {
   "debug": true,
   "hostname": "127.0.0.1",
-  "port": 80,
+  "port": 8080,
   "exposePort": null,
   "apiPath": "/v0.4",
   "ssl": {

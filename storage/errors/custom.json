@@ -32,14 +32,6 @@
 			"Processes"
 		]
 	},
-	"FormatMissing": {
-		"description": null,
-		"message": "No output format specified.",
-		"http": 400,
-		"tags": [
-			"Job Management"
-		]
-	},
 	"MultipleResultNodes": {
 		"description": null,
 		"message": "Multiple result nodes specified for process graph.",
@@ -91,6 +83,30 @@
 	"ReferencedNodeMissing": {
 		"description": null,
 		"message": "Referenced node '{node_id}' doesn't exist.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"NodeIdInvalid": {
+		"description": null,
+		"message": "Invalid node id specified in process graph.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"NodeInvalid": {
+		"description": null,
+		"message": "Process graph node with id '{node_id}' is not a valid object.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
+	},
+	"ProcessIdMissing": {
+		"description": null,
+		"message": "Process graph node with id '{node_id}' doesn't contain a process id.",
 		"http": 400,
 		"tags": [
 			"Process Graphs"

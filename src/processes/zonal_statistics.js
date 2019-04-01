@@ -4,29 +4,31 @@ const Process = require('../processgraph/process');
 
 module.exports = class zonal_statistics extends Process {
 
-	execute(args, context) {
-		// Convert to an Image
-		var imagery = Utils.toImageCollection(args.imagery);
+	async execute(node, context) {
+		var dc = node.getData("imagery");
+		var imagery = dc.imageCollection();
 
 		// Group the images by date
-		imagery = this._groupImageCollectionByInterval(imagery, args.interval);
+		imagery = this._groupImageCollectionByInterval(imagery, node.getArgument("interval"));
 
 		// Read and parse GeoJSON file
-		var p = null;
-		if (typeof args.regions === 'string') {
-			p = context.readFileFromWorkspace(args.regions)
-			.then(contents => JSON.parse(contents))
-			.catch(err => {
+		var regions = node.getArgument("regions");
+		var geojson;
+		if (typeof regions === 'string') {
+			try {
+				var contents = await context.readFileFromWorkspace(regions);
+				geojson = JSON.parse(contents);
+			} catch (err) {
 				// ToDo: Make such a check in validate.
 				return Promise.reject(new Errors.ProcessArgumentInvalid({
 					argument: 'regions',
 					process: this.schema.id,
 					reason: err.message
 				}));
-			});
+			};
 		}
-		else if (typeof args.regions.type === 'string') { // Only a rough check for GeoJSON
-			p = Promise.resolve(args.regions);
+		else if (typeof regions.type === 'string') { // Only a rough check for GeoJSON
+			geojson = regions;
 		}
 		else {
 			throw new Errors.ProcessArgumentInvalid({
@@ -36,19 +38,18 @@ module.exports = class zonal_statistics extends Process {
 			});
 		}
 
-		return p.then(geojson => {
-			// Convert GeoJSON to a GEE FeatureCollection
-			var features = Utils.geoJsonToFeatureCollection(geojson);
+		// Convert GeoJSON to a GEE FeatureCollection
+		var features = Utils.geoJsonToFeatureCollection(geojson);
 
-			// Calculate the zonal statistics
-			var results = this._calculateStatistics(imagery, features, args);
+		// Calculate the zonal statistics
+		var results = this._calculateStatistics(imagery, features, node);
 
-			// Transform results into the openEO format
-			var data = {
-				results: results.getInfo()
-			};
-			return Promise.resolve(data);
+		// Transform results into the openEO format and transfer into data cube
+		dc.setData({
+			results: results.getInfo()
 		});
+
+		return dc;
 	}
 
 	_groupImageCollectionByInterval(imagery, interval) {
@@ -93,10 +94,11 @@ module.exports = class zonal_statistics extends Process {
 		return reducer;
 	}
 
-	_calculateStatistics(imagery, features, args) {
-		var scale = args.scale ? args.scale : 1000;
+	_calculateStatistics(imagery, features, node) {
+		var scale = node.getArgument("scale", 1000);
+		var func = node.getArgument("func");
 
-		var reducer = this._createReducerByName(args.func);
+		var reducer = this._createReducerByName(func);
 		if (reducer === null) {
 			throw new Errors.ProcessArgumentInvalid({
 				argument: 'func',
@@ -111,7 +113,7 @@ module.exports = class zonal_statistics extends Process {
 				collection: features,
 				scale: scale
 			});
-			var values = results.aggregate_array(args.func);
+			var values = results.aggregate_array(func);
 			var date = ee.Date(image.get('date')).format('y-MM-dd'); // Would it be enough to call image.get('date')?
 			return ee.Dictionary(dict).set(date, values);
 		};

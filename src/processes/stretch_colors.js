@@ -3,13 +3,14 @@ const Process = require('../processgraph/process');
 
 module.exports = class stretch_colors extends Process {
 
-	execute(args, context) {
-		var obj = Utils.toImage(args.imagery, req).visualize({
-			min: args.min,
-			max: args.max,
+	async execute(node, context) {
+		var dc = node.getData("imagery");
+		dc.image(img => img.visualize({
+			min: node.getArgument("min"),
+			max: node.getArgument("max"),
 			palette: ['000000', 'FFFFFF']
-		});
-		return Promise.resolve(obj);
+		}));
+		return dc;
 	}
 
 };

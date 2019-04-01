@@ -3,12 +3,12 @@ const Errors = require('../errors');
 
 module.exports = class ProcessingContext {
 
-	constructor(serverContext, userId = null) {
+	// ToDo: extent, dimension and other must be stored per node?! otherwise parallel processing will fail
+	constructor(serverContext, userId = null, synchronousRequest = false) {
 		this.serverContext = serverContext;
 		this.userId = userId;
-		this.extent = null;
-		this.dimensions = {};
 		this.variables = {};
+		this.synchronousRequest = synchronousRequest;
 	}
 
 	server() {
@@ -49,12 +49,6 @@ module.exports = class ProcessingContext {
 		return this.serverContext.files().getFileContents(this.userId, file);
 	}
 
-	importFromCollection(id) {
-		var collection = this.getCollection(id);
-		// Import dimensions
-		this.dimensions = collection.properties['cube:dimensions'];
-	}
-
 	setVariables(variables) {
 		this.variables = variables;
 	}
@@ -67,45 +61,8 @@ module.exports = class ProcessingContext {
 		return this.userId;
 	}
 
-	setSpatialExtent(extent) {
-		this.extent = extent;
-		// ToDo: Set the bbox in the dimensions
-	}
-
-	setSpatialExtentFromGeometry() {
-		// ToDo: Set the bbox from a geometry
-	}
-
-	getSpatialExtent() {
-		return ee.Geometry.Rectangle([this.extent.west, this.extent.south, this.extent.east, this.extent.north], this.extent.crs);
-	}
-
-	setResolution() {
-		// ToDo: Set resoltion in the dimensions
-	}
-
-	setProjection() {
-		// ToDo: Set the projection in the dimensions
-	}
-
-	getDimension(name) {
-		return this.dimensions[name] ? this.dimensions[name] : null;
-	}
-
-	getDimensionNames() {
-		return Object.keys(this.dimensions);
-	}
-
-	addDimension(name, type) {
-		// ToDo: Make more useful and compliant to STAC data cube extension. Can it handle what add_dimension asks for?
-		this.dimensions[name] = {
-			type: type
-		};
-	}
-
-	dropDimension(name) {
-		// ToDo: Don't forget to drop the actual data?!
-		delete this.dimensions[name];
+	isSynchronousRequest() {
+		return this.synchronousRequest;
 	}
 
 };

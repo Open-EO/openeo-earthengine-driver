@@ -12,7 +12,7 @@ module.exports = class JobsAPI {
 	}
 
 	beforeServerStart(server) {
-//		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
+		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
 
 //		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
 		server.addEndpoint('get', '/jobs', this.getJobs.bind(this));
@@ -372,27 +372,44 @@ module.exports = class JobsAPI {
 		let plan = req.body.plan || this.context.plans.default;
 		let budget = req.body.budget || null;
 		// ToDo: Validate data, handle budget and plan input
-	
+
 		this.sendDebugNotifiction(req, res, "Starting to process request");
-		this.storage.execute(req, res, req.body.process_graph, req.body.output, true).then(url => {
-			this.sendDebugNotifiction(req, res, "Downloading " + url);
-			return axios({
-				method: 'get',
-				url: url,
-				responseType: 'stream'
-			});
-		})
-		.then(stream => {
-			var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
-			res.header('Content-Type', contentType);
-			res.header('OpenEO-Costs', 0);
-			stream.data.pipe(res);
-			return next();
-		})
-		.catch(e => {
-			this.sendDebugNotifiction(req, res, e);
-			next(Errors.wrap(e));
-		});
+		var runner = this.context.processes().createRunner(req.body.process_graph);
+		var context = runner.createContextFromRequest(req, true);
+		runner.validate(context)
+			.then(errorList => {
+				var errors = errorList.getAll();
+				this.sendDebugNotifiction(req, res, "Validated with " + errors.length + " errors");
+				if (errors.length > 0) {
+					for (var i in errors) {
+						this.sendDebugNotifiction(req, res, errors[i]);
+					}
+					throw e[0];
+				}
+				else {
+					this.sendDebugNotifiction(req, res, "Executing processes");
+					return runner.execute();
+				}
+			})
+			.then(resultNode => {
+				return this.storage.retrieveResults(resultNode.getResult(), context, true);
+			})
+			.then(url => {
+				this.sendDebugNotifiction(req, res, "Downloading " + url);
+				return axios({
+					method: 'get',
+					url: url,
+					responseType: 'stream'
+				});
+			})
+			.then(stream => {
+				var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
+				res.header('Content-Type', contentType);
+				res.header('OpenEO-Costs', 0);
+				stream.data.pipe(res);
+				return next();
+			})
+			.catch(e => next(Errors.wrap(e)));
 	}
 
 	makeJobResponse(job, full = true) {

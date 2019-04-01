@@ -15,8 +15,8 @@ describe('Process Graph Registry', () => {
 		runner = registry.createRunner(json);
 		var p = runner.getProcessGraph();
 		expect(p.getNode("loadco1").passesTo).toEqual(["filter1"/*, "filter2"*/]);
-		expect(p.getStartNodes()).toEqual(["loadco1"]);
-		expect(p.getResultNode()).toBe("mint1"/*"export2"*/);
+		expect(p.getStartNodeIds()).toEqual(["loadco1"]);
+		expect(p.getResultNode().id).toBe("mint1"/*"export2"*/);
 	});
 	test('Validate', (done) => {
 		runner.validate().then(() => done()).catch(e => console.log(e) && done());

@@ -21,21 +21,15 @@ module.exports = class StoredProcessGraphs {
 
 	postValidation(req, res, next) {
 		var runner = this.context.processes().createRunner(req.body.process_graph);
-		var context = runner.createContextFromRequest(req);
-		runner.validate(context).then(() => {
-			res.send(200, {
-				errors: []
-			});
-			next();
-		})
-		.catch(e => {
-			res.send(200, {
-				errors: [
-					Errors.wrap(e).toJSON()
-				]
-			});
-			next();
-		});
+		var context = runner.createContextFromRequest(req, true);
+		runner.validate(context)
+			.then(errors => {
+				res.send(200, {
+					errors: errors.toJSON()
+				});
+				next();
+			})
+			.catch(e => next(e));
 	}
 
 	getProcessGraphs(req, res, next) {

@@ -4,35 +4,34 @@ const Process = require('../processgraph/process');
 
 module.exports = class process_graph extends Process {
 
-	validate(args, context) {
-		context.setVariables(args.variables);
-		return this.validateSchema(args).then(args => {
-			var promise;
-			if (typeof args.id === 'string') {
-				promise = this.loadInternal(args.id, context);
-			}
-			else if (typeof args.url === 'string') {
-				promise = this.loadExternal(args.url, context);
-			}
+	async validate(node, context) {
+		var variables = node.getArgument("variables");
+		context.setVariables(variables);
 
-			if (promise) {
-				return promise.then(pg => {
-					args.processGraph = pg;
-					return args;
-				});
-			}
-			else {
-				throw new Errors.ProcessArgumentsMissing({
-					process: this.schema.id,
-					min_parameters: 1
-				});
-			}
-		});
+		node = await super.validate(node, context);
+		
+		var pg;
+		var id = node.getArgument("id");
+		var url = node.getArgument("url");
+		if (typeof id === 'string') {
+			pg = await this.loadInternal(id, context);
+		}
+		else if (typeof url === 'string') {
+			pg = await this.loadExternal(url, context);
+		}
+		else {
+			throw new Errors.ProcessArgumentsMissing({
+				process: this.schema.id,
+				min_parameters: 1
+			});
+		}
+
+		node.setProvision("ProcessGraph", pg);
+		return node;
 	}
 
-	execute(args, context) {
-		context.setVariables(args.variables);
-		return context.executeProcessGraph(args.processGraph, context);
+	async execute(node, context) {
+		return context.executeProcessGraph(node.getProvision("ProcessGraph"), context);
 	}
 
 	loadInternal(id, context) {
@@ -45,6 +44,7 @@ module.exports = class process_graph extends Process {
 			url: url
 		})
 		.then(response => {
+			// ToDo
 			if (typeof response.data.process_graph === 'object') {
 				return context.validateProcessGraph(response.data.process_graph, context).then(() => {
 					return response.data.process_graph;
