@@ -20,7 +20,7 @@
     "url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
   },
   "devDependencies": {
-    "forever": "^0.15.3",
+    "forever": "^0.15.4",
     "jest": "^24.5.0",
     "jest-html-reporter": "^2.4.2",
     "nodemon": "^1.18.7"
@@ -33,6 +33,7 @@
     "jsonschema": "^1.2.4",
     "nedb": "^1.8.0",
     "object-hash": "^1.3.0",
+    "proj4": "^2.5.0",
     "restify": "^7.2.1",
     "ws": "^6.1.0"
   },
