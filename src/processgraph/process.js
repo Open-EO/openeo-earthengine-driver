@@ -1,10 +1,11 @@
-const validate = require('jsonschema').validate;
+const JsonSchemaValidator = require('./jsonschema');
 const Errors = require('../errors');
 
 module.exports = class Process {
 
 	constructor(schema) {
 		this.schema = schema;
+		this.jsonSchema = new JsonSchemaValidator();
 	}
 
 	async validate(node, context) {
@@ -18,6 +19,7 @@ module.exports = class Process {
 		}
 
 		// Validate against JSON Schema
+		this.jsonSchema.setContext(context);
 		for(let name in this.schema.parameters) {
 			let param = this.schema.parameters[name];
 			// Check whether parameter is required
@@ -35,12 +37,8 @@ module.exports = class Process {
 			}
 
 			// Validate against JSON schema
-			let result = validate(arg, param.schema);
-			if (!result.valid) {
-				var errors = [];
-				for (let i in result.errors) {
-					errors.push(result.errors[i].stack);
-				}
+			let errors = await this.jsonSchema.validateJson(arg, param.schema);
+			if (errors.length > 0) {
 				throw new Errors.ProcessArgumentInvalid({
 					process: this.schema.id,
 					argument: name,

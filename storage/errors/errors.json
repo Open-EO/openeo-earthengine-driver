@@ -277,7 +277,7 @@
 	},
 	"ProcessArgumentInvalid": {
 		"description": null,
-		"message": "The value specified for the process argument '{argument}' in process '{process}' is invalid: {reason}",
+		"message": "The argument '{argument}' in process '{process}' is invalid: {reason}",
 		"http": 400,
 		"tags": [
 			"Processes"

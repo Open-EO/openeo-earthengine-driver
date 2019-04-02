@@ -17,7 +17,7 @@
 			"required": true,
 			"schema": {
 				"type": "object",
-				"format": "spatial_extent",
+				"format": "bounding-box",
 				"required": [
 					"west",
 					"east",

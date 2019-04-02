@@ -33,7 +33,7 @@ module.exports = class ProcessingContext {
 		return runner.execute(context);
 	}
 
-	isJob(jobId) { // returns promise
+	getJob(jobId) { // returns promise
 		return this.serverContext.jobs().getById(jobId);
 	}
 

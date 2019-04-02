@@ -18,7 +18,7 @@
 			"required": true,
 			"schema": {
 				"type": "array",
-				"format": "temporal_extent",
+				"format": "temporal-interval",
 				"example": [
 					"2016-01-01T00:00:00Z",
 					"2017-10-01T00:00:00Z"

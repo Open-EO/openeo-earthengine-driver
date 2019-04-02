@@ -27,7 +27,7 @@ module.exports = class zonal_statistics extends Process {
 				}));
 			};
 		}
-		else if (typeof regions.type === 'string') { // Only a rough check for GeoJSON
+		else if (typeof regions.type === 'string') { // It's GeoJSON
 			geojson = regions;
 		}
 		else {

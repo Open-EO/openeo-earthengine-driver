@@ -9,6 +9,7 @@
 			"required": true,
 			"schema": {
 				"type": "string",
+				"format": "collection-id",
 				"examples": [
 					"COPERNICUS/S2"
 				]
