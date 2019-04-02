@@ -11,11 +11,11 @@ module.exports = class ServicesAPI {
 	beforeServerStart(server) {
 		// Add endpoints
 		server.addEndpoint('get', '/services', this.getServices.bind(this));
-//		server.addEndpoint('post', '/services', this.postService.bind(this));
+		server.addEndpoint('post', '/services', this.postService.bind(this));
 		server.addEndpoint('get', '/services/{service_id}', this.getService.bind(this));
-//		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
+		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
 		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
-//		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
+		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
 
 		return Promise.resolve();
 	}
@@ -40,25 +40,16 @@ module.exports = class ServicesAPI {
 
 			try {
 				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				req.processRegistry.executeProcessGraph(req, service.process_graph).then(obj => {
-					var image = Utils.toImage(obj, req);
-					// Download image
-					// ToDo: Replace getThumbURL with getDownloadURL
-					image.getThumbURL({
-						format: 'jpeg',
-						dimensions: '256x256',
-						region: rect.bounds().getInfo()
-					}, url => {
-						if (!url) {
-							next(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-						}
-						else {
-							console.log("Downloading " + url);
-							res.redirect(url, next);
-						}
-					});
-				})
-				.catch(e => next(e));
+				var runner = this.context.runner(service.process_graph);
+				var context = runner.createContextFromRequest(req);
+				runner.validate(context)
+					.then(() => runner.execute(context))
+					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', "jpeg", rect))
+					.then(url => {
+						console.log("Serving " + url);
+						res.redirect(url, next);
+					})
+					.catch(e => next(Errors.wrap(e)));
 			} catch(e) {
 				return next(e);
 			}
@@ -131,7 +122,8 @@ module.exports = class ServicesAPI {
 				if (this.editableFields.includes(key)) {
 					switch(key) {
 						case 'process_graph':
-							promises.push(req.processRegistry.validateProcessGraph(req, req.body.process_graph));
+							var runner = this.context.runner(req.body.process_graph);
+							promises.push(runner.validateRequest(req));
 							break;
 						case 'type':
 							promises.push(new Promise((resolve, reject) => {
@@ -203,7 +195,8 @@ module.exports = class ServicesAPI {
 			return next(new Errors.ServiceUnsupported());
 		}
 
-		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+		var runner = this.context.runner(req.body.process_graph);
+		runner.validateRequest(req).then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,

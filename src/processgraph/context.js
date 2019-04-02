@@ -4,11 +4,10 @@ const Errors = require('../errors');
 module.exports = class ProcessingContext {
 
 	// ToDo: extent, dimension and other must be stored per node?! otherwise parallel processing will fail
-	constructor(serverContext, userId = null, synchronousRequest = false) {
+	constructor(serverContext, userId = null) {
 		this.serverContext = serverContext;
 		this.userId = userId;
 		this.variables = {};
-		this.synchronousRequest = synchronousRequest;
 	}
 
 	server() {
@@ -24,12 +23,12 @@ module.exports = class ProcessingContext {
 	}
 
 	validateProcessGraph(pg, context) {
-		var runner = this.context.processes().createRunner(pg);
+		var runner = this.context.runner(pg);
 		return runner.validate(context);
 	}
 
 	executeProcessGraph(pg, context) {
-		var runner = this.context.processes().createRunner(pg);
+		var runner = this.context.runner(pg);
 		return runner.execute(context);
 	}
 
@@ -61,8 +60,61 @@ module.exports = class ProcessingContext {
 		return this.userId;
 	}
 
-	isSynchronousRequest() {
-		return this.synchronousRequest;
+	async retrieveResults(dataCube, size = 2000, defaultFormat = "jpeg", bounds = null) {
+		// Execute graph
+		var format = dataCube.getOutputFormat() || defaultFormat;
+		if (format.toLowerCase() !== 'json') {
+			var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
+//			if (syncResult) {
+				return new Promise((resolve, reject) => {
+					dataCube.image().getThumbURL({
+						format: this.translateOutputFormat(format),
+						dimensions: size,
+						region: bounds.bounds().getInfo()
+					}, url => {
+						if (!url) {
+							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+						}
+						else {
+							resolve(url);
+						}
+					});
+				});
+/*			}
+			else {
+				var options = {
+					name: "openeo",
+					dimensions: size,
+					region: bounds
+				};
+				image.getDownloadURL(options, url => {
+					if (!url) {
+						reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+					}
+					else {
+						resolve(url);
+					}
+				});
+			} */
+		}
+		else {
+			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
+			var p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
+			var parent = path.dirname(p);
+			await fse.ensureDir(parent);
+			await fse.writeJson(p, dataCube.getData());
+			return Utils.getApiUrl("/temp/" + fileName);
+		}
+	}
+
+	translateOutputFormat(format) {
+		format = format.toLowerCase();
+		switch(format) {
+			case 'jpeg':
+				return 'jpg';
+			default:
+				return format;
+		}
 	}
 
 };

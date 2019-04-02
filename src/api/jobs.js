@@ -14,19 +14,19 @@ module.exports = class JobsAPI {
 	beforeServerStart(server) {
 		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
 
-//		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
+		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
 		server.addEndpoint('get', '/jobs', this.getJobs.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}', this.getJob.bind(this));
-//		server.addEndpoint('patch', '/jobs/{job_id}', this.patchJob.bind(this));
+		server.addEndpoint('patch', '/jobs/{job_id}', this.patchJob.bind(this));
 		server.addEndpoint('delete', '/jobs/{job_id}', this.deleteJob.bind(this));
 
-//		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
-//		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
+		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
+		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
 		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
 		// We could use https://github.com/axios/axios#cancellation in the future
 
-//		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
-//		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this));
+		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
+		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this));
 
 		server.createSubscriptions(['openeo.jobs.debug']);
 
@@ -34,7 +34,7 @@ module.exports = class JobsAPI {
 	}
 
 	getTempFile(req, res, next) {
-		var p = this.storage.makeFolder(this.getTempFolder(), [req.params.token, req.params.file]);
+		var p = this.storage.makeFolder(this.context.getTempFolder(), [req.params.token, req.params.file]);
 		if (!p) {
 			return next(new Errors.NotFound());
 		}
@@ -42,7 +42,7 @@ module.exports = class JobsAPI {
 	}
 
 	getStorageFile(req, res, next) {
-		var p = this.storage.makeFolder(this.getFolder(), [req.params.job_id, req.params.file]);
+		var p = this.storage.makeFolder(this.storage.getFolder(), [req.params.job_id, req.params.file]);
 		if (!p) {
 			return next(new Errors.NotFound());
 		}
@@ -148,11 +148,18 @@ module.exports = class JobsAPI {
 
 				res.send(202);
 				next();
-	
-				var jobFormat = this.storage.translateOutputFormat(job.output.format);
-				filePath = this.storage.getJobFile(job._id, Utils.generateHash() +  "." + jobFormat);
-	
-				return this.storage.execute(req, res, job.process_graph, job.output);
+
+				var runner = this.context.runner(job.process_graph);
+				var context = runner.createContextFromRequest(req);
+				return runner.validate(context)
+					.then(() => runner.execute(context))
+					.then(resultNode => {
+						var cube = resultNode.getResult();
+						var jobFormat = context.translateOutputFormat(cube.getOutputFormat());
+						filePath = this.storage.getJobFile(job._id, Utils.generateHash() +  "." + jobFormat);
+						return context.retrieveResults(cube);
+					})
+					.catch(e => next(Errors.wrap(e)));
 			});
 		})
 		.then(url => {
@@ -271,7 +278,8 @@ module.exports = class JobsAPI {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
 						case 'process_graph':
-							promises.push(req.processRegistry.validateProcessGraph(req, req.body.process_graph));
+							var runner = this.context.runner(req.body.process_graph);
+							promises.push(runner.validateRequest(req));
 							break;
 						case 'output':
 							promises.push(new Promise((resolve, reject) => {
@@ -332,7 +340,8 @@ module.exports = class JobsAPI {
 			}
 		}
 
-		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
+		var runner = this.context.runner(req.body.process_graph);
+		runner.validateRequest(req).then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,
@@ -374,26 +383,21 @@ module.exports = class JobsAPI {
 		// ToDo: Validate data, handle budget and plan input
 
 		this.sendDebugNotifiction(req, res, "Starting to process request");
-		var runner = this.context.processes().createRunner(req.body.process_graph);
-		var context = runner.createContextFromRequest(req, true);
-		runner.validate(context)
+
+		var runner = this.context.runner(req.body.process_graph);
+		var context = runner.createContextFromRequest(req);
+		runner.validate(context, false)
 			.then(errorList => {
-				var errors = errorList.getAll();
-				this.sendDebugNotifiction(req, res, "Validated with " + errors.length + " errors");
-				if (errors.length > 0) {
-					for (var i in errors) {
-						this.sendDebugNotifiction(req, res, errors[i]);
-					}
-					throw e[0];
+				this.sendDebugNotifiction(req, res, "Validated with " + errorList.count() + " errors");
+				if (errorList.count() > 0) {
+					errorList.getAll().forEach(error => this.sendDebugNotifiction(req, res, error));
+					throw errorList.first();
 				}
-				else {
-					this.sendDebugNotifiction(req, res, "Executing processes");
-					return runner.execute();
-				}
+
+				this.sendDebugNotifiction(req, res, "Executing processes");
+				return runner.execute(context);
 			})
-			.then(resultNode => {
-				return this.storage.retrieveResults(resultNode.getResult(), context, true);
-			})
+			.then(resultNode => context.retrieveResults(resultNode.getResult(), 1000)) // 1000 = pixel size
 			.then(url => {
 				this.sendDebugNotifiction(req, res, "Downloading " + url);
 				return axios({

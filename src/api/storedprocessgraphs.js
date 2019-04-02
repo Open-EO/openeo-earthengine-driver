@@ -11,18 +11,17 @@ module.exports = class StoredProcessGraphs {
 	beforeServerStart(server) {
 		server.addEndpoint('post', '/validation', this.postValidation.bind(this));
 		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this));
-//		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this));
+		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this));
 		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraph.bind(this));
-//		server.addEndpoint('patch', '/process_graphs/{process_graph_id}', this.patchProcessGraph.bind(this));
+		server.addEndpoint('patch', '/process_graphs/{process_graph_id}', this.patchProcessGraph.bind(this));
 		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraph.bind(this));
 
 		return Promise.resolve();
 	}
 
 	postValidation(req, res, next) {
-		var runner = this.context.processes().createRunner(req.body.process_graph);
-		var context = runner.createContextFromRequest(req, true);
-		runner.validate(context)
+		var runner = this.context.runner(req.body.process_graph);
+		runner.validateRequest(req, false)
 			.then(errors => {
 				res.send(200, {
 					errors: errors.toJSON()
@@ -58,25 +57,28 @@ module.exports = class StoredProcessGraphs {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-		req.processRegistry.validateProcessGraph(req, req.body.process_graph).then(() => {
-			var data = {
-				title: req.body.title || null,
-				description: req.body.description || null,
-				process_graph: req.body.process_graph,
-				public: req.body.public || false,
-				user_id: req.user._id
-			};
-			this.storage.database().insert(data, (err, pg) => {
-				if (err) {
-					return next(new Errors.Internal(err));
-				}
-				else {
-					res.header('OpenEO-Identifier', pg._id);
-					res.redirect(201, Utils.getApiUrl('/process_graphs/' + pg._id), next);
-				}
-			});
-		})
-		.catch(e => next(e));
+
+		var runner = this.context.runner(req.body.process_graph);
+		runner.validateRequest(req)
+			.then(() => {
+				var data = {
+					title: req.body.title || null,
+					description: req.body.description || null,
+					process_graph: req.body.process_graph,
+					public: req.body.public || false,
+					user_id: req.user._id
+				};
+				this.storage.database().insert(data, (err, pg) => {
+					if (err) {
+						return next(new Errors.Internal(err));
+					}
+					else {
+						res.header('OpenEO-Identifier', pg._id);
+						res.redirect(201, Utils.getApiUrl('/process_graphs/' + pg._id), next);
+					}
+				});
+			})
+			.catch(e => next(e));
 	}
 
 	patchProcessGraph(req, res, next) {
@@ -101,7 +103,8 @@ module.exports = class StoredProcessGraphs {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
 						case 'process_graph':
-							promises.push(req.processRegistry.validateProcessGraph(req, req.body.process_graph));
+							var runner = this.context.runner(req.body.process_graph);
+							promises.push(runner.validateRequest(req));
 							break;
 						default:
 							// ToDo: Validate further data

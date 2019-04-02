@@ -18,17 +18,31 @@ module.exports = class ProcessGraphRunner {
 		return this.processGraph;
 	}
 
-	createContextFromRequest(req, synchronousRequest = false) {
-		return new ProcessingContext(this.registry.getServerContext(), req.user._id, synchronousRequest);
+	createContextFromRequest(req) {
+		return new ProcessingContext(this.registry.getServerContext(), req.user._id);
 	}
 
-	async validate(context = null) {
+	async validateRequest(req, throwOnErrors = true) {
+		var context = this.createContextFromRequest(req);
+		return await this.validate(context, throwOnErrors);
+	}
+
+	async validate(context = null, throwOnErrors = true) {
 		if (context === null) {
 			context = new ProcessingContext(this.registry.getServerContext());
 		}
 
 		this.processGraph.parse();
-		return this.validateNodes(this.processGraph.getStartNodes(), context);
+		var errorList = await this.validateNodes(this.processGraph.getStartNodes(), context);
+		if (throwOnErrors) {
+			if (errorList.count() > 0) {
+				throw errorList.first(); // Or errorList.getMessage() wrapped in a new error object?
+			}
+			return this.processGraph;
+		}
+		else {
+			return errorList;
+		}
 	}
 
 	async execute(context = null) {
@@ -124,12 +138,20 @@ class ErrorList {
 		this.errors.push(Errors.wrap(error));
 	}
 
-	empty() {
-		return (this.errors.length === 0);
+	count() {
+		return this.errors.length;
 	}
 
 	toJSON() {
 		return this.errors.map(e => e.toJSON());
+	}
+
+	getMessage() {
+		var msg = '';
+		for (var i in this.errors) {
+			msg += (i+1) + ". " + this.errors[i].message + "\r\n";
+		}
+		return msg.trim();
 	}
 
 	getAll() {

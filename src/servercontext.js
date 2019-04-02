@@ -22,6 +22,7 @@ module.exports = class ServerContext extends Config {
 		this.subscriptionPool = new SubscriptionPool();
 		this.userStore = new UserStore();
 		this.serviceStore = new ServiceStore();
+		this.tempFolder = './storage/temp_files';
 	}
 
 	jobs() {
@@ -53,6 +54,14 @@ module.exports = class ServerContext extends Config {
 
 	webServices() {
 		return this.serviceStore;
+	}
+
+	runner(pg) {
+		return this.processes().createRunner(pg);
+	}
+
+	getTempFolder() {
+		return this.tempFolder;
 	}
 
 	isValidOutputFormat(format) {

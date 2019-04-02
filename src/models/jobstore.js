@@ -8,7 +8,6 @@ module.exports = class JobStore {
 	constructor() {
 		this.db = Utils.loadDB('jobs');
 		this.editableFields = ['title', 'description', 'process_graph', 'plan', 'budget'];
-		this.tempFolder = './storage/temp_files';
 		this.jobFolder = './storage/job_files';
 	}
 
@@ -16,12 +15,8 @@ module.exports = class JobStore {
 		return this.db;
 	}
 
-	getTempFolder() {
-		return this.tempFolder;
-	}
-
 	getFolder() {
-		return this.getJobFolder;
+		return this.jobFolder;
 	}
 
 	getJobFolder(jobId) {
@@ -62,7 +57,7 @@ module.exports = class JobStore {
 	updateJobStatus(query, status, error = null) {
 		return new Promise((resolve, reject) => {
 			if (error !== null) {
-				error = Error.wrap(error).toJson();
+				error = Errors.wrap(error).toJSON();
 			}
 			this.db.update(query, { $set: { status: status, error: error } }, {}, function (err, numChanged) {
 				if (err) {
@@ -94,64 +89,6 @@ module.exports = class JobStore {
 			return false;
 		}
 		return p;
-	}
-
-	async retrieveResults(dataCube, context) {
-		// Execute graph
-		var format = dataCube.getOutputFormat();
-		if (format.toLowerCase() !== 'json') {
-			var bounds = dataCube.getSpatialExtentAsGeeGeometry().bounds().getInfo();
-			var size = context.isSynchronousRequest() ? 1000 : 2000;
-//			if (syncResult) {
-				return new Promise((resolve, reject) => {
-					dataCube.image().getThumbURL({
-						format: this.translateOutputFormat(format),
-						dimensions: size,
-						region: bounds
-					}, url => {
-						if (!url) {
-							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-						}
-						else {
-							resolve(url);
-						}
-					});
-				});
-/*			}
-			else {
-				var options = {
-					name: "openeo",
-					dimensions: size,
-					region: bounds
-				};
-				image.getDownloadURL(options, url => {
-					if (!url) {
-						reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-					}
-					else {
-						resolve(url);
-					}
-				});
-			} */
-		}
-		else {
-			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
-			var p = path.normalize(path.join(this.tempFolder, fileName));
-			var parent = path.dirname(p);
-			await fse.ensureDir(parent);
-			await fse.writeJson(p, dataCube.getData());
-			return Utils.getApiUrl("/temp/" + fileName);
-		}
-	}
-
-	translateOutputFormat(format) {
-		format = format.toLowerCase();
-		switch(format) {
-			case 'jpeg':
-				return 'jpg';
-			default:
-				return format;
-		}
 	}
 
 };
