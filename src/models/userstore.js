@@ -45,17 +45,17 @@ module.exports = class UserStore {
 			};
 			this.db.findOne(query, (err, user) => {
 				if (err) {
-					reject(new Errors.Internal(err));
+					return reject(new Errors.Internal(err));
 				}
 				else if (user === null) {
-					reject(new Errors.AuthenticationRequired({
+					return reject(new Errors.AuthenticationRequired({
 						reason: 'User not found'
 					}));
 				}
 
 				var pw = this.hashPassword(password, user.passwordSalt);
 				if (pw.passwordHash !== user.password) {
-					reject(new Errors.AuthenticationRequired({
+					return reject(new Errors.AuthenticationRequired({
 						reason: 'Password invalid'
 					}));
 				}
@@ -68,10 +68,10 @@ module.exports = class UserStore {
 				};
 				this.db.update(query, { $set: dataToUpdate }, {}, (err, numReplaced) => {
 					if (numReplaced !== 1) {
-						reject(new Errors.Internal(err));
+						return reject(new Errors.Internal(err));
 					}
 
-					resolve(user);
+					return resolve(user);
 				});
 			});
 		});
