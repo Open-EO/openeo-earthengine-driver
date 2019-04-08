@@ -37,7 +37,7 @@ module.exports = class CapabilitiesAPI {
 		versions.push({
 			url: Utils.getApiUrl(),
 			production: !this.context.debug,
-			version: this.context.apiVersion
+			api_version: this.context.apiVersion
 		});
 		res.json({
 			versions: versions
