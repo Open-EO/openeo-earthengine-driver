@@ -281,14 +281,6 @@ module.exports = class JobsAPI {
 							var runner = this.context.runner(req.body.process_graph);
 							promises.push(runner.validateRequest(req));
 							break;
-						case 'output':
-							promises.push(new Promise((resolve, reject) => {
-								if (Utils.isObject(req.body.output) && typeof req.body.output.format !== 'string') {
-									reject(new Errors.FormatUnsupported());
-								}
-								resolve();
-							}));
-							break;
 						default:
 							// ToDo: Validate further data
 							// For example, if budget < costs, reject request
@@ -327,18 +319,6 @@ module.exports = class JobsAPI {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-		let output = {
-			format: this.context.outputFormats.default,
-			parameters: {}
-		};
-		if (typeof req.body === 'object' && Utils.isObject(req.body.output) && typeof req.body.output.format === 'string') {
-			if (req.isValidOutputFormat(req.body.output.format)) {
-				output.format = req.body.output.format;
-				// ToDo: We don't support any parameters yet, take and check input from req.body.output.parameters
-			} else {
-				return next(new Errors.FormatUnsupported());
-			}
-		}
 
 		var runner = this.context.runner(req.body.process_graph);
 		runner.validateRequest(req).then(() => {
@@ -347,7 +327,6 @@ module.exports = class JobsAPI {
 				title: req.body.title || null,
 				description: req.body.description || null,
 				process_graph: req.body.process_graph,
-				output: output,
 				status: "submitted",
 				submitted: Utils.getISODateTime(),
 				updated: Utils.getISODateTime(),
@@ -431,9 +410,6 @@ module.exports = class JobsAPI {
 		};
 		if (full) {
 			response.process_graph = job.process_graph;
-			if (job.output) {
-				response.output = job.output;
-			}
 		}
 		return response;
 	}
