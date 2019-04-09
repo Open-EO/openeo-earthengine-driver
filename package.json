@@ -4,7 +4,7 @@
   "description": "An openEO driver for Google Earth Engine.",
   "main": "server.js",
   "scripts": {
-    "dev": "nodemon server.js",
+    "dev": "nodemon server.js --trace-warnings",
     "up": "forever start -a -l forever.eelog -o out.eelog -e err.eelog server.js",
     "down": "forever stop server.js",
     "test": "jest --env=node"

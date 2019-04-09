@@ -189,7 +189,7 @@ class Server {
 	}
 
 	logRequest(req, res, next) {
-		console.log("Requested: " + req.href());
+		console.log("Requested: " + req.getRoute().method + " " + req.href());
 		next();
 	}
 

@@ -49,14 +49,16 @@ module.exports = class JsonSchemaValidator {
 	}
 
 	async validateJson(json, schema) {
-		schema["$async"] = true;
+		 // Make sure we don't alter the process registry
+		var clonedSchema = Object.assign({}, schema);
+		clonedSchema["$async"] = true;
 		if (typeof schema["$schema"] === 'undefined') {
 			// Set applicable JSON SChema draft version if not already set
-			schema["$schema"] = "http://json-schema.org/draft-07/schema#";
+			clonedSchema["$schema"] = "http://json-schema.org/draft-07/schema#";
 		}
 
 		try {
-			await this.ajv.validate(schema, json);
+			await this.ajv.validate(clonedSchema, json);
 			return [];
 		} catch (e) {
 			return e.errors.map(e => e.message);
@@ -64,8 +66,9 @@ module.exports = class JsonSchemaValidator {
 	}
 
 	validateJsonSchema(schema) {
+		// Set applicable JSON SChema draft version if not already set
 		if (typeof schema["$schema"] === 'undefined') {
-			// Set applicable JSON SChema draft version if not already set
+			var schema = Object.assign({}, schema); // Make sure we don't alter the process registry
 			schema["$schema"] = "http://json-schema.org/draft-07/schema#";
 		}
 	
