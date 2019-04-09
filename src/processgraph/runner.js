@@ -96,7 +96,7 @@ module.exports = class ProcessGraphRunner {
 			}
 
 			if (context.server().debug) {
-				console.log("calling " + node.process_id);
+				console.debug("calling " + node.process_id);
 			}
 
 			var process = this.getProcess(node);
@@ -104,7 +104,7 @@ module.exports = class ProcessGraphRunner {
 			node.setResult(result);
 			
 			if (context.server().debug) {
-				console.log("returning from " + node.process_id);
+				console.debug("returning from " + node.process_id);
 			}
 
 			// Execute next nodes in chain

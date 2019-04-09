@@ -46,7 +46,9 @@ module.exports = class ServicesAPI {
 					.then(() => runner.execute(context))
 					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', "jpeg", rect))
 					.then(url => {
-						console.log("Serving " + url);
+						if (this.context.debug) {
+							console.log("Serving " + url);
+						}
 						res.redirect(url, next);
 					})
 					.catch(e => next(Errors.wrap(e)));

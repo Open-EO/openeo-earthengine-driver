@@ -264,7 +264,7 @@ module.exports = class JobsAPI {
 				console.log(params.job_id + ": " + message);
 			}
 		} catch (e) {
-			console.log(e);
+			console.error(e);
 		}
 	}
 

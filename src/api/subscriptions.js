@@ -7,7 +7,7 @@ module.exports = class SubscriptionsAPI {
 		this.pool = context.subscriptions();
 		this.context = context;
 		this.websocketserver = new WebSocket.Server({noServer: true});
-		console.log('WebSocket Server started.');
+		console.info('WebSocket Server started.');
 	}
 
 	beforeServerStart(server) {
@@ -64,7 +64,7 @@ module.exports = class SubscriptionsAPI {
 				})
 				.catch(err => {
 					if (this.context.debug) {
-						console.log(err);
+						console.error(err);
 					}
 					ws.close();
 				});

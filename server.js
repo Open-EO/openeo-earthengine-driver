@@ -18,7 +18,7 @@ global.ee = require('@google/earthengine');
 class Server {
 
 	constructor() {
-		console.log('Initializing openEO Google Earth Engine driver...');
+		console.info('Initializing openEO Google Earth Engine driver...');
 
 		this.http_server = null;
 		this.https_server = null;
@@ -46,12 +46,12 @@ class Server {
 		const privateKey = fse.readJsonSync(this.serverContext.serviceAccountCredentialsFile);
 		ee.data.authenticateViaPrivateKey(privateKey,
 			() => { 
-				console.log("GEE Authentication succeeded.");
+				console.info("GEE Authentication succeeded.");
 				ee.initialize();
 				this.startServer();
 			},
 			(error) => {
-				console.log("ERROR: GEE Authentication failed: " + error);
+				console.error("ERROR: GEE Authentication failed: " + error);
 				process.exit(1);
 			}
 		);
@@ -123,6 +123,9 @@ class Server {
 		server.use(restify.plugins.authorizationParser());
 		server.use(this.injectCorsHeader.bind(this));
 		server.use(this.api.users.checkRequestAuthToken.bind(this.api.users));
+		if (this.serverContext.debug) {
+			server.use(this.logRequest.bind(this));
+		}
 	}
 
 	createSubscriptions(topics) {
@@ -146,8 +149,8 @@ class Server {
 		.then(() => this.startServerHttps())
 		.then(() => this.afterServerStart())
 		.catch(e => {
-			console.log('Server not started due to the following error: ');
-			console.log(e);
+			console.error('Server not started due to the following error: ');
+			console.error(e);
 			process.exit(1);
 		});
 
@@ -160,7 +163,7 @@ class Server {
 				var exposePortStr = this.serverContext.exposePort != 80 ? ":" + this.serverContext.exposePort : "";
 				Utils.serverUrl = "http://" + this.serverContext.hostname + exposePortStr;
 				Utils.apiPath = this.serverContext.apiPath;
-				console.log('HTTP-Server listening at %s', Utils.getApiUrl());
+				console.info('HTTP-Server listening at %s', Utils.getApiUrl());
 				resolve();
 			});
 		});
@@ -174,15 +177,20 @@ class Server {
 					var exposePortStr = this.serverContext.ssl.exposePort != 443 ? ":" + this.serverContext.ssl.exposePort : "";
 					Utils.serverUrl = "https://" + this.serverContext.hostname + exposePortStr;
 					Utils.apiPath = this.serverContext.apiPath;
-					console.log('HTTPS-Server listening at %s', Utils.getApiUrl());
+					console.info('HTTPS-Server listening at %s', Utils.getApiUrl());
 					resolve();
 				});
 			}
 			else {
-				console.log('HTTPS not enabled.');
+				console.warn('HTTPS not enabled.');
 				resolve();
 			}
 		});
+	}
+
+	logRequest(req, res, next) {
+		console.log("Requested: " + req.href());
+		next();
 	}
 
 	injectCorsHeader(req, res, next) {

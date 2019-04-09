@@ -19,7 +19,7 @@ module.exports = class ProcessRegistry {
 			}
 		});
 		var num = Utils.size(this.processes);
-		console.log("Loaded " + num + " processes.");
+		console.info("Loaded " + num + " processes.");
 		return Promise.resolve(num);
 	}
 

@@ -15,10 +15,10 @@ for(var name in errors) {
 		toJSON() {
 			if (global.server.serverContext.debug) {
 				if (this.originalError !== null) {
-					console.log(this.originalError);
+					console.error(this.originalError);
 				}
 				else {
-					console.log(this);
+					console.error(this);
 				}
 			}
 			return {

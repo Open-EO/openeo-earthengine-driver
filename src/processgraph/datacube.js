@@ -35,12 +35,16 @@ module.exports = class DataCube {
 		}
 		else if (this.data instanceof ee.ComputedObject) {
 			// ToDo: Send warning via subscriptions
-			console.log("WARN: Casting to Image might be unintentional.");
+			if (global.server.serverContext.debug) {
+				console.warn("Casting to Image might be unintentional.");
+			}
 			this.data = ee.Image(this.data);
 		}
 		else if (this.data instanceof ee.ImageCollection) {
 			// ToDo: Send warning via subscriptions
-			console.log("WARN: Compositing the image collection to a single image.");
+			if (global.server.serverContext.debug) {
+				console.warn("Compositing the image collection to a single image.");
+			}
 			this.data = this.data.mosaic();
 		}
 		else {

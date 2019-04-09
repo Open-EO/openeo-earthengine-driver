@@ -12,14 +12,14 @@ var Utils = {
 
 	getApiUrl(path = '') {
 		if (this.serverUrl === null || this.apiPath === null) {
-			console.log('WARN: Server has not started yet, Utils.getApiUrl() is not available yet.');
+			console.warn('Server has not started yet, Utils.getApiUrl() is not available yet.');
 		}
 		return this.serverUrl + this.apiPath + path;
 	},
 
 	getServerUrl() {
 		if (this.serverUrl === null || this.apiPath === null) {
-			console.log('WARN: Server has not started yet, Utils.getServerUrl() is not available yet.');
+			console.warn('Server has not started yet, Utils.getServerUrl() is not available yet.');
 		}
 		return this.serverUrl;
 	},

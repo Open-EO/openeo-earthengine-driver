@@ -107,7 +107,9 @@ module.exports = class FilesAPI {
 					});
 					return next();
 				}).catch(e => {
-					console.log(e);
+					if (this.context.debug) {
+						console.error(e);
+					}
 					res.send(200, {
 						path: filePath
 					});

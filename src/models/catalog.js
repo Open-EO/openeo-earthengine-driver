@@ -35,7 +35,7 @@ module.exports = class DataCatalog {
 			}
 		}
 
-		console.log('Refreshing GEE catalog...');
+		console.info('Refreshing GEE catalog...');
 		const storage = new Storage({
 			keyFile: './privatekey.json'
 		});
@@ -59,7 +59,7 @@ module.exports = class DataCatalog {
 	loadCatalog() {
 		return this.updateCatalog().then(() => {
 			this.readLocalCatalog();
-			console.log("Loaded catalog with " + Utils.size(this.collections) + " collections.");
+			console.info("Loaded catalog with " + Utils.size(this.collections) + " collections.");
 			return Promise.resolve();
 		});
 	}
