@@ -8,16 +8,17 @@ const Errors = require('./errors');
 var Utils = {
 
 	serverUrl: null,
+	apiPath: null,
 
 	getApiUrl(path = '') {
-		if (this.serverUrl === null) {
+		if (this.serverUrl === null || this.apiPath === null) {
 			console.log('WARN: Server has not started yet, Utils.getApiUrl() is not available yet.');
 		}
-		return this.serverUrl + path;
+		return this.serverUrl + this.apiPath + path;
 	},
 
 	getServerUrl() {
-		if (this.serverUrl === null) {
+		if (this.serverUrl === null || this.apiPath === null) {
 			console.log('WARN: Server has not started yet, Utils.getServerUrl() is not available yet.');
 		}
 		return this.serverUrl;

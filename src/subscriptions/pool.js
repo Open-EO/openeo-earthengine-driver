@@ -1,4 +1,4 @@
-const WebSocket = require('ws');
+const SubscriptionConnection = require('./connection');
 
 module.exports = class SubscriptionsPool {
 

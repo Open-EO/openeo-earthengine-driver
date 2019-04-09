@@ -158,8 +158,9 @@ class Server {
 			const port = process.env.PORT || this.serverContext.port;
 			this.http_server.listen(port, () => {
 				var exposePortStr = this.serverContext.exposePort != 80 ? ":" + this.serverContext.exposePort : "";
-				Utils.serverUrl = "http://" + this.serverContext.hostname + exposePortStr + this.serverContext.apiPath;
-				console.log('HTTP-Server listening at %s', Utils.getServerUrl());
+				Utils.serverUrl = "http://" + this.serverContext.hostname + exposePortStr;
+				Utils.apiPath = this.serverContext.apiPath;
+				console.log('HTTP-Server listening at %s', Utils.getApiUrl());
 				resolve();
 			});
 		});
@@ -171,8 +172,9 @@ class Server {
 				var sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
 				this.https_server.listen(sslport, () => {
 					var exposePortStr = this.serverContext.ssl.exposePort != 443 ? ":" + this.serverContext.ssl.exposePort : "";
-					Utils.serverUrl = "https://" + this.serverContext.hostname + exposePortStr + this.serverContext.apiPath;
-					console.log('HTTPS-Server listening at %s', Utils.getServerUrl());
+					Utils.serverUrl = "https://" + this.serverContext.hostname + exposePortStr;
+					Utils.apiPath = this.serverContext.apiPath;
+					console.log('HTTPS-Server listening at %s', Utils.getApiUrl());
 					resolve();
 				});
 			}
