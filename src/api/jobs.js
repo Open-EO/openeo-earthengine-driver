@@ -174,10 +174,16 @@ module.exports = class JobsAPI {
 		.then(stream => {
 			this.sendDebugNotifiction(req, res, "Download finished, storing result to " + filePath);
 			return fse.ensureDir(path.dirname(filePath))
-				.then(() => {
+				.then(() => new Promise((resolve, reject) => {
 					var writer = fse.createWriteStream(filePath);
 					stream.data.pipe(writer);
-				});
+					writer.on('error', (e) => {
+						reject(new Errors.Internal(e));
+					});
+					writer.on('close', () => {
+						resolve();
+					});
+				}));
 		})
 		.then(() => this.storage.updateJobStatus(query, 'finished'))
 		.catch(e => {
