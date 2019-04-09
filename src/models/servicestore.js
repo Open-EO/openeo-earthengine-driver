@@ -7,6 +7,10 @@ module.exports = class ServiceStore {
 		this.editableFields = ['title', 'description', 'process_graph', 'enabled', 'parameters', 'plan', 'budget'];
 	}
 
+	isFieldEditable(name) {
+		return this.editableFields.includes(name);
+	}
+
 	database() {
 		return this.db;
 	}

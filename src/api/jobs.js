@@ -172,7 +172,7 @@ module.exports = class JobsAPI {
 			});
 		})
 		.then(stream => {
-			this.sendDebugNotifiction(req, res, "Download finished, storing result to " + filePath);
+			this.sendDebugNotifiction(req, res, "Storing result to " + filePath);
 			return fse.ensureDir(path.dirname(filePath))
 				.then(() => new Promise((resolve, reject) => {
 					var writer = fse.createWriteStream(filePath);
@@ -185,7 +185,10 @@ module.exports = class JobsAPI {
 					});
 				}));
 		})
-		.then(() => this.storage.updateJobStatus(query, 'finished'))
+		.then(() => {
+			this.sendDebugNotifiction(req, res, "Finished");
+			this.storage.updateJobStatus(query, 'finished')
+		})
 		.catch(e => {
 			this.storage.updateJobStatus(query, 'error', e);
 			this.sendDebugNotifiction(req, res, e);

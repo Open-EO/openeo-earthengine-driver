@@ -119,7 +119,7 @@ module.exports = class ServicesAPI {
 			var data = {};
 			var promises = [];
 			for(let key in req.body) {
-				if (this.editableFields.includes(key)) {
+				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
 						case 'process_graph':
 							var runner = this.context.runner(req.body.process_graph);
