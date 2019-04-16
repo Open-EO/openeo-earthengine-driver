@@ -102,8 +102,8 @@ module.exports = class DataCatalog {
 
 			// Copy asset schema to other properties for now
 			c.other_properties = {};
-			for(var i in c.properties['gee:asset_schema']) {
-				var schema = c.properties['gee:asset_schema'][i];
+			for(var j in c.properties['gee:asset_schema']) {
+				var schema = c.properties['gee:asset_schema'][j];
 				c.other_properties[schema.name] = {
 					description: schema.description,
 					type: schema.type
@@ -130,8 +130,8 @@ module.exports = class DataCatalog {
 				}
 			};
 			var bandNames = [];
-			for(var i in c.properties['eo:bands']) {
-				var b = c.properties['eo:bands'][i];
+			for(var j in c.properties['eo:bands']) {
+				var b = c.properties['eo:bands'][j];
 				if (typeof b.name === 'string') {
 					bandNames.push(b.name);
 				}
