@@ -20,10 +20,10 @@
     "url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
   },
   "devDependencies": {
-    "forever": "^0.15.4",
+    "forever": "^1.0.0",
     "jest": "^24.5.0",
     "jest-html-reporter": "^2.4.2",
-    "nodemon": "^1.18.7"
+    "nodemon": "^1.18.11"
   },
   "dependencies": {
     "@google-cloud/storage": "^2.1.0",
