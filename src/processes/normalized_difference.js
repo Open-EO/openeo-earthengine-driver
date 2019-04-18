@@ -2,7 +2,7 @@ const Process = require('../processgraph/process');
 
 module.exports = class normalized_difference extends Process {
 
-	async execute(node, context, processGraph) {
+	async execute(node, context) {
 		var dc1 = node.getData("band1");
 		var dc2 = node.getData("band2");
 		var name = node.getArgument("name", "normalized_difference");

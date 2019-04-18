@@ -34,6 +34,10 @@ module.exports = class ProcessGraphNode {
 		return this.provision[name];
 	}
 
+	getProcessGraph() {
+		return this.processGraph;
+	}
+
 	getArgumentNames() {
 		return Object.keys(this.arguments);
 	}

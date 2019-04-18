@@ -273,10 +273,12 @@ module.exports = class DataCube {
 		if (this.dimensions[name] instanceof Dimension) {
 			throw "Dimension '" + name + "' already exists.";
 		}
-		this.dimensions[name] = new Dimension(this, {
+		var dimension = new Dimension(this, {
 			type: type,
 			axis: axis
 		});
+		this.dimensions[name] = dimension;
+		return dimension;
 	}
 
 	setDimensionsFromSTAC(dimensions) {
@@ -284,6 +286,11 @@ module.exports = class DataCube {
 		for (var name in dimensions) {
 			this.dimensions[name] = new Dimension(this, dimensions[name]);
 		}
+	}
+
+	renameDimension(oldName, newName) {
+		this.dimensions[newName] = this.dimensions[oldName];
+		delete this.dimensions[oldName];
 	}
 
 	dropDimension(name) {

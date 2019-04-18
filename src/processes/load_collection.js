@@ -5,8 +5,8 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class load_collection extends Process {
 
-	async validate(node, context, processGraph) {
-		await super.validate(node, context, processGraph);
+	async validate(node, context) {
+		await super.validate(node, context);
 		var id = node.getArgument('id');
 		if (context.getCollection(id) === null) {
 			throw new Errors.ProcessArgumentInvalid({
@@ -17,7 +17,7 @@ module.exports = class load_collection extends Process {
 		}
 	}
 
-	async execute(node, context, processGraph) {
+	async execute(node, context) {
 		// Load data
 		var id = node.getArgument('id');
 		var collection = context.getCollection(id);

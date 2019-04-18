@@ -1,7 +1,7 @@
 {
     "id": "filter_bands",
     "summary": "Filter the bands by name",
-    "description": "Filters the bands in the data cube so that bands that don't match any of the criteria are dropped from the data cube. The data cube is expected to have only one dimension of type `bands`.\n\nThe following criteria can be used to select bands:\n\n* `bands`: band name (e.g. `B01` or `B8A`)\n\n**Important:** The order of the specified array defines the order of the bands in the data cube, which can be important for subsequent processes. If multiple bands are matched by a single criterion (e.g. a range of wavelengths), they are ordered alphabetically by band names. Bands without names have an arbitrary order.",
+    "description": "Filters the bands in the data cube so that bands that don't match any of the criteria are dropped from the data cube. The data cube is expected to have only one dimension of type `bands`. Fails with a `DimensionMissing` error if no such dimension exists.\n\nThe following criteria can be used to select bands:\n\n* `bands`: band name (e.g. `B01` or `B8A`)\n\n**Important:** The order of the specified array defines the order of the bands in the data cube, which can be important for subsequent processes. If multiple bands are matched by a single criterion (e.g. a range of wavelengths), they are ordered alphabetically by band names. Bands without names have an arbitrary order.",
     "categories": [
         "filter"
     ],
@@ -33,6 +33,11 @@
         "schema": {
             "type": "object",
             "format": "raster-cube"
+        }
+    },
+    "exceptions": {
+        "DimensionMissing": {
+            "message": "A band dimension is missing."
         }
     },
     "links": [

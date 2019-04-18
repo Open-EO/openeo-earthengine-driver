@@ -1,7 +1,7 @@
 {
-    "id": "min",
-    "summary": "Minimum value",
-    "description": "Computes the smallest value of an array of numbers, which is is equal to the last element of a sorted (i.e., ordered) version the array.",
+    "id": "max",
+    "summary": "Maximum value",
+    "description": "Computes the largest value of an array of numbers, which is is equal to the first element of a sorted (i.e., ordered) version the array.",
     "categories": [
         "math",
         "reducer"
@@ -23,7 +23,7 @@
         }
     },
     "returns": {
-        "description": "The minimum value.",
+        "description": "The maximum value.",
         "schema": {
             "type": [
                 "number",
@@ -36,15 +36,16 @@
             "arguments": {
                 "data": [1,0,3,2]
             },
-            "returns": 0
+            "returns": 3
         },
         {
             "arguments": {
                 "data": [5,2.5,null,-0.7]
             },
-            "returns": -0.7
+            "returns": 5
         },
         {
+            "description": "The input array is empty: return `null`.",
             "arguments": {
                 "data": []
             },
@@ -54,8 +55,8 @@
     "links": [
         {
             "rel": "about",
-            "href": "http://mathworld.wolfram.com/Minimum.html",
-            "title": "Minimum explained by Wolfram MathWorld"
+            "href": "http://mathworld.wolfram.com/Maximum.html",
+            "title": "Maximum explained by Wolfram MathWorld"
         }
     ]
 }

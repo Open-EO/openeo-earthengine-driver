@@ -5,11 +5,11 @@ const Utils = require('../utils');
 
 module.exports = class run_process_graph extends Process {
 
-	async validate(node, context, processGraph) {
+	async validate(node, context) {
 		var variables = node.getArgument("variables");
 		context.setVariables(variables);
 
-		await super.validate(node, context, processGraph);
+		await super.validate(node, context);
 		
 		var pg;
 		var id = node.getArgument("id");
@@ -27,7 +27,7 @@ module.exports = class run_process_graph extends Process {
 		node.setProvision("ProcessGraph", pg);
 	}
 
-	async execute(node, context, processGraph) {
+	async execute(node, context) {
 		var pg = node.getProvision("ProcessGraph");
 		return await pg.execute();
 	}

@@ -105,7 +105,7 @@ module.exports = class ProcessGraph {
 			// Get process and validate
 			try {
 				var process = this._getProcess(node);
-				await process.validate(node, this.context, this);
+				await process.validate(node, this.context);
 			} catch (e) {
 				if (e instanceof ErrorList) {
 					this.errors.merge(e);
@@ -142,7 +142,7 @@ module.exports = class ProcessGraph {
 			}
 
 			var process = this._getProcess(node);
-			var result = await process.execute(node, this.context, this);
+			var result = await process.execute(node, this.context);
 			node.setResult(result);
 			
 			if (this.context.server().debug) {

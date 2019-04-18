@@ -3,6 +3,21 @@ const Utils = require('../utils');
 
 module.exports = class ProcessCommons {
 
+	static reduceInCallback(node, reducer) {
+		var dc = node.getData("data");
+		var func = data => data.reduce(reducer);
+		if (node.getProcessGraph().isSimpleReducer() || dc.isImageCollection()) {
+			dc.imageCollection(func);
+		}
+		else if (dc.isArray()) {
+			dc.array(func);
+		}
+		else {
+			throw "Calculating min not supported for given data type.";
+		}
+		return dc;
+	}
+
 	static filterBbox(dc, bbox, process_id, paramName) {
 		try {
 			dc.setSpatialExtent(bbox);

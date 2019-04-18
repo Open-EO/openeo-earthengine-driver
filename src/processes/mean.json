@@ -1,7 +1,7 @@
 {
-    "id": "min",
-    "summary": "Minimum value",
-    "description": "Computes the smallest value of an array of numbers, which is is equal to the last element of a sorted (i.e., ordered) version the array.",
+    "id": "mean",
+    "summary": "Arithmetic mean (average)",
+    "description": "The arithmetic mean of an array of numbers is the quantity commonly called the average. It is defined as the sum of all elements divided by the number of elements.",
     "categories": [
         "math",
         "reducer"
@@ -23,7 +23,7 @@
         }
     },
     "returns": {
-        "description": "The minimum value.",
+        "description": "The computed arithmetic mean.",
         "schema": {
             "type": [
                 "number",
@@ -36,15 +36,16 @@
             "arguments": {
                 "data": [1,0,3,2]
             },
-            "returns": 0
+            "returns": 1.5
         },
         {
             "arguments": {
-                "data": [5,2.5,null,-0.7]
+                "data": [9,2.5,null,-2.5]
             },
-            "returns": -0.7
+            "returns": 3
         },
         {
+            "description": "The input array is empty: return `null`.",
             "arguments": {
                 "data": []
             },
@@ -54,8 +55,8 @@
     "links": [
         {
             "rel": "about",
-            "href": "http://mathworld.wolfram.com/Minimum.html",
-            "title": "Minimum explained by Wolfram MathWorld"
+            "href": "http://mathworld.wolfram.com/ArithmeticMean.html",
+            "title": "Arithmetic mean explained by Wolfram MathWorld"
         }
     ]
 }

@@ -2,8 +2,8 @@ const Process = require('../processgraph/process');
 
 module.exports = class save_result extends Process {
 
-	async validate(node, context, processGraph) {
-		await super.validate(node, context, processGraph);
+	async validate(node, context) {
+		await super.validate(node, context);
 
 		var format = node.getArgument("format");
 		if (!context.server().isValidOutputFormat(format)) {
@@ -13,7 +13,7 @@ module.exports = class save_result extends Process {
 		// ToDo: We don't support any options yet, validate them
 	}
 
-	async execute(node, context, processGraph) {
+	async execute(node, context) {
 		var data = node.getData("data");
 		data.setOutputFormat(
 			node.getArgument("format"),

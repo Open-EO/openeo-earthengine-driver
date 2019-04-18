@@ -11,7 +11,7 @@ module.exports = class Process {
 		this.jsonSchema = new JsonSchemaValidator();
 	}
 
-	async validate(node, context, processGraph) {
+	async validate(node, context) {
 		// Check for arguments we don't support and throw error
 		var unsupportedArgs = node.getArgumentNames().filter(name => (typeof this.schema.parameters[name] === 'undefined'));
 		if (unsupportedArgs.length > 0) {
@@ -40,7 +40,7 @@ module.exports = class Process {
 				}
 			}
 			else if (argType === 'callback-argument') {
-				var cbParams = processGraph.getCallbackParameters();
+				var cbParams = node.getProcessGraph().getCallbackParameters();
 				if (Utils.isObject(cbParams) && cbParams.hasOwnProperty(arg.from_argument)) {
 					return; // ToDo: Call isParameterCompatibleTo
 				}
@@ -68,7 +68,7 @@ module.exports = class Process {
 		}
 	}
 
-	async execute(node, context, processGraph) {
+	async execute(node, context) {
 		throw "execute not implemented yet";
 	}
 

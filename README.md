@@ -50,7 +50,6 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
   "load_collection": {
     "arguments": {
       "id": "COPERNICUS/S2",
-      "spatial_extent": {"west": 4.96871, "south": 51.807693, "east": 5.726767, "north": 52.535366},
       "temporal_extent": ["2018-04-30","2018-06-26"]
     },
     "process_id": "load_collection"
@@ -111,8 +110,6 @@ This translates into the following [Google Earth Engine Playground](https://code
 // load_collection
 var img = ee.ImageCollection("COPERNICUS/S2");
 img = img.filterDate("2018-04-30", "2018-06-26");
-var geom = ee.Geometry.Rectangle([4.96871,51.807693,5.726767,52.535366], "EPSG:4326");
-img = img.filterBounds(geom);
 
 // filter_bands (2x)
 var band1 = img.select(["B4"],["B4"]);
