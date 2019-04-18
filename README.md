@@ -47,50 +47,90 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
 
 ```
 {
-  "process_id": "stretch_colors",
-  "imagery": {
-    "process_id": "min_time",
-    "imagery": {
-      "process_id": "NDVI",
-      "imagery": {
-        "process_id": "filter_daterange",
-        "imagery": {
-          "process_id": "get_collection",
-          "name": "COPERNICUS/S2"
-        },
-        "extent": [
-          "2018-01-01T00:00:00Z",
-          "2018-01-31T23:59:59Z"
-        ]
-      },
-      "red": "B4",
-      "nir": "B8"
-    }
+  "load_collection": {
+    "arguments": {
+      "id": "COPERNICUS/S2",
+      "spatial_extent": {"west": 4.96871, "south": 51.807693, "east": 5.726767, "north": 52.535366},
+      "temporal_extent": ["2018-04-30","2018-06-26"]
+    },
+    "process_id": "load_collection"
   },
-  "min": -1,
-  "max": 1
+  "b1": {
+    "arguments": {
+      "data": {"from_node": "load_collection"},
+      "bands": ["B4"]
+    },
+    "process_id": "filter_bands"
+  },
+  "b2": {
+    "arguments": {
+      "data": {"from_node": "load_collection"},
+      "bands": ["B8"]
+    },
+    "process_id": "filter_bands"
+  },
+  "normalized_difference": {
+    "arguments": {
+      "band1": {"from_node": "b1"},
+      "band2": {"from_node": "b2"}
+    },
+    "process_id": "normalized_difference"
+  },
+  "reduce": {
+    "arguments": {
+      "data": {"from_node": "normalized_difference"},
+      "dimension": "temporal",
+      "reducer": {
+        "callback": {
+          "min": {
+            "arguments": {
+              "data": {"from_argument": "data"}
+            },
+            "process_id": "min",
+            "result": true
+          }
+        }
+      }
+    },
+    "process_id": "reduce"
+  },
+  "save_result": {
+    "arguments": {
+      "data": {"from_node": "reduce"},
+      "format": "png"
+    },
+    "process_id": "save_result",
+    "result": true
+  }
 }
 ```
 
 This translates into the following [Google Earth Engine Playground](https://code.earthengine.google.com/) script:
 
 ```
-// create image collection
-var img = ee.ImageCollection('COPERNICUS/S2');
+// load_collection
+var img = ee.ImageCollection("COPERNICUS/S2");
+img = img.filterDate("2018-04-30", "2018-06-26");
+var geom = ee.Geometry.Rectangle([4.96871,51.807693,5.726767,52.535366], "EPSG:4326");
+img = img.filterBounds(geom);
 
-// filter_daterange
-img = img.filterDate("2018-01-01T00:00:00Z", "2018-01-31T23:59:59Z");
+// filter_bands (2x)
+var band1 = img.select(["B4"],["B4"]);
+var band2 = img.select(["B8"],["B8"]);
 
-// ndvi
-img = img.map(function(image) {
-  return image.normalizedDifference(['B4', 'B8']);
+// normalized_difference
+var combined = band1.combine(band2);
+img = combined.map(function(image) {
+	var normalizedDifference = image.normalizedDifference().rename("normalized_difference");
+	return image.addBands(normalizedDifference).select("normalized_difference");
 });
 
-// min_time
+// reduce with callback min
 img = img.reduce('min');
 
-// stretch_color and mapping
-Map.addLayer(img, {min: -1, max: 1, palette: ['black', 'white']});
+// save_result
+// Either download data with img.getDownloadURL() or show it in in the playground with:
+Map.addLayer(img);
 ```
 
 **[Further documentation](docs/README.md) can be found in the [docs/](docs/) directory, but is currently work in progress.**

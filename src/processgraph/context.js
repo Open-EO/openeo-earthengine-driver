@@ -22,16 +22,6 @@ module.exports = class ProcessingContext {
 		return this.serverContext.storedProcessGraphs().getById(id);
 	}
 
-	validateProcessGraph(pg, context) {
-		var runner = this.context.runner(pg);
-		return runner.validate(context);
-	}
-
-	executeProcessGraph(pg, context) {
-		var runner = this.context.runner(pg);
-		return runner.execute(context);
-	}
-
 	getJob(jobId) { // returns promise
 		return this.serverContext.jobs().getById(jobId);
 	}

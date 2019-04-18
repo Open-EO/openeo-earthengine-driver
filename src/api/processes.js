@@ -11,7 +11,6 @@ module.exports = class Processes {
 	}
 
 	getProcesses(req, res, next) {
-		
 		res.json({
 			processes: this.registry.getProcessSchemas(),
 			links: []

@@ -111,5 +111,13 @@
 		"tags": [
 			"Process Graphs"
 		]
+	},
+	"CallbackArgumentInvalid": {
+		"description": null,
+		"message": "Invalid callback argument '{argument}' requested in the process '{process_id}' with node with id '{node_id}'.",
+		"http": 400,
+		"tags": [
+			"Process Graphs"
+		]
 	}
 }

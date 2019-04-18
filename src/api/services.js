@@ -1,5 +1,6 @@
 const Utils = require('../utils');
 const Errors = require('../errors');
+const ProcessGraph = require('../processgraph/processgraph');
 
 module.exports = class ServicesAPI {
 
@@ -40,10 +41,8 @@ module.exports = class ServicesAPI {
 
 			try {
 				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				var runner = this.context.runner(service.process_graph);
-				var context = runner.createContextFromRequest(req);
-				runner.validate(context)
-					.then(() => runner.execute(context))
+				var pg = new ProcessGraph(service.process_graph, this.context.processingContext(req));
+				pg.execute()
 					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', "jpeg", rect))
 					.then(url => {
 						if (this.context.debug) {
@@ -124,8 +123,8 @@ module.exports = class ServicesAPI {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
 						case 'process_graph':
-							var runner = this.context.runner(req.body.process_graph);
-							promises.push(runner.validateRequest(req));
+						var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+							promises.push(pg.validate());
 							break;
 						case 'type':
 							promises.push(new Promise((resolve, reject) => {
@@ -197,8 +196,8 @@ module.exports = class ServicesAPI {
 			return next(new Errors.ServiceUnsupported());
 		}
 
-		var runner = this.context.runner(req.body.process_graph);
-		runner.validateRequest(req).then(() => {
+		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		pg.validate().then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,

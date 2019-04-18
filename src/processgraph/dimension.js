@@ -1,6 +1,7 @@
 module.exports = class Dimension {
 
-	constructor(options) {
+	constructor(datacube, options) {
+		this.datacube = datacube;
 		this.fromSTAC(options);
 	}
 
@@ -37,6 +38,10 @@ module.exports = class Dimension {
 			obj.reference_system = this.referenceSystem;
 		}
 		return obj;
+	}
+
+	drop() {
+		this.datacube.dropDimension(this);
 	}
 
 	getResolution() {

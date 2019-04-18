@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const objectHash = require('object-hash');
 const fse = require('fs-extra');
 const path = require('path');
+const axios = require('axios');
 const Errors = require('./errors');
 
 var Utils = {
@@ -114,8 +115,34 @@ var Utils = {
 		}, bbox);
 	},
 
+	geoJsonToGeometry(geojson) {
+		switch(geojson.type) {
+			case 'Feature':
+				return ee.Geometry(geojson.geometry);
+			case 'FeatureCollection':
+				var geometries = {
+					type: "GeometryCollection",
+					geometries: []
+				};
+				for(var i in geojson.features) {
+					geometries.geometries.push(geojson.features[i].geometry);
+				}
+				return ee.Geometry(geometries);
+			case 'Point':
+			case 'MultiPoint':
+			case 'LineString':
+			case 'MultiLineString':
+			case 'Polygon':
+			case 'MultiPolygon':
+			case 'GeometryCollection':
+				return ee.Geometry(geojson);
+			default:
+				return null;
+		}
+
+	},
+
 	geoJsonToFeatureCollection(geojson) {
-		let feature = null;
 		switch(geojson.type) {
 			case 'Point':
 			case 'MultiPoint':
@@ -125,17 +152,16 @@ var Utils = {
 			case 'MultiPolygon':
 			case 'GeometryCollection':
 			case 'Feature':
-				feature = ee.FeatureCollection(ee.Feature(geojson));
-				break;
+				return ee.FeatureCollection(ee.Feature(geojson));
 			case 'FeatureCollection':
 				var features = [];
 				for(var i in geojson.features) {
 					features.push(ee.Feature(geojson.features[i]));
 				}
-				feature = ee.FeatureCollection(features);
-				break;
+				return ee.FeatureCollection(features);
+			default:
+				return null;
 		}
-		return feature;
 	},
 
 	getFileExtension(file) {
@@ -190,6 +216,26 @@ var Utils = {
 		.catch(err => {
 			return Promise.reject(new Errors.FileNotFound());
 		});
+	},
+
+	stream(opts) {
+		return axios(opts).catch(error => {
+			if (opts.responseType === 'stream' && error.response !== null && typeof error.response === 'object' && error.response.data !== null) {
+				// JSON error responses are Blobs and streams if responseType is set as such, so convert to JSON if required.
+				// See: https://github.com/axios/axios/issues/815
+				return new Promise((_, reject) => {
+					var chunks = [];
+					error.response.data.on("data", chunk => chunks.push(chunk));
+					error.response.data.on("error", () => reject(error));
+					error.response.data.on("end", () => reject(new Errors.EarthEngineError({
+						message: Buffer.concat(chunks).toString(),
+						process: 'save_result'
+					})));
+				});
+			}
+			throw error;
+		});
+
 	}
 
 };

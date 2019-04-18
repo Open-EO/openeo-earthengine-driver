@@ -1,5 +1,8 @@
 const JsonSchemaValidator = require('./jsonschema');
 const Errors = require('../errors');
+const ProcessGraph = require('./processgraph');
+const ProcessGraphNode = require('./node');
+const Utils = require('../utils');
 
 module.exports = class Process {
 
@@ -8,7 +11,7 @@ module.exports = class Process {
 		this.jsonSchema = new JsonSchemaValidator();
 	}
 
-	async validate(node, context) {
+	async validate(node, context, processGraph) {
 		// Check for arguments we don't support and throw error
 		var unsupportedArgs = node.getArgumentNames().filter(name => (typeof this.schema.parameters[name] === 'undefined'));
 		if (unsupportedArgs.length > 0) {
@@ -24,7 +27,8 @@ module.exports = class Process {
 			let param = this.schema.parameters[name];
 			// Check whether parameter is required
 			let arg = node.getArgument(name, undefined, false);
-			if (typeof arg === 'undefined') {
+			let argType = ProcessGraphNode.getType(arg);
+			if (argType === 'undefined') {
 				if (param.required) {
 					throw new Errors.ProcessArgumentRequired({
 						process: this.schema.id,
@@ -34,6 +38,22 @@ module.exports = class Process {
 				else {
 					continue; // Parameter not set, nothing to validate against
 				}
+			}
+			else if (argType === 'callback-argument') {
+				var cbParams = processGraph.getCallbackParameters();
+				if (Utils.isObject(cbParams) && cbParams.hasOwnProperty(arg.from_argument)) {
+					return; // ToDo: Call isParameterCompatibleTo
+				}
+				else {
+					throw new Errors.CallbackArgumentInvalid({
+						argument: arg.from_argument,
+						node_id: node.id,
+						process_id: this.schema.id
+					});
+				}
+			}
+			else if (arg instanceof ProcessGraph) {
+				await arg.validate(true);
 			}
 
 			// Validate against JSON schema
@@ -46,10 +66,9 @@ module.exports = class Process {
 				});
 			}
 		}
-		return node;
 	}
 
-	async execute(node, context) {
+	async execute(node, context, processGraph) {
 		throw "execute not implemented yet";
 	}
 

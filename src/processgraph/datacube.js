@@ -16,7 +16,7 @@ module.exports = class DataCube {
 			this.data = sourceDataCube.data;
 			this.output = Object.assign({}, sourceDataCube.output);
 			for(var i in sourceDataCube.dimensions) {
-				this.dimensions[i] = new Dimension(sourceDataCube.dimensions[i]);
+				this.dimensions[i] = new Dimension(this, sourceDataCube.dimensions[i]);
 			}
 		}
 	}
@@ -27,6 +27,30 @@ module.exports = class DataCube {
 
 	setData(data) {
 		this.data = data;
+	}
+
+	isImage() {
+		if (this.data instanceof ee.Image) {
+			return true;
+		}
+		else if (this.data instanceof ee.ComputedObject) {
+			throw "Can't detect type of ComputedObject yet, so can't tell whether it's an Image.";
+		}
+		else {
+			return false;
+		}
+	}
+
+	isImageCollection() {
+		if (this.data instanceof ee.ImageCollection) {
+			return true;
+		}
+		else if (this.data instanceof ee.ComputedObject) {
+			throw "Can't detect type of ComputedObject yet, so can't tell whether it's an ImageCollection.";
+		}
+		else {
+			return false;
+		}
 	}
 
 	image(callback = null) {
@@ -47,6 +71,9 @@ module.exports = class DataCube {
 			}
 			this.data = this.data.mosaic();
 		}
+		else if (this.data instanceof ee.Array) {
+			this.data = ee.Image(this.data);
+		}
 		else {
 			throw "Can't convert to image.";
 		}
@@ -63,8 +90,27 @@ module.exports = class DataCube {
 		else if (this.data instanceof ee.Image || this.data instanceof ee.ComputedObject) {
 			this.data = ee.ImageCollection(this.data);
 		}
+		else if (this.data instanceof ee.Array) {
+			this.data = ee.ImageCollection(ee.Image(this.data));
+		}
 		else {
 			throw "Can't convert to image collection.";
+		}
+		if (callback) {
+			this.data = callback(this.data);
+		}
+		return this.data;
+	}
+	
+	array(callback = null) {
+		if (this.data instanceof ee.Array) {
+			// No op
+		}
+		else if (this.data instanceof ee.Image) {
+			this.data = this.data.toArray();
+		}
+		else {
+			throw "Can't convert to an array.";
 		}
 		if (callback) {
 			this.data = callback(this.data);
@@ -121,8 +167,12 @@ module.exports = class DataCube {
 	}
 
 	setSpatialExtent(extent) {
-		this.dimX().setExtent(extent.west, extent.east);
-		this.dimY().setExtent(extent.south, extent.north);
+		var crs = extent.crs > 0 ? 'EPSG:' + extent.crs : 'EPSG:4326';
+		var proj = proj4(crs, this.getCrs());
+		var p1 = proj.forward([extent.west, extent.south]);
+		var p2 = proj.forward([extent.east, extent.north]);
+		this.dimX().setExtent(p1[0], p2[0]);
+		this.dimY().setExtent(p1[1], p2[1]);
 		if (extent.base && extent.height) {
 			this.dimZ().setExtent(extent.base, extent.height);
 		}
@@ -168,6 +218,10 @@ module.exports = class DataCube {
 
 	getBands() {
 		return this.dimBands().getValues();
+	}
+
+	setBands(bands) {
+		this.dimBands().setValues(bands);
 	}
 
 	getCrs() {
@@ -219,7 +273,7 @@ module.exports = class DataCube {
 		if (this.dimensions[name] instanceof Dimension) {
 			throw "Dimension '" + name + "' already exists.";
 		}
-		this.dimensions[name] = new Dimension({
+		this.dimensions[name] = new Dimension(this, {
 			type: type,
 			axis: axis
 		});
@@ -228,12 +282,22 @@ module.exports = class DataCube {
 	setDimensionsFromSTAC(dimensions) {
 		this.dimensions = [];
 		for (var name in dimensions) {
-			this.dimensions[name] = new Dimension(dimensions[name]);
+			this.dimensions[name] = new Dimension(this, dimensions[name]);
 		}
 	}
 
 	dropDimension(name) {
-		delete this.dimensions[name];
+		if (name instanceof Dimension) {
+			for(var key in this.dimensions) {
+				if (this.dimensions[key] === name) {
+					delete this.dimensions[key];
+					return;
+				}
+			}
+		}
+		else {
+			delete this.dimensions[name];
+		}
 	}
 
 	setOutputFormat(format, parameters = {}) {

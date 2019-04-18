@@ -1,66 +1,96 @@
 {
-	"id": "filter_bbox",
-	"deprecated": true,
-	"description": "Drops observations from a collection that are located outside of a given bounding box.",
-	"parameter_order": ["imagery", "extent"],
-	"parameters": {
-		"imagery": {
-			"description": "EO data to process.",
-			"required": true,
-			"schema": {
-				"type": "object",
-				"format": "raster-cube"
-			}
-		},
-		"extent": {
-			"description": "Spatial extent, may include a vertical axis (height or depth).",
-			"required": true,
-			"schema": {
-				"type": "object",
-				"format": "bounding-box",
-				"required": [
-					"west",
-					"east",
-					"north",
-					"south"
-				],
-				"additionalProperties": false,
-				"properties": {
-					"crs": {
-						"description": "Coordinate reference system. EPSG codes must be supported. In addition, proj4 strings should be supported by back-ends. Whenever possible, it is recommended to use EPSG codes instead of proj4 strings.\nDefaults to `EPSG:4326` unless the client explicitly requests a different coordinate reference system.",
-						"type": "string",
-						"default": "EPSG:4326"
-					},
-					"west": {
-						"description": "Lower left corner, coordinate axis 1 (west).",
-						"type": "number"
-					},
-					"east": {
-						"description": "Upper right corner, coordinate axis 1 (east).",
-						"type": "number"
-					},
-					"north": {
-						"description": "Lower left corner, coordinate axis 2 (north).",
-						"type": "number"
-					},
-					"south": {
-						"description": "Upper right corner, coordinate axis 2 (south).",
-						"type": "number"
-					}
-				}
-			}
-		}
-	},
-	"returns": {
-		"description": "Processed EO data.",
-		"schema": {
-			"type": "object",
-			"format": "raster-cube"
-		}
-	},
-	"exceptions": {
-		"ProcessArgumentUnsupported": {
-			"message": "The height or base parameters are set, but not supported."
-		}
-	}
+    "id": "filter_bbox",
+    "summary": "Spatial filter using a bounding box",
+    "description": "Limits the data cube to the specified bounding box.\n\nThe filter retains a pixel in the data cube if the point at the pixel center intersects with the bounding box (as defined in the Simple Features standard by the OGC).",
+    "categories": [
+        "filter"
+    ],
+    "gee:custom": true,
+    "parameter_order": ["data", "extent"],
+    "parameters": {
+        "data": {
+            "description": "A data cube.",
+            "schema": {
+                "type": "object",
+                "format": "raster-cube"
+            },
+            "required": true
+        },
+        "extent": {
+            "description": "A bounding box, which may include a vertical axis (see `base` and `height`).\n\nThe coordinate reference system of the extent must be specified as [EPSG](http://www.epsg.org) code or [PROJ](https://proj4.org) definition.",
+            "required": true,
+            "schema": {
+                "type": "object",
+                "format": "bounding-box",
+                "required": ["west", "south", "east", "north"],
+                "properties": {
+                    "west": {
+                        "description": "West (lower left corner, coordinate axis 1).",
+                        "type": "number"
+                    },
+                    "south": {
+                        "description": "South (lower left corner, coordinate axis 2).",
+                        "type": "number"
+                    },
+                    "east": {
+                        "description": "East (upper right corner, coordinate axis 1).",
+                        "type": "number"
+                    },
+                    "north": {
+                        "description": "North (upper right corner, coordinate axis 2).",
+                        "type": "number"
+                    },
+                    "base": {
+                        "description": "Base (optional, lower left corner, coordinate axis 3).",
+                        "type": ["number", "null"],
+                        "default": null
+                    },
+                    "height": {
+                        "description": "Height (optional, upper right corner, coordinate axis 3).",
+                        "type": ["number", "null"],
+                        "default": null
+                    },
+                    "crs": {
+                        "description": "Coordinate reference system of the extent specified as EPSG code. Defaults to `4326` (EPSG code 4326) unless the client explicitly requests a different coordinate reference system.",
+                        "schema": {
+                            "title": "EPSG Code",
+                            "type": "integer",
+                            "format": "epsg-code",
+                            "examples": [7099],
+                            "default": 4326
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "returns": {
+        "description": "A data cube restricted to the bounding box. Therefore, the cardinality is potentially lower, but the resolution and the number of dimensions are the same as for the original data cube.",
+        "schema": {
+            "type": "object",
+            "format": "raster-cube"
+        }
+    },
+    "links": [
+        {
+            "rel": "about",
+            "href": "https://proj4.org/usage/projections.html",
+            "title": "PROJ parameters for cartographic projections"
+        },
+        {
+            "rel": "about",
+            "href": "http://www.epsg-registry.org",
+            "title": "Official EPSG code registry"
+        },
+        {
+            "rel": "about",
+            "href": "http://www.epsg.io",
+            "title": "Unofficial EPSG code database"
+        },
+        {
+            "href": "http://www.opengeospatial.org/standards/sfa",
+            "rel": "about",
+            "title": "Simple Features standard by the OGC"
+        }
+    ]
 }

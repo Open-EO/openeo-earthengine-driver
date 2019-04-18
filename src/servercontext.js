@@ -1,5 +1,6 @@
 const Config = require('./config');
 const ProcessRegistry = require('./processgraph/registry');
+const ProcessingContext = require('./processgraph/context');
 const SubscriptionPool = require('./subscriptions/pool');
 const Utils = require('./utils');
 
@@ -56,10 +57,6 @@ module.exports = class ServerContext extends Config {
 		return this.serviceStore;
 	}
 
-	runner(pg) {
-		return this.processes().createRunner(pg);
-	}
-
 	getTempFolder() {
 		return this.tempFolder;
 	}
@@ -70,6 +67,10 @@ module.exports = class ServerContext extends Config {
 
 	isValidServiceType(service_type) {
 		return (typeof service_type === 'string' && Utils.isObject(this.services[service_type.toLowerCase()]));
+	}
+
+	processingContext(req) {
+		return new ProcessingContext(this, req.user._id);
 	}
 
 };

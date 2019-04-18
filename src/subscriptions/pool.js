@@ -65,7 +65,7 @@ module.exports = class SubscriptionsPool {
 	}
 
 	xscribe(json, user_id, subscribe) {
-		if (typeof json.payload.topics === 'object' && Array.isArray(json.payload.topics)) {
+		if (Array.isArray(json.payload.topics)) {
 			var con = this.getConnection(user_id);
 			if (con !== null) {
 				if (subscribe) {

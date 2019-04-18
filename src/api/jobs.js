@@ -1,8 +1,8 @@
-const axios = require('axios');
 const Utils = require('../utils');
 const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
+const ProcessGraph = require('../processgraph/processgraph');
 
 module.exports = class JobsAPI {
 
@@ -149,10 +149,9 @@ module.exports = class JobsAPI {
 				res.send(202);
 				next();
 
-				var runner = this.context.runner(job.process_graph);
-				var context = runner.createContextFromRequest(req);
-				return runner.validate(context)
-					.then(() => runner.execute(context))
+				var context = this.context.processingContext(req);
+				var pg = new ProcessGraph(job.process_graph, context);
+				return pg.execute()
 					.then(resultNode => {
 						var cube = resultNode.getResult();
 						var jobFormat = context.translateOutputFormat(cube.getOutputFormat());
@@ -165,7 +164,7 @@ module.exports = class JobsAPI {
 		.then(url => {
 			this.sendDebugNotifiction(req, res, "Downloading " + url);
 			this.storage.updateJobStatus(query, 'running').catch(() => {});
-			return axios({
+			return Utils.stream({
 				method: 'get',
 				url: url,
 				responseType: 'stream'
@@ -287,8 +286,8 @@ module.exports = class JobsAPI {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
 						case 'process_graph':
-							var runner = this.context.runner(req.body.process_graph);
-							promises.push(runner.validateRequest(req));
+							var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+							promises.push(pg.validate());
 							break;
 						default:
 							// ToDo: Validate further data
@@ -329,8 +328,8 @@ module.exports = class JobsAPI {
 			return next(new Errors.AuthenticationRequired());
 		}
 
-		var runner = this.context.runner(req.body.process_graph);
-		runner.validateRequest(req).then(() => {
+		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		pg.validate().then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,
@@ -372,9 +371,9 @@ module.exports = class JobsAPI {
 
 		this.sendDebugNotifiction(req, res, "Starting to process request");
 
-		var runner = this.context.runner(req.body.process_graph);
-		var context = runner.createContextFromRequest(req);
-		runner.validate(context, false)
+		var context = this.context.processingContext(req);
+		var pg = new ProcessGraph(req.body.process_graph, context);
+		pg.validate(false)
 			.then(errorList => {
 				this.sendDebugNotifiction(req, res, "Validated with " + errorList.count() + " errors");
 				if (errorList.count() > 0) {
@@ -383,12 +382,12 @@ module.exports = class JobsAPI {
 				}
 
 				this.sendDebugNotifiction(req, res, "Executing processes");
-				return runner.execute(context);
+				return pg.execute();
 			})
 			.then(resultNode => context.retrieveResults(resultNode.getResult(), 1000)) // 1000 = pixel size
 			.then(url => {
 				this.sendDebugNotifiction(req, res, "Downloading " + url);
-				return axios({
+				return Utils.stream({
 					method: 'get',
 					url: url,
 					responseType: 'stream'
@@ -401,7 +400,10 @@ module.exports = class JobsAPI {
 				stream.data.pipe(res);
 				return next();
 			})
-			.catch(e => next(Errors.wrap(e)));
+			.catch(e => {
+				// ToDo: Check for error in response.
+				next(Errors.wrap(e))
+			});
 	}
 
 	makeJobResponse(job, full = true) {

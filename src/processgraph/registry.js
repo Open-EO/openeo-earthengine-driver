@@ -1,7 +1,6 @@
 const Utils = require('../utils');
 const fse = require('fs-extra');
 const path = require('path');
-const ProcessGraphRunner = require('./runner');
 
 module.exports = class ProcessRegistry {
 
@@ -39,10 +38,6 @@ module.exports = class ProcessRegistry {
 
 	getProcessSchemas() {
 		return Object.values(this.processes).map(impl => impl.schema);
-	}
-
-	createRunner(processGraph) {
-		return new ProcessGraphRunner(processGraph, this);
 	}
 
 	getServerContext() {

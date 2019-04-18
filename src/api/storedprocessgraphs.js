@@ -1,5 +1,6 @@
 const Utils = require('../utils');
 const Errors = require('../errors');
+const ProcessGraph = require('../processgraph/processgraph');
 
 module.exports = class StoredProcessGraphs {
 
@@ -20,8 +21,8 @@ module.exports = class StoredProcessGraphs {
 	}
 
 	postValidation(req, res, next) {
-		var runner = this.context.runner(req.body.process_graph);
-		runner.validateRequest(req, false)
+		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		pg.validate(false)
 			.then(errors => {
 				res.send(200, {
 					errors: errors.toJSON()
@@ -58,8 +59,8 @@ module.exports = class StoredProcessGraphs {
 			return next(new Errors.AuthenticationRequired());
 		}
 
-		var runner = this.context.runner(req.body.process_graph);
-		runner.validateRequest(req)
+		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		pg.validate()
 			.then(() => {
 				var data = {
 					title: req.body.title || null,
@@ -103,8 +104,8 @@ module.exports = class StoredProcessGraphs {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
 						case 'process_graph':
-							var runner = this.context.runner(req.body.process_graph);
-							promises.push(runner.validateRequest(req));
+							var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+							promises.push(pg.validate());
 							break;
 						default:
 							// ToDo: Validate further data

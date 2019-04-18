@@ -2,9 +2,9 @@ const Utils = require('../utils');
 const Errors = require('../errors');
 const Process = require('../processgraph/process');
 
-module.exports = class zonal_statistics extends Process {
+module.exports = class aggregate_polygon extends Process {
 
-	async execute(node, context) {
+	async execute(node, context, processGraph) {
 		var dc = node.getData("imagery");
 		var imagery = dc.imageCollection();
 

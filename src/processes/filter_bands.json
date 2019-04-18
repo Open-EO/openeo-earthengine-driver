@@ -1,37 +1,46 @@
 {
-	"id": "filter_bands",
-	"deprecated": true,
-	"summary": "Filters by bands.",
-	"description": "Allows to extract one or multiple bands of multi-band raster image collection.\nBands can be chosen either by band id.",
-	"parameter_order": ["imagery", "bands"],
-	"parameters": {
-		"imagery": {
-			"description": "EO data to process.",
-			"required": true,
-			"schema": {
-				"type": "object",
-				"format": "raster-cube"
-			}
-		},
-		"bands": {
-			"description": "string or array of strings containing band ids.",
-			"required": true,
-			"schema": {
-				"type": [
-					"string",
-					"array"
-				],
-				"items": {
-					"type": "string"
-				}
-			}
-		}
-	},
-	"returns": {
-		"description": "Processed EO data.",
-		"schema": {
-			"type": "object",
-			"format": "raster-cube"
-		}
-	}
+    "id": "filter_bands",
+    "summary": "Filter the bands by name",
+    "description": "Filters the bands in the data cube so that bands that don't match any of the criteria are dropped from the data cube. The data cube is expected to have only one dimension of type `bands`.\n\nThe following criteria can be used to select bands:\n\n* `bands`: band name (e.g. `B01` or `B8A`)\n\n**Important:** The order of the specified array defines the order of the bands in the data cube, which can be important for subsequent processes. If multiple bands are matched by a single criterion (e.g. a range of wavelengths), they are ordered alphabetically by band names. Bands without names have an arbitrary order.",
+    "categories": [
+        "filter"
+    ],
+    "gee:custom": true,
+    "parameter_order": ["data", "bands"],
+    "parameters": {
+        "data": {
+            "description": "A data cube with bands.",
+            "schema": {
+                "type": "object",
+                "format": "raster-cube"
+            },
+            "required": true
+        },
+        "bands": {
+            "description": "A list of band names.\n\nThe order of the specified array defines the order of the bands in the data cube.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "type": "string",
+                    "format": "band-name"
+                }
+            },
+            "required": true
+        }
+    },
+    "returns": {
+        "description": "A data cube limited to a subset of its original bands. Therefore, the cardinality is potentially lower, but the resolution and the number of dimensions are the same as for the original data cube.",
+        "schema": {
+            "type": "object",
+            "format": "raster-cube"
+        }
+    },
+    "links": [
+        {
+            "rel": "about",
+            "href": "https://github.com/radiantearth/stac-spec/tree/master/extensions/eo#common-band-names",
+            "title": "List of common band names as specified by the STAC specification"
+        }
+    ]
+    
 }

@@ -1,4 +1,5 @@
 const ProcessRegistry = require('../src/processgraph/registry');
+const ProcessingContext = require('../src/processgraph/context');
 const json = require('./data/sample-processgraph.json');
 
 describe('Process Graph Registry', () => {
@@ -12,8 +13,7 @@ describe('Process Graph Registry', () => {
 	});
 	var runner;
 	test('Create Runner', () => {
-		runner = registry.createRunner(json);
-		var p = runner.getProcessGraph();
+		var pg = new ProcessGraph(json, new ProcessingContext());
 		expect(p.getNode("loadco1").passesTo).toEqual(["filter1"/*, "filter2"*/]);
 		expect(p.getStartNodeIds()).toEqual(["loadco1"]);
 		expect(p.getResultNode().id).toBe("mint1"/*"export2"*/);

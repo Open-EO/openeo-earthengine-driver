@@ -1,5 +1,6 @@
 const Errors = require('../errors');
 const DataCube = require('./datacube');
+const Utils = require('../utils');
 
 module.exports = class ProcessGraphNode {
 
@@ -7,7 +8,7 @@ module.exports = class ProcessGraphNode {
 		if (typeof id !== 'string' || id.length === 0) {
 			throw new Errors.NodeIdInvalid();
 		}
-		if (typeof json !== 'object') {
+		if (!Utils.isObject(json)) {
 			throw new Errors.NodeInvalid({node_id: id});
 		}
 		if (typeof json.process_id !== 'string') {
@@ -46,12 +47,48 @@ module.exports = class ProcessGraphNode {
 		return new DataCube(this.getArgument(name));
 	}
 
+	static getType(obj, reportNullAs = 'null') {
+		if (typeof obj === 'object') {
+			if (obj === null) {
+				return reportNullAs;
+			}
+			else if (Array.isArray(obj)) {
+				return 'array';
+			}
+			else if(obj.hasOwnProperty("callback")) {
+				return 'callback';
+			}
+			else if(obj.hasOwnProperty("variable_id")) {
+				return 'variable';
+			}
+			else if(obj.hasOwnProperty("from_node")) {
+				return 'result';
+			}
+			else if(obj.hasOwnProperty("from_argument")) {
+				return 'callback-argument';
+			}
+			else {
+				return 'object';
+			}
+		}
+		return (typeof obj);
+	}
+
 	processArgument(arg, getResult = true) {
-		var type = this.processGraph.getType(arg);
+		var type = ProcessGraphNode.getType(arg);
 		switch(type) {
 			case 'result':
 				if (getResult) {
 					return this.processGraph.getNode(arg.from_node).getResult();
+				}
+				else {
+					return arg;
+				}
+			case 'callback':
+				return arg.callback;
+			case 'callback-argument':
+				if (getResult) {
+					return this.processGraph.getParameter(arg.from_argument);
 				}
 				else {
 					return arg;
