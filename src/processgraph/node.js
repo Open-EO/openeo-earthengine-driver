@@ -43,7 +43,7 @@ module.exports = class ProcessGraphNode {
 	}
 
 	getArgument(name, defaultValue = undefined, getResult = true) {
-		var arg = this.arguments[name] || defaultValue;
+		var arg = typeof this.arguments[name] === 'undefined' ? defaultValue : this.arguments[name];
 		return this.processArgument(arg, getResult);
 	}
 

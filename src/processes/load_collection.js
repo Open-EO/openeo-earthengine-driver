@@ -5,18 +5,6 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class load_collection extends Process {
 
-	async validate(node, context) {
-		await super.validate(node, context);
-		var id = node.getArgument('id');
-		if (context.getCollection(id) === null) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
-				argument: 'id',
-				reason: 'Collection does not exist.'
-			});
-		}
-	}
-
 	async execute(node, context) {
 		// Load data
 		var id = node.getArgument('id');
