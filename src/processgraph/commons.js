@@ -13,7 +13,7 @@ module.exports = class ProcessCommons {
 			dc.array(func);
 		}
 		else {
-			throw "Calculating min not supported for given data type.";
+			throw "Calculating " + reducer + " not supported for given data type.";
 		}
 		return dc;
 	}

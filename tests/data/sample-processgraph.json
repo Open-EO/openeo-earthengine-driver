@@ -1,50 +1,56 @@
 {
-    "loadco1": {
-      "process_id": "get_collection",
-      "arguments": {
-        "name": "Sentinel-2"
-      }
+  "load_collection": {
+    "arguments": {
+      "id": "COPERNICUS/S2",
+      "temporal_extent": ["2018-04-30","2018-06-26"]
     },
-    "filter1": {
-      "process_id": "filter_daterange",
-      "arguments": {
-        "data": {
-          "from_node": "loadco1"
-        },
-        "extent": ["2018-01-01","2018-01-31"]
-      }
+    "process_id": "load_collection"
+  },
+  "b1": {
+    "arguments": {
+      "data": {"from_node": "load_collection"},
+      "bands": ["B4"]
     },
-    "filter2": {
-      "process_id": "filter_bbox",
-      "arguments": {
-        "data": {
-          "from_node": "filter1"
-        },
-        "extent": {
-          "west": 16.1,
-          "east": 16.6,
-          "north": 48.6,
-          "south": 47.2
+    "process_id": "filter_bands"
+  },
+  "b2": {
+    "arguments": {
+      "data": {"from_node": "load_collection"},
+      "bands": ["B8"]
+    },
+    "process_id": "filter_bands"
+  },
+  "normalized_difference": {
+    "arguments": {
+      "band1": {"from_node": "b1"},
+      "band2": {"from_node": "b2"}
+    },
+    "process_id": "normalized_difference"
+  },
+  "reduce": {
+    "arguments": {
+      "data": {"from_node": "normalized_difference"},
+      "dimension": "temporal",
+      "reducer": {
+        "callback": {
+          "min": {
+            "arguments": {
+              "data": {"from_argument": "data"}
+            },
+            "process_id": "min",
+            "result": true
+          }
         }
       }
     },
-    "ndvi1": {
-      "process_id": "NDVI",
-      "arguments": {
-        "data": {
-          "from_node": "filter2"
-        },
-        "red": "B4",
-        "nir": "B8"
-      }
+    "process_id": "reduce"
+  },
+  "save_result": {
+    "arguments": {
+      "data": {"from_node": "reduce"},
+      "format": "png"
     },
-    "mint1": {
-      "process_id": "min_time",
-      "arguments": {
-        "data": {
-          "from_node": "ndvi1"
-        }
-      },
-      "result": true
-    }
+    "process_id": "save_result",
+    "result": true
   }
+}

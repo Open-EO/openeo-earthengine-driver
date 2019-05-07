@@ -1,27 +1,40 @@
-const ProcessRegistry = require('../src/processgraph/registry');
+const GeeProcessRegistry = require('../src/processgraph/registry');
+const ServerContext = require('../src/servercontext');
 const ProcessingContext = require('../src/processgraph/context');
+const GeeProcessGraph = require('../src/processgraph/processgraph');
 const json = require('./data/sample-processgraph.json');
 
 describe('Process Graph Registry', () => {
-	var registry;
+	var registry, p, context;
+
 	beforeAll(() => {
-		registry = new ProcessRegistry();
+		registry = new GeeProcessRegistry();
+		context = new ProcessingContext(new ServerContext());
+		p = new GeeProcessGraph(json, context);
 		return Promise.resolve();
 	});
+
 	test('Load Processes', () => {
-		expect(registry.addFromFolder('./src/processes/')).toBe(10);
+		registry.addFromFolder('./src/processes/');
+		expect(registry.count()).toBe(18);
 	});
-	var runner;
-	test('Create Runner', () => {
-		var pg = new ProcessGraph(json, new ProcessingContext());
-		expect(p.getNode("loadco1").passesTo).toEqual(["filter1"/*, "filter2"*/]);
-		expect(p.getStartNodeIds()).toEqual(["loadco1"]);
-		expect(p.getResultNode().id).toBe("mint1"/*"export2"*/);
+
+	test('Validate', async () => {
+		var errors = await p.validate(false);
+
+		expect(p.getNode("load_collection").getNextNodes().map(n => n.id)).toEqual(["b1", "b2"]);
+		expect(p.getStartNodeIds()).toEqual(["load_collection"]);
+		expect(p.getResultNode().id).toBe("save_result");
+
+		if (errors.count() > 0) {
+			console.log(errors.getMessage());
+		}
+		expect(errors.count()).toBe(0);
 	});
-	test('Validate', (done) => {
-		runner.validate().then(() => done()).catch(e => console.log(e) && done());
-	});
-	test('Execute', (done) => {
-		runner.execute().then(() => done()).catch(e => console.log(e) && done());
-	});
+
+/*	test('Execute', async () => {
+		var resultNode = await p.execute();
+		expect(resultNode).not.toBeNull(); // TODO: Futher checks...
+	}); */
+
 });

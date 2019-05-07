@@ -1,5 +1,5 @@
 const Config = require('./config');
-const ProcessRegistry = require('./processgraph/registry');
+const GeeProcessRegistry = require('./processgraph/registry');
 const ProcessingContext = require('./processgraph/context');
 const SubscriptionPool = require('./subscriptions/pool');
 const Utils = require('./utils');
@@ -15,7 +15,7 @@ module.exports = class ServerContext extends Config {
 
 	constructor() {
 		super();
-		this.processRegistry = new ProcessRegistry(this);
+		this.processRegistry = new GeeProcessRegistry(this);
 		this.dataCatalog = new DataCatalog();
 		this.processGraphStore = new ProcessGraphStore();
 		this.fileWorkspace = new FileWorkspace();

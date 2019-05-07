@@ -5,6 +5,7 @@ const fse = require('fs-extra');
 const path = require('path');
 const axios = require('axios');
 const Errors = require('./errors');
+const { Utils: CommonUtils } = require('@openeo/js-commons');
 
 var Utils = {
 
@@ -38,14 +39,11 @@ var Utils = {
 	},
 
 	isObject(obj) {
-		return (obj === Object(obj) && !Array.isArray(obj));
+		return CommonUtils.isObject(obj);
 	},
 	
 	size(obj) {
-		if (obj === null) {
-			return 0;
-		}
-		return Object.keys(obj).length;
+		return CommonUtils.size(obj);
 	},
 
 	loadDB(name) {

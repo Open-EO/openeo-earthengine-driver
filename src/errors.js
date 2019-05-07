@@ -1,6 +1,7 @@
 const openeo_errors = require('../storage/errors/errors.json');
 const custom_errors = require('../storage/errors/custom.json');
 const restify_errors = require('restify-errors');
+const { Utils: CommonUtils, ProcessGraphError } = require('@openeo/js-commons');
 
 const errors = Object.assign(openeo_errors, custom_errors);
 
@@ -38,20 +39,21 @@ for(var name in errors) {
 				args.message = obj.message;
 			}
 		}
-		else if (obj === Object(obj) && !Array.isArray(obj)) {
+		else if (CommonUtils.isObject(obj)) {
 			args = obj;
 		}
 		this.info = args;
-
-		for(var placeholder in this.info) {
-			this.message = this.message.replace('{' + placeholder + '}', this.info[placeholder]);
-		}
+		console.log(this.message, this.info);
+		this.message = CommonUtils.replacePlaceholders(this.message, this.info);
 	};
 	restify_errors[name].prototype = old;
 }
 
 restify_errors['wrap'] = function(e, callback) {
-	if (typeof e.openEOCode !== 'undefined') {
+	if (e instanceof ProcessGraphError) {
+		return e;
+	}
+	else if (typeof e.openEOCode !== 'undefined') {
 		return e; // An openEO error
 	}
 	else {

@@ -1,4 +1,3 @@
-const Errors = require('../errors');
 const Process = require('../processgraph/process');
 const DataCube = require('../processgraph/datacube');
 const Commons = require('../processgraph/commons');

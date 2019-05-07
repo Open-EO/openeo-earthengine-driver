@@ -1,12 +1,12 @@
 const Utils = require('../utils');
 const fse = require('fs-extra');
 const path = require('path');
+const { ProcessRegistry } = require('@openeo/js-commons');
 
-module.exports = class ProcessRegistry {
+module.exports = class GeeProcessRegistry extends ProcessRegistry {
 
 	constructor(serverContext) {
-		// Keys added to this object must be lowercase!
-		this.processes = {};
+		super();
 		this.serverContext = serverContext;
 	}
 
@@ -26,18 +26,6 @@ module.exports = class ProcessRegistry {
 		var schema = require('../processes/' + id + '.json');
 		var impl = require('../processes/' + id + '.js');
 		this.processes[id.toLowerCase()] = new impl(schema);
-	}
-	
-	get(id) {
-		var pid = id.toLowerCase();
-		if (typeof this.processes[pid] !== 'undefined') {
-			return this.processes[pid];
-		}
-		return null;
-	}
-
-	getProcessSchemas() {
-		return Object.values(this.processes).map(impl => impl.schema);
 	}
 
 	getServerContext() {
