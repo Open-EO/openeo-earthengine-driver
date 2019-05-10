@@ -3,14 +3,14 @@ const Utils = require('../utils');
 
 module.exports = class ProcessCommons {
 
-	static reduceInCallback(node, reducer) {
+	static reduceInCallback(node, reducer, ...add_args) {
 		var dc = node.getData("data");
-		var func = data => data.reduce(reducer);
+		var func = data => data.reduce(reducer);  // TODO: How does this exactly work?
 		if (node.getProcessGraph().isSimpleReducer() || dc.isImageCollection()) {
-			dc.imageCollection(func);
+			dc.imageCollection(func, ...add_args);
 		}
 		else if (dc.isArray()) {
-			dc.array(func);
+			dc.array(func, ...add_args);
 		}
 		else {
 			throw "Calculating " + reducer + " not supported for given data type.";
@@ -27,6 +27,21 @@ module.exports = class ProcessCommons {
 		}
 		else if (dc.isArray()) {
 			dc.array(func);
+		}
+		else {
+			throw "Calculating " + process + " not supported for given data type.";
+		}
+		return dc;
+	}
+
+	static applyDimensionInCallback(node, process, dimension, ...add_args) {
+		var dc = node.getData("data");
+		var func = data => data[process];  //TODO: how do I properly translate a string into a function?
+		if (dc.isImageCollection()) {
+			dc.imageCollection(func, dimension, ...add_args);
+		}
+		else if (dc.isArray()) {
+			dc.array(func, dimension, ...add_args);
 		}
 		else {
 			throw "Calculating " + process + " not supported for given data type.";
