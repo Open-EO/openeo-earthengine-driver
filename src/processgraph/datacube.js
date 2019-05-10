@@ -53,7 +53,7 @@ module.exports = class DataCube {
 		}
 	}
 
-	image(callback = null) {
+	image(callback = null, ...add_args) {
 		if (this.data instanceof ee.Image) {
 			// No op
 		}
@@ -78,12 +78,12 @@ module.exports = class DataCube {
 			throw "Can't convert to image.";
 		}
 		if (callback) {
-			this.data = callback(this.data);
+			this.data = callback(this.data, ...add_args);
 		}
 		return this.data;
 	}
 	
-	imageCollection(callback = null) {
+	imageCollection(callback = null, ...add_args) {
 		if (this.data instanceof ee.ImageCollection) {
 			// No op
 		}
@@ -97,12 +97,12 @@ module.exports = class DataCube {
 			throw "Can't convert to image collection.";
 		}
 		if (callback) {
-			this.data = callback(this.data);
+			this.data = callback(this.data, ...add_args);
 		}
 		return this.data;
 	}
 	
-	array(callback = null) {
+	array(callback = null, ...add_args) {
 		if (this.data instanceof ee.Array) {
 			// No op
 		}
@@ -113,7 +113,7 @@ module.exports = class DataCube {
 			throw "Can't convert to an array.";
 		}
 		if (callback) {
-			this.data = callback(this.data);
+			this.data = callback(this.data, ...add_args);
 		}
 		return this.data;
 	}

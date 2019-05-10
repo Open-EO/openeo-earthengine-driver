@@ -1,0 +1,135 @@
+{
+  "id": "sort",
+  "summary": "Sort data",
+  "description": "Sorts an array into ascending (default) or descending order.\n\nThis process is an alias to call ``order()`` and ``rearrange()`` consecutively: `rearrange(data, order(data, nodata))`. This process could be faster though. See ``order()`` for more information on sorting behaviour.",
+  "categories": [
+    "arrays",
+    "sorting"
+  ],
+  "parameter_order": [
+    "data",
+    "asc",
+    "nodata"
+  ],
+  "gee:custom": true,
+  "parameters": {
+    "data": {
+      "description": "An array with data to sort.",
+      "schema": {
+        "type": "array",
+        "items": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "string",
+              "format": "date"
+            },
+            {
+              "type": "string",
+              "format": "time"
+            }
+          ]
+        }
+      },
+      "required": true,
+      "name": "data"
+    }
+  },
+  "returns": {
+    "description": "The sorted array.",
+    "schema": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {
+            "type": "number"
+          },
+          {
+            "type": "null"
+          },
+          {
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "type": "string",
+            "format": "date"
+          },
+          {
+            "type": "string",
+            "format": "time"
+          }
+        ]
+      }
+    }
+  },
+  "examples": [
+    {
+      "arguments": {
+        "data": [
+          6,
+          -1,
+          2,
+          null,
+          7,
+          4,
+          null,
+          8,
+          3,
+          9,
+          9
+        ]
+      },
+      "returns": [
+        -1,
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        9
+      ]
+    },
+    {
+      "arguments": {
+        "data": [
+          6,
+          -1,
+          2,
+          null,
+          7,
+          4,
+          null,
+          8,
+          3,
+          9,
+          9
+        ]
+      },
+      "returns": [
+        9,
+        9,
+        8,
+        7,
+        6,
+        4,
+        3,
+        2,
+        -1,
+        null,
+        null
+      ]
+    }
+  ]
+}
