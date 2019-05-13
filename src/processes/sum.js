@@ -1,10 +1,10 @@
 const Process = require('../processgraph/process');
 const Commons = require('../processgraph/commons');
 
-module.exports = class absolute extends Process {
+module.exports = class sum extends Process {
 
     async execute(node, context) {
-        return Commons.applyInCallback(node, ee.Image.abs, ee.Array.abs);
+        return Commons.reduceInCallback(node, 'sum');
     }
 
 };
