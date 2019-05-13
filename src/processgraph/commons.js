@@ -18,15 +18,14 @@ module.exports = class ProcessCommons {
 		return dc;
 	}
 
-	static applyInCallback(node, process) {
+	static applyInCallback(node, image_process, array_process) {
 		var dc = node.getData("data");
-		var func = data => data[process];  //TODO: how do I properly translate a string into a function?
 		if (dc.isImageCollection()) {
-			var mapper = data => data.map(func);
+			var mapper = data => data.map(image_process);
 			dc.imageCollection(mapper);
 		}
 		else if (dc.isArray()) {
-			dc.array(func);
+			dc.array(array_process);
 		}
 		else {
 			throw "Calculating " + process + " not supported for given data type.";
