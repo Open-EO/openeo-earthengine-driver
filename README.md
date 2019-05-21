@@ -50,7 +50,9 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
   "load_collection": {
     "arguments": {
       "id": "COPERNICUS/S2",
-      "temporal_extent": ["2018-04-30","2018-06-26"]
+      "temporal_extent": ["2018-04-30","2018-06-26"],
+      "spatial_extent": null,
+      "bands": ["B4", "B8"]
     },
     "process_id": "load_collection"
   },
