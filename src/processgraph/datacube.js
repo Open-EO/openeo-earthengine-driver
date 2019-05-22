@@ -122,7 +122,7 @@ module.exports = class DataCube {
 		var filter;
 		var label = "type '" + type + "'";
 		if (axis) {
-			filter = dim => dim.type == type && dim.axis == 'x';
+			filter = dim => dim.type == type && dim.axis == axis;
 			label += " with axis '" + axis + "'";
 		}
 		else {

@@ -34,7 +34,7 @@ module.exports = class ProcessCommons {
 	}
 
 	static filterBands(dc, bands) {
-		dc.imageCollection(ic => ic.select(bands, bands));
+		dc.imageCollection(ic => ic.select(bands));
 		dc.dimBands().setValues(bands);
 		return dc;
 	}

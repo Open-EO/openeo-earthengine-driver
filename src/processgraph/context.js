@@ -50,9 +50,9 @@ module.exports = class ProcessingContext {
 		return this.userId;
 	}
 
-	async retrieveResults(dataCube, size = 2000, defaultFormat = "jpeg", bounds = null) {
+	async retrieveResults(dataCube, size = 2000, bounds = null) {
 		// Execute graph
-		var format = dataCube.getOutputFormat() || defaultFormat;
+		var format = dataCube.getOutputFormat() || "jpeg";
 		if (format.toLowerCase() !== 'json') {
 			var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
 //			if (syncResult) {

@@ -114,8 +114,8 @@ var img = ee.ImageCollection("COPERNICUS/S2");
 img = img.filterDate("2018-04-30", "2018-06-26");
 
 // filter_bands (2x)
-var band1 = img.select(["B4"],["B4"]);
-var band2 = img.select(["B8"],["B8"]);
+var band1 = img.select(["B4"]);
+var band2 = img.select(["B8"]);
 
 // normalized_difference
 var combined = band1.combine(band2);

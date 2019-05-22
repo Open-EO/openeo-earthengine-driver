@@ -41,9 +41,10 @@ module.exports = class ServicesAPI {
 
 			try {
 				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				var pg = new ProcessGraph(service.process_graph, this.context.processingContext(req));
+				var context = this.context.processingContext(req);
+				var pg = new ProcessGraph(service.process_graph, context);
 				pg.execute()
-					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', "jpeg", rect))
+					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', rect))
 					.then(url => {
 						if (this.context.debug) {
 							console.log("Serving " + url);
