@@ -143,20 +143,38 @@
 - [X] exp
 - [X] ln
 - [X] log
-# floor
-* process needs transformation between array and image collection
-* process could be done by mapping the image collection
-# ceil
-* process needs transformation between array and image collection
-* process could be done by mapping the image collection
-# int
-* process needs transformation between array and image collection
-* process could be done by mapping the image collection
-# round
-* process needs transformation between array and image collection
-* process could be done by mapping the image collection
-# trigonometric functions
-* processes need transformation between array and image collection
-* process could be done by mapping the image collection
-* ar...h functions are missing in GEE
-* arctan2 needs 2 arrays, i.e. it is not a simple apply
+- [X] normalized_difference
+- [X] ndvi
+- [X] floor
+    * process needs transformation between array and image collection
+    * process could be done by mapping the image collection
+- [X] ceil
+    * process needs transformation between array and image collection
+    * process could be done by mapping the image collection
+- [X] int
+    * process needs transformation between array and image collection
+    * process could be done by mapping the image collection
+- [X] round
+    * process needs transformation between array and image collection
+    * process could be done by mapping the image collection
+- [X] cos
+- [X] sin
+- [X] tan
+- [X] cosh
+- [X] sinh
+- [X] tanh
+- [X] arccos
+- [X] arcsin
+- [X] arctan
+- [X] arcosh
+    * process is missing in GEE
+    * different mathematical formulation?
+- [X] arsinh
+    * process is missing in GEE
+    * different mathematical formulation?
+- [X] artanh
+    * process is missing in GEE
+    * different mathematical formulation?
+- [X] arctan2
+    * needs 2 arrays, i.e. it is not a simple apply
+

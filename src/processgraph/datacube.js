@@ -30,11 +30,24 @@ module.exports = class DataCube {
 	}
 
 	isImage() {
-		if (this.data instanceof ee.Image) {
+		if (this.data.getInfo().type === "Image") {  //TODO
+			return true;
+		}
+		//else if (this.data instanceof ee.ComputedObject) {
+		//	throw "Can't detect type of ComputedObject yet, so can't tell whether it's an Image.";
+		//}
+		else {
+			return false;
+		}
+	}
+
+
+	isArray() {
+		if (this.data instanceof ee.Array) {
 			return true;
 		}
 		else if (this.data instanceof ee.ComputedObject) {
-			throw "Can't detect type of ComputedObject yet, so can't tell whether it's an Image.";
+			throw "Can't detect type of ComputedObject yet, so can't tell whether it's an Array.";
 		}
 		else {
 			return false;
@@ -42,12 +55,12 @@ module.exports = class DataCube {
 	}
 
 	isImageCollection() {
-		if (this.data instanceof ee.ImageCollection) {
+		if (this.data.getInfo().type === "ImageCollection") {
 			return true;
 		}
-		else if (this.data instanceof ee.ComputedObject) {
-			throw "Can't detect type of ComputedObject yet, so can't tell whether it's an ImageCollection.";
-		}
+		//else if (this.data instanceof ee.ComputedObject) {
+		//	throw "Can't detect type of ComputedObject yet, so can't tell whether it's an ImageCollection.";
+		//}
 		else {
 			return false;
 		}

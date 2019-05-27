@@ -18,11 +18,14 @@ module.exports = class ProcessCommons {
 		return dc;
 	}
 
-	static applyInCallback(node, image_process, array_process) {
-		var dc = node.getData("data");
+	static applyInCallback(node, data_arg, image_process, array_process) {
+		var dc = node.getData(data_arg);
 		if (dc.isImageCollection()) {
 			var mapper = data => data.map(image_process);
 			dc.imageCollection(mapper);
+		}
+		else if (dc.isImage()){
+			dc.image(image_process);
 		}
 		else if (dc.isArray()) {
 			dc.array(array_process);
@@ -64,7 +67,12 @@ module.exports = class ProcessCommons {
 	}
 
 	static filterBands(dc, bands) {
-		dc.imageCollection(ic => ic.select(bands, bands));
+		//if(dc.isImage()){
+		//	dc.image(image => image.select(bands, bands));
+		//}
+		//else{
+			dc.imageCollection(ic => ic.select(bands, bands));
+		//}
 		dc.dimBands().setValues(bands);
 		return dc;
 	}

@@ -30,7 +30,13 @@ module.exports = class Config {
 
 		this.outputFormats = {
 			PNG: {
-				gis_data_types: ['raster']
+				gis_data_types: ['raster'],
+				parameters: {
+					red: {description: 'dsads'},  //TODO
+					green: {description: 'dsads'},
+					blue: {description: 'dsads'},
+					gray: {description: 'dsads'},
+				}
 			},
 			JPEG: {
 				gis_data_types: ['raster']

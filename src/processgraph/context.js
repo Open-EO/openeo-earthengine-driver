@@ -53,11 +53,41 @@ module.exports = class ProcessingContext {
 	async retrieveResults(dataCube, size = 2000, defaultFormat = "jpeg", bounds = null) {
 		// Execute graph
 		var format = dataCube.getOutputFormat() || defaultFormat;
-		if (format.toLowerCase() !== 'json') {
+		if ((format.toLowerCase() === 'jpeg') || (format.toLowerCase() === 'png')) {
 			var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
 //			if (syncResult) {
 				return new Promise((resolve, reject) => {
-					dataCube.image().getThumbURL({
+					var vis_bands = null;
+					var available_bands = dataCube.getBands();
+					var parameters = dataCube.getOutputFormatParameters(); // this will be important/used in the future
+					var n_params = length(parameters);
+					if(n_params > 3){
+						throw new Errors.ProcessArgumentInvalid({
+							argument: "options",
+							process: "save_result",
+							reason: "The number of bands to visualise must be smaller than 4."
+						});
+					}
+					else if(n_params === 0){
+						var info = "No bands are specified in the output parameter settings. " +
+							"The first band will be used for a gray-value visualisation.";
+						console.log(info);
+						vis_bands = available_bands.get(0);
+					}
+					else{
+						if ((parameters.red || parameters.green || parameters.blue) && parameters.gray){
+							throw new Errors.ProcessArgumentInvalid({
+								argument: "options",
+								process: "save_result",
+								reason: "Mixing a gray band with a colour band is not allowed."
+							});
+						}
+						else {
+							vis_bands = [parameters.red, parameters.green, parameters.blue, parameters.gray];
+							vis_bands.filter(String)
+						}
+					}
+					dataCube.image().visualize({min: 0, max: 255, bands: vis_bands}).getThumbURL({
 						format: this.translateOutputFormat(format),
 						dimensions: size,
 						region: bounds.bounds().getInfo()
