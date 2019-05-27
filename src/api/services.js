@@ -41,9 +41,10 @@ module.exports = class ServicesAPI {
 
 			try {
 				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				var pg = new ProcessGraph(service.process_graph, this.context.processingContext(req));
+				var context = this.context.processingContext(req);
+				var pg = new ProcessGraph(service.process_graph, context);
 				pg.execute()
-					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', "jpeg", rect))
+					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', rect))
 					.then(url => {
 						if (this.context.debug) {
 							console.log("Serving " + url);
@@ -206,7 +207,7 @@ module.exports = class ServicesAPI {
 				parameters: (typeof req.body === 'object' && Utils.isObject(req.body.parameters)) ? req.body.parameters : {},
 				attributes: {},
 				type: req.body.type,
-				enabled: req.body.enabled || true,
+				enabled: typeof req.body.enabled === 'boolean' ? req.body.enabled : true,
 				submitted: Utils.getISODateTime(),
 				plan: req.body.plan || this.context.plans.default,
 				costs: 0,
@@ -232,7 +233,7 @@ module.exports = class ServicesAPI {
 			description: service.description || null,
 			url: this.makeServiceUrl(service),
 			type: service.type.toLowerCase(),
-			enabled: service.enabled || true,
+			enabled: typeof service.enabled === 'boolean' ? service.enabled : true,
 			submitted: service.submitted,
 			plan: service.plan,
 			costs: service.costs || 0,

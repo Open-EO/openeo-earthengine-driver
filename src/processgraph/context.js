@@ -50,11 +50,11 @@ module.exports = class ProcessingContext {
 		return this.userId;
 	}
 
-	async retrieveResults(dataCube, size = 2000, defaultFormat = "jpeg", bounds = null) {
+	async retrieveResults(dataCube, size = 2000, bounds = null) {
 		// Execute graph
-		var format = dataCube.getOutputFormat() || defaultFormat;
-		if ((format.toLowerCase() === 'jpeg') || (format.toLowerCase() === 'png')) {
-			var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
+		var format = dataCube.getOutputFormat() || "jpeg";
+        if ((format.toLowerCase() === 'jpeg') || (format.toLowerCase() === 'png')) {
+            var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
 //			if (syncResult) {
 				return new Promise((resolve, reject) => {
 					var vis_bands = null;

@@ -7,6 +7,7 @@ module.exports = class normalized_difference extends Process {
 		var dc2 = node.getData("band2");
 		var name = node.getArgument("name", "normalized_difference");
 		dc1.imageCollection(ic => {
+			// ToDo: Combine is incredibly slow, we should look for a better alternative...
 			var combined = ic.combine(dc2.imageCollection());
 			return combined.map(image => {
 				var normalizedDifference = image.normalizedDifference().rename(name);
