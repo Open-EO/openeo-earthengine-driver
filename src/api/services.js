@@ -156,7 +156,7 @@ module.exports = class ServicesAPI {
 						return next(new Errors.Internal(err));
 					}
 					else if (numChanged === 0) {
-						return next(new Error.Internal({message: 'Number of changed elements was 0.'}));
+						return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
 					}
 					else {
 						res.send(204);
