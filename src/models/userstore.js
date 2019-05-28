@@ -45,7 +45,7 @@ module.exports = class UserStore {
 			};
 			this.db.findOne(query, (err, user) => {
 				if (err) {
-					return reject(new Errors.Internal(err));
+					return reject(Errors.wrap(err));
 				}
 				else if (user === null) {
 					return reject(new Errors.AuthenticationRequired({
@@ -68,7 +68,7 @@ module.exports = class UserStore {
 				};
 				this.db.update(query, { $set: dataToUpdate }, {}, (err, numReplaced) => {
 					if (numReplaced !== 1) {
-						return reject(new Errors.Internal(err));
+						return reject(Errors.wrap(err));
 					}
 
 					return resolve(user);
@@ -81,7 +81,7 @@ module.exports = class UserStore {
 		return new Promise((resolve, reject) => {
 			this.db.findOne({ token: token }, {}, (err, user) => {
 				if (err) {
-					reject(new Errors.Internal(err));
+					reject(Errors.wrap(err));
 				}
 				else if (user === null) {
 					reject(new Errors.AuthenticationRequired({

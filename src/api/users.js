@@ -59,7 +59,7 @@ module.exports = class UsersAPI {
 		userData.passwordSalt = pw.salt;
 		this.storage.database().insert(userData, (err, user) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 
 			res.json({

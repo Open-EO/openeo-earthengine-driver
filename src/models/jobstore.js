@@ -35,7 +35,7 @@ module.exports = class JobStore {
 		return new Promise((resolve, reject) => {
 			this.db.findOne(query, {}, (err, job) => {
 				if (err) {
-					reject(new Errors.Internal(err));
+					reject(Errors.wrap(err));
 				}
 				else if (job === null) {
 					reject(new Errors.JobNotFound());
@@ -61,7 +61,7 @@ module.exports = class JobStore {
 			}
 			this.db.update(query, { $set: { status: status, error: error } }, {}, function (err, numChanged) {
 				if (err) {
-					reject(new Errors.Internal(err));
+					reject(Errors.wrap(err));
 				}
 				else if (numChanged === 0) {
 					reject(new Errors.JobNotFound());

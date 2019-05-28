@@ -48,7 +48,7 @@ module.exports = class FilesAPI {
 			});
 			return next();
 		})
-		.catch(e => next(new Errors.Internal(e)));
+		.catch(e => next(Errors.wrap(e)));
 	}
 
 	putFileByPath(req, res, next) {
@@ -67,7 +67,7 @@ module.exports = class FilesAPI {
 			return fse.ensureDir(parent).then(() => {
 				return Promise.resolve(null);
 			})
-			.catch(err => Promise.reject(new Errors.Internal(err)));
+			.catch(err => Promise.reject(Errors.wrap(err)));
 		})
 		.then(stat => {
 			let fileExists = (stat !== null);
@@ -89,7 +89,7 @@ module.exports = class FilesAPI {
 			req.on('error', (e) => {
 				stream.end();
 				fse.exists(p).then(() => fse.unlink(p));
-				return next(new Errors.Internal(e));
+				return next(Errors.wrap(e));
 			});
 			stream.on('close', () => {
 				var filePath = this.workspace.getFileName(req.user._id, p);
@@ -118,7 +118,7 @@ module.exports = class FilesAPI {
 			});
 			stream.on('error', (e) => {
 				fse.exists(p).then(() => fse.unlink(p));
-				return next(new Errors.Internal(e));
+				return next(Errors.wrap(e));
 			});
 		})
 		.catch(err => next(Errors.wrap(err)));
@@ -161,7 +161,7 @@ module.exports = class FilesAPI {
 			res.setHeader('Content-Type', 'application/octet-stream');
 			stream.pipe(res);
 			stream.on('error', (e) => {
-				return next(new Errors.Internal(e));
+				return next(Errors.wrap(e));
 			});
 			stream.on('close', () => {
 				res.end();

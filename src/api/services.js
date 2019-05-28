@@ -33,7 +33,7 @@ module.exports = class ServicesAPI {
 		};
 		this.storage.database().findOne(query, (err, service) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (service ===  null) {
 				return next(new Errors.ServiceNotFound());
@@ -67,7 +67,7 @@ module.exports = class ServicesAPI {
 		};
 		this.storage.database().find(query, {}, (err, services) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else {
 				services = services.map(service =>  this.makeServiceResponse(service, false));
@@ -90,7 +90,7 @@ module.exports = class ServicesAPI {
 		};
 		this.storage.database().remove(query, {}, (err, numRemoved) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (numRemoved === 0) {
 				return next(new Errors.ServiceNotFound());
@@ -112,7 +112,7 @@ module.exports = class ServicesAPI {
 		};
 		this.storage.database().findOne(query, {}, (err, service) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (service === null) {
 				return next(new Errors.ServiceNotFound());
@@ -153,7 +153,7 @@ module.exports = class ServicesAPI {
 			Promise.all(promises).then(() => {
 				this.storage.database().update(query, { $set: data }, {}, function (err, numChanged) {
 					if (err) {
-						return next(new Errors.Internal(err));
+						return next(Errors.wrap(err));
 					}
 					else if (numChanged === 0) {
 						return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
@@ -178,7 +178,7 @@ module.exports = class ServicesAPI {
 		};
 		this.storage.database().findOne(query, {}, (err, service) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (service === null) {
 				return next(new Errors.ServiceNotFound());
@@ -216,7 +216,7 @@ module.exports = class ServicesAPI {
 			};
 			this.storage.database().insert(data, (err, service) => {
 				if (err) {
-					return next(new Errors.Internal(err));
+					return next(Errors.wrap(err));
 				}
 				else {
 					res.header('OpenEO-Identifier', service._id);

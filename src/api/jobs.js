@@ -55,14 +55,14 @@ module.exports = class JobsAPI {
 			var stream = fse.createReadStream(path);
 			stream.pipe(res);
 			stream.on('error', (e) => {
-				return next(new Errors.Internal(e));
+				return next(Errors.wrap(e));
 			});
 			stream.on('close', () => {
 				res.end();
 				return next();
 			});
 		})
-		.catch(err => next(new Errors.wrap(err)));
+		.catch(err => next(Errors.wrap(err)));
 	}
 
 	getJobs(req, res, next) {
@@ -74,7 +74,7 @@ module.exports = class JobsAPI {
 		};
 		this.storage.database().find(query, {}, (err, jobs) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else {
 				jobs = jobs.map(job => this.makeJobResponse(job, false));
@@ -108,7 +108,7 @@ module.exports = class JobsAPI {
 		};
 		this.storage.database().remove(query, {}, (err, numRemoved) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (numRemoved === 0) {
 				return next(new Errors.JobNotFound());
@@ -177,7 +177,7 @@ module.exports = class JobsAPI {
 					var writer = fse.createWriteStream(filePath);
 					stream.data.pipe(writer);
 					writer.on('error', (e) => {
-						reject(new Errors.Internal(e));
+						reject(Errors.wrap(e));
 					});
 					writer.on('close', () => {
 						resolve();
@@ -309,7 +309,7 @@ module.exports = class JobsAPI {
 		.then(data => {
 			this.storage.database().update(query, { $set: data }, {}, function (err, numChanged) {
 				if (err) {
-					return next(new Errors.Internal(err));
+					return next(Errors.wrap(err));
 				}
 				else if (numChanged === 0) {
 					return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
@@ -345,7 +345,7 @@ module.exports = class JobsAPI {
 			};
 			this.storage.database().insert(data, (err, job) => {
 				if (err) {
-					next(new Errors.Internal(err));
+					next(Errors.wrap(err));
 				}
 				else {
 					res.header('OpenEO-Identifier', job._id);
@@ -402,7 +402,7 @@ module.exports = class JobsAPI {
 			})
 			.catch(e => {
 				// ToDo: Check for error in response.
-				next(Errors.wrap(e))
+				next(Errors.wrap(e));
 			});
 	}
 

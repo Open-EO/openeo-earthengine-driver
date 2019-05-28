@@ -116,6 +116,7 @@ class Server {
 	}
 
 	initServer(server) {
+		server.on('restifyError', this.errorHandler.bind(this));
 		server.pre(this.preflight.bind(this));
 		server.use(this.populateGlobals.bind(this));
 		server.use(restify.plugins.queryParser());
@@ -126,6 +127,18 @@ class Server {
 		if (this.serverContext.debug) {
 			server.use(this.logRequest.bind(this));
 		}
+	}
+
+	errorHandler(req, res, e, next) {
+		if (global.server.serverContext.debug) {
+			if (e.originalError) {
+				console.error(e.originalError);
+			}
+			else {
+				console.error(e);
+			}
+		}
+		return next();
 	}
 
 	createSubscriptions(topics) {

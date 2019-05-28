@@ -1,4 +1,5 @@
 const { JsonSchemaValidator } = require('@openeo/js-commons');
+const ajv = require('ajv');
 
 module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 

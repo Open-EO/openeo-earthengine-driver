@@ -41,7 +41,7 @@ module.exports = class StoredProcessGraphs {
 		};
 		this.storage.database().find(query, {}, (err, graphs) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else {
 				var data = graphs.map(pg => this.makeResponse(pg, false));
@@ -71,7 +71,7 @@ module.exports = class StoredProcessGraphs {
 				};
 				this.storage.database().insert(data, (err, pg) => {
 					if (err) {
-						return next(new Errors.Internal(err));
+						return next(Errors.wrap(err));
 					}
 					else {
 						res.header('OpenEO-Identifier', pg._id);
@@ -92,7 +92,7 @@ module.exports = class StoredProcessGraphs {
 		};
 		this.storage.database().findOne(query, {}, (err, pg) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (pg === null) {
 				return next(new Errors.ProcessGraphNotFound());
@@ -124,7 +124,7 @@ module.exports = class StoredProcessGraphs {
 			Promise.all(promises).then(() => {
 				this.storage.database().update(query, { $set: data }, {}, function (err, numChanged) {
 					if (err) {
-						return next(new Errors.Internal(err));
+						return next(Errors.wrap(err));
 					}
 					else if (numChanged === 0) {
 						return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
@@ -149,7 +149,7 @@ module.exports = class StoredProcessGraphs {
 		};
 		this.storage.database().remove(query, {}, (err, numRemoved) => {
 			if (err) {
-				return next(new Errors.Internal(err));
+				return next(Errors.wrap(err));
 			}
 			else if (numRemoved === 0) {
 				return next(new Errors.ProcessGraphNotFound());
