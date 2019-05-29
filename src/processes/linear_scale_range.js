@@ -14,14 +14,14 @@ module.exports = class linear_scale_range extends Process {
         if (outputMax == null){
             outputMax = 1
         }
-        var image_process = function(image){
+        var process = function(image){
             var numerator = image.subtract(inputMin);
             var denominator = inputMax - inputMin;
             var ratio = numerator.divide(denominator);
-            var scale_factor = outputMax - outputMin;
-            return ratio.multiply(scale_factor).add(outputMin);
+            var scaleFactor = outputMax - outputMin;
+            return ratio.multiply(scaleFactor).add(outputMin);
         };
-        return Commons.applyInCallback(node, 'x', image_process, null);
+        return Commons.applyInCallback(node, 'x', process, process);
     }
 
 };

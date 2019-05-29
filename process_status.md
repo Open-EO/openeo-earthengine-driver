@@ -1,4 +1,6 @@
 # openEO v0.4.0 process status
+## General TODOs:
+- Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
 ## Aggregate & Resample
 - [ ] aggregate_polygon
 - [ ] aggregate_temporal

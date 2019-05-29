@@ -3,47 +3,39 @@ const Utils = require('../utils');
 
 module.exports = class ProcessCommons {
 
-	static reduceInCallback(node, reducer, ...add_args) {
+	static reduceInCallback(node, reducer, ...args) {
 		var dc = node.getData("data");
-		var func = data => data.reduce(reducer);  // TODO: How does this exactly work?
+		var func = data => data.reduce(reducer);
 		if (node.getProcessGraph().isSimpleReducer() || dc.isImageCollection()) {
-			dc.imageCollection(func, ...add_args);
+			dc.imageCollection(func, ...args);
+			// rename bands according to the GEE convention
+			var bands = dc.getBands();
+			var rename = function (bandName) {
+				return bandName + "_" + reducer
+			};
+			var renamedBands = bands.map(rename);
+			dc.setBands(renamedBands);
 		}
 		else if (dc.isArray()) {
-			dc.array(func, ...add_args);
+			dc.array(func, ...args);
 		}
 		else {
-			throw "Calculating " + reducer + " not supported for given data type.";
+			throw new Error("Calculating " + reducer + " not supported for given data type.");
 		}
 		return dc;
 	}
 
-	static applyInCallback(node, data_arg, image_process, array_process) {
+	static applyInCallback(node, data_arg, image_process, array_process, ...args) {
 		var dc = node.getData(data_arg);
 		if (dc.isImageCollection()) {
 			var mapper = data => data.map(image_process);
 			dc.imageCollection(mapper);
 		}
 		else if (dc.isImage()){
-			dc.image(image_process);
+			dc.image(image_process, ...args);
 		}
 		else if (dc.isArray()) {
-			dc.array(array_process);
-		}
-		else {
-			throw "Calculating " + process + " not supported for given data type.";
-		}
-		return dc;
-	}
-
-	static applyDimensionInCallback(node, process, dimension, ...add_args) {
-		var dc = node.getData("data");
-		var func = data => data[process];  //TODO: how do I properly translate a string into a function?
-		if (dc.isImageCollection()) {
-			dc.imageCollection(func, dimension, ...add_args);
-		}
-		else if (dc.isArray()) {
-			dc.array(func, dimension, ...add_args);
+			dc.array(array_process, ...args);
 		}
 		else {
 			throw "Calculating " + process + " not supported for given data type.";
@@ -67,12 +59,7 @@ module.exports = class ProcessCommons {
 	}
 
 	static filterBands(dc, bands) {
-		//if(dc.isImage()){
-		//	dc.image(image => image.select(bands, bands));
-		//}
-		//else{
-			dc.imageCollection(ic => ic.select(bands, bands));
-		//}
+		dc.imageCollection(ic => ic.select(bands, bands));
 		dc.dimBands().setValues(bands);
 		return dc;
 	}

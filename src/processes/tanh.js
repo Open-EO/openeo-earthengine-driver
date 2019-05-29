@@ -4,7 +4,10 @@ const Commons = require('../processgraph/commons');
 module.exports = class tanh extends Process {
 
     async execute(node, context) {
-        return Commons.applyInCallback(node, 'tanh');
+        var image_process = function(image){
+            return image.tanh();
+        };
+        return Commons.applyInCallback(node, 'x', image_process, ee.Array.tanh);
     }
 
 };

@@ -4,7 +4,10 @@ const Commons = require('../processgraph/commons');
 module.exports = class sinh extends Process {
 
     async execute(node, context) {
-        return Commons.applyInCallback(node, ee.Image.sinh, ee.Array.sinh);
+        var image_process = function(image){
+            return image.sinh();
+        };
+        return Commons.applyInCallback(node, 'x', image_process, ee.Array.sinh);
     }
 
 };

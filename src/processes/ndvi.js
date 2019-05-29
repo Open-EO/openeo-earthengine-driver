@@ -1,6 +1,7 @@
 const Process = require('../processgraph/process');
 
 // TODO: assumes bands have been labelled before
+// TODO: complete implementation
 module.exports = class ndvi extends Process {
 
     async execute(node, context) {

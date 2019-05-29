@@ -49,7 +49,7 @@ module.exports = class ProcessingContext {
 	getUserId() {
 		return this.userId;
 	}
-
+	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube, size = 2000, bounds = null) {
 		// Execute graph
 		var format = dataCube.getOutputFormat() || "jpeg";
@@ -57,37 +57,32 @@ module.exports = class ProcessingContext {
             var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
 //			if (syncResult) {
 				return new Promise((resolve, reject) => {
-					var vis_bands = null;
-					var available_bands = dataCube.getBands();
+					var visBands = null;
+					var availableBands = dataCube.getBands();
 					var parameters = dataCube.getOutputFormatParameters(); // this will be important/used in the future
-					var n_params = length(parameters);
-					if(n_params > 3){
-						throw new Errors.ProcessArgumentInvalid({
-							argument: "options",
-							process: "save_result",
-							reason: "The number of bands to visualise must be smaller than 4."
-						});
-					}
-					else if(n_params === 0){
+					var nParams = Object.keys(parameters).length;
+					if(nParams === 0){
 						var info = "No bands are specified in the output parameter settings. " +
 							"The first band will be used for a gray-value visualisation.";
-						console.log(info);
-						vis_bands = available_bands.get(0);
+						console.warn(info); // ToDo: Send warning via subscriptions
+						visBands = [availableBands[0]];
 					}
 					else{
-						if ((parameters.red || parameters.green || parameters.blue) && parameters.gray){
+						if (parameters.red && parameters.green && parameters.blue){
+							visBands = [parameters.red, parameters.green, parameters.blue];
+						}
+						else if(parameters.gray){
+							visBands = [parameters.gray];
+						}
+						else {
 							throw new Errors.ProcessArgumentInvalid({
 								argument: "options",
 								process: "save_result",
-								reason: "Mixing a gray band with a colour band is not allowed."
+								reason: "The output band definitions are not properly given."
 							});
 						}
-						else {
-							vis_bands = [parameters.red, parameters.green, parameters.blue, parameters.gray];
-							vis_bands.filter(String)
-						}
 					}
-					dataCube.image().visualize({min: 0, max: 255, bands: vis_bands}).getThumbURL({
+					dataCube.image().visualize({min: 0, max: 255, bands: visBands}).getThumbURL({
 						format: this.translateOutputFormat(format),
 						dimensions: size,
 						region: bounds.bounds().getInfo()
@@ -117,13 +112,20 @@ module.exports = class ProcessingContext {
 				});
 			} */
 		}
-		else {
+		else if(format.toLowerCase() === 'json') {
 			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
 			var p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
 			var parent = path.dirname(p);
 			await fse.ensureDir(parent);
 			await fse.writeJson(p, dataCube.getData());
 			return Utils.getApiUrl("/temp/" + fileName);
+		}
+		else{
+			throw new Errors.ProcessArgumentInvalid({
+				argument: "format",
+				process: "save_result",
+				reason: "The given output format " + format + " is not supported."
+			});
 		}
 	}
 

@@ -1,5 +1,4 @@
 const Process = require('../processgraph/process');
-const Errors = require('../errors');
 
 module.exports = class apply extends Process {
 

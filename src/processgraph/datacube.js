@@ -29,104 +29,99 @@ module.exports = class DataCube {
 		this.data = data;
 	}
 
-	isImage() {
-		if (this.data.getInfo().type === "Image") {  //TODO
-			return true;
-		}
-		//else if (this.data instanceof ee.ComputedObject) {
-		//	throw "Can't detect type of ComputedObject yet, so can't tell whether it's an Image.";
-		//}
-		else {
-			return false;
-		}
+	computedObjectType(){
+		return this.data.getInfo().type
 	}
 
+	objectType(){
+		if (this.data instanceof ee.Image){
+			return "Image"
+		}
+		else if (this.data instanceof ee.ImageCollection){
+			return "ImageCollection"
+		}
+		else if(this.data instanceof ee.Array){
+			return "Array"
+		}
+		else if (this.data instanceof ee.ComputedObject){
+			return this.computedObjectType()
+		}
+		else{
+			throw new Error("Data type not understood.")
+		}
+
+	}
+
+	isImage() {
+		return this.objectType() === "Image"
+	}
 
 	isArray() {
-		if (this.data instanceof ee.Array) {
-			return true;
-		}
-		else if (this.data instanceof ee.ComputedObject) {
-			throw "Can't detect type of ComputedObject yet, so can't tell whether it's an Array.";
-		}
-		else {
-			return false;
-		}
+		return this.objectType() === "Array"
 	}
 
 	isImageCollection() {
-		if (this.data.getInfo().type === "ImageCollection") {
-			return true;
-		}
-		//else if (this.data instanceof ee.ComputedObject) {
-		//	throw "Can't detect type of ComputedObject yet, so can't tell whether it's an ImageCollection.";
-		//}
-		else {
-			return false;
-		}
+		return this.objectType() === "ImageCollection"
 	}
 
-	image(callback = null, ...add_args) {
-		if (this.data instanceof ee.Image) {
-			// No op
+	// TODO: it would be more readable to always call isArray, isImage, ... within the following functions -> evaluate the efficiency of the data type retrieval from a computed object
+	image(callback = null, ...args) {
+		var dataType = this.objectType();
+		if (dataType === "Image"){
+			// no operation
 		}
-		else if (this.data instanceof ee.ComputedObject) {
-			// ToDo: Send warning via subscriptions
-			if (global.server.serverContext.debug) {
-				console.warn("Casting to Image might be unintentional.");
-			}
-			this.data = ee.Image(this.data);
-		}
-		else if (this.data instanceof ee.ImageCollection) {
+		else if (dataType === "ImageCollection") {
 			// ToDo: Send warning via subscriptions
 			if (global.server.serverContext.debug) {
 				console.warn("Compositing the image collection to a single image.");
 			}
 			this.data = this.data.mosaic();
 		}
-		else if (this.data instanceof ee.Array) {
+		else if (dataType === "Array") {
 			this.data = ee.Image(this.data);
 		}
 		else {
-			throw "Can't convert to image.";
+			throw new Error("Can't convert to image.");
 		}
 		if (callback) {
-			this.data = callback(this.data, ...add_args);
+			this.data = callback(this.data, ...args);
 		}
 		return this.data;
 	}
 	
-	imageCollection(callback = null, ...add_args) {
-		if (this.data instanceof ee.ImageCollection) {
-			// No op
+	imageCollection(callback = null, ...args) {
+		var dataType = this.objectType();
+		if (dataType === "ImageCollection"){
+			// no operation
 		}
-		else if (this.data instanceof ee.Image || this.data instanceof ee.ComputedObject) {
+		else if (dataType === "Image") {
 			this.data = ee.ImageCollection(this.data);
 		}
-		else if (this.data instanceof ee.Array) {
+		else if (dataType === "Array") {
 			this.data = ee.ImageCollection(ee.Image(this.data));
 		}
 		else {
-			throw "Can't convert to image collection.";
+			throw new Error("Can't convert to image collection.");
 		}
 		if (callback) {
-			this.data = callback(this.data, ...add_args);
+			this.data = callback(this.data, ...args);
 		}
 		return this.data;
 	}
 	
-	array(callback = null, ...add_args) {
-		if (this.data instanceof ee.Array) {
-			// No op
+	array(callback = null, ...args) {
+		var dataType = this.objectType();
+		if (dataType === "Array"){
+			// no operation
 		}
-		else if (this.data instanceof ee.Image) {
+		else if (dataType === "Image") {
 			this.data = this.data.toArray();
 		}
 		else {
-			throw "Can't convert to an array.";
+			throw new Error("Can't convert to an array.");
 		}
 		if (callback) {
-			this.data = callback(this.data, ...add_args);
+			this.data = callback(this.data, ...args);
 		}
 		return this.data;
 	}
@@ -230,7 +225,7 @@ module.exports = class DataCube {
 	}
 
 	getBands() {
-		return this.dimBands().getValues();
+		return this.dimBands().values;
 	}
 
 	setBands(bands) {
