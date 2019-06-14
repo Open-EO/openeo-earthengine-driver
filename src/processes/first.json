@@ -7,8 +7,7 @@
     "reducer"
   ],
   "parameter_order": [
-    "data",
-    "ignore_nodata"
+    "data"
   ],
   "gee:custom": true,
   "parameters": {
@@ -60,7 +59,7 @@
           3
         ]
       },
-      "returns": null
+      "returns": 2
     },
     {
       "description": "The input array is empty: return `null`.",

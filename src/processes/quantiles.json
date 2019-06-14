@@ -134,22 +134,6 @@
       ]
     },
     {
-      "arguments": {
-        "data": [
-          -1,
-          -0.5,
-          null,
-          1
-        ],
-        "q": 4
-      },
-      "returns": [
-        null,
-        null,
-        null
-      ]
-    },
-    {
       "title": "Empty array example",
       "arguments": {
         "data": [],

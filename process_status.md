@@ -1,6 +1,8 @@
 # openEO v0.4.0 process status
 ## General TODOs:
 - Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
+- Introduce Numbers for simple processes
+- Properly read the default values from the JSON files
 ## Aggregate & Resample
 - [ ] aggregate_polygon
 - [ ] aggregate_temporal
@@ -135,13 +137,13 @@
 - [X] e
 - [X] pi
 - [ ] cummax
-    * process is missing in GEE
+    * process accum for arrays and reducer max
 - [ ] cummin
-    * process is missing in GEE
+    * process accum for arrays and reducer min
 - [ ] cumsum
-    * process is missing in GEE
+    * process accum for arrays and reducer sum (default)
 - [ ] cumproduct
-    * process is missing in GEE
+    * process accum for arrays and reducer product
 - [X] exp
 - [X] ln
 - [X] log

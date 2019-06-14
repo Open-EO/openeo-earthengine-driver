@@ -1,5 +1,7 @@
 const Utils = require('../utils');
 const Errors = require('../errors');
+const path = require('path');
+const fse = require('fs-extra');
 
 module.exports = class ProcessingContext {
 
@@ -119,13 +121,6 @@ module.exports = class ProcessingContext {
 			await fse.ensureDir(parent);
 			await fse.writeJson(p, dataCube.getData());
 			return Utils.getApiUrl("/temp/" + fileName);
-		}
-		else{
-			throw new Errors.ProcessArgumentInvalid({
-				argument: "format",
-				process: "save_result",
-				reason: "The given output format " + format + " is not supported."
-			});
 		}
 	}
 

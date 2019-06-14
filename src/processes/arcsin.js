@@ -4,10 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class arcsin extends Process {
 
     async execute(node, context) {
-        var image_process = function(image){
-            return image.asin();
-        };
-        return Commons.applyInCallback(node, 'x', image_process, ee.Array.asin);
+        return Commons.applyInCallback(node, image => image.asin(), array => array.asin());
     }
 
 };

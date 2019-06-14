@@ -32,10 +32,10 @@ module.exports = class Config {
 			PNG: {
 				gis_data_types: ['raster'],
 				parameters: {
-					red: {description: 'dsads'},  //TODO
-					green: {description: 'dsads'},
-					blue: {description: 'dsads'},
-					gray: {description: 'dsads'},
+					red: {description: 'Band name being used for the red channel.'},
+					green: {description: 'Band name being used for the green channel.'},
+					blue: {description: 'Band name being used for the blue channel.'},
+					gray: {description: 'Band name being used as a gray channel.'},
 				}
 			},
 			JPEG: {

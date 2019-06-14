@@ -6,9 +6,9 @@
     "math > rounding"
   ],
   "parameter_order": [
-    "x"
+    "x",
+    "p"
   ],
-  "gee:custom": true,
   "parameters": {
     "x": {
       "description": "A number to round.",
@@ -20,6 +20,14 @@
       },
       "required": true,
       "name": "x"
+    },
+    "p": {
+      "description": "A positive number specifies the number of digits after the decimal point to round to. A negative number means rounding to a power of ten, so for example *-2* rounds to the nearest hundred. Defaults to *0*.",
+      "schema": {
+        "type": "integer",
+        "default": 0
+      },
+      "name": "p"
     }
   },
   "returns": {
@@ -40,13 +48,15 @@
     },
     {
       "arguments": {
-        "x": 3.56
+        "x": 3.56,
+        "p": 1
       },
       "returns": 3.6
     },
     {
       "arguments": {
-        "x": -0.4444444
+        "x": -0.4444444,
+        "p": 2
       },
       "returns": -0.44
     },
@@ -64,7 +74,8 @@
     },
     {
       "arguments": {
-        "x": 1234.5
+        "x": 1234.5,
+        "p": -2
       },
       "returns": 1200
     }

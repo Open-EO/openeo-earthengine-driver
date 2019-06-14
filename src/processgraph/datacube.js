@@ -30,21 +30,21 @@ module.exports = class DataCube {
 	}
 
 	computedObjectType(){
-		return this.data.getInfo().type
+		return this.data.getInfo().type;
 	}
 
 	objectType(){
 		if (this.data instanceof ee.Image){
-			return "Image"
+			return "Image";
 		}
 		else if (this.data instanceof ee.ImageCollection){
-			return "ImageCollection"
+			return "ImageCollection";
 		}
 		else if(this.data instanceof ee.Array){
-			return "Array"
+			return "Array";
 		}
 		else if (this.data instanceof ee.ComputedObject){
-			return this.computedObjectType()
+			return this.computedObjectType();
 		}
 		else{
 			throw new Error("Data type not understood.")
@@ -53,16 +53,17 @@ module.exports = class DataCube {
 	}
 
 	isImage() {
-		return this.objectType() === "Image"
+		return this.objectType() === "Image";
 	}
 
 	isArray() {
-		return this.objectType() === "Array"
+		return this.objectType() === "Array";
 	}
 
 	isImageCollection() {
-		return this.objectType() === "ImageCollection"
+		return this.objectType() === "ImageCollection";
 	}
+
 
 	// TODO: it would be more readable to always call isArray, isImage, ... within the following functions -> evaluate the efficiency of the data type retrieval from a computed object
 	image(callback = null, ...args) {
@@ -225,7 +226,7 @@ module.exports = class DataCube {
 	}
 
 	getBands() {
-		return this.dimBands().values;
+		return this.dimBands().getValues();
 	}
 
 	setBands(bands) {

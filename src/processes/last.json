@@ -60,7 +60,7 @@
           null
         ]
       },
-      "returns": null
+      "returns": 1
     },
     {
       "description": "The input array is empty: return `null`.",
