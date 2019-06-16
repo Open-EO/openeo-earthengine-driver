@@ -11,7 +11,9 @@ module.exports = class text_contains extends Process {
             pattern = pattern.toLowerCase();
         }
 
-        return data.includes(pattern);
+        var dc = node.getData('data');
+        dc.data = data.includes(pattern);
+        return dc;
     }
 
 };

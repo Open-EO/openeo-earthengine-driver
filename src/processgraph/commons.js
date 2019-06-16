@@ -9,6 +9,9 @@ module.exports = class ProcessCommons {
 		if (reducerName === null){
 			reducerName = reducer;
 		}
+		if (!this.isString(reducerName)){
+			throw new Error("The input parameter 'reducerName' is not a string.");
+		}
 		var func = data => data.reduce(reducer);
 		if (isSimpleReducer || dc.isImageCollection()) {
 			dc.imageCollection(func);
@@ -65,7 +68,6 @@ module.exports = class ProcessCommons {
 
 	// TODO: this changes the dc directly, copy would be more suitable if it does not cost too much
 	static filterBands(dc, bands) {
-		var dimensions = Object.values(dc.dimensions);
 		dc.imageCollection(ic => ic.select(bands, bands));
 		dc.dimBands().setValues(bands);
 		return dc;

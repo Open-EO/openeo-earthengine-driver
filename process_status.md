@@ -3,6 +3,7 @@
 - Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
 - Introduce Numbers for simple processes
 - Properly read the default values from the JSON files
+- Band filtering issue of none available bands (i.e., reduce without band filtering fails)
 ## Aggregate & Resample
 - [ ] aggregate_polygon
 - [ ] aggregate_temporal

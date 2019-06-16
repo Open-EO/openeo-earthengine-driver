@@ -11,7 +11,9 @@ module.exports = class text_ends extends Process {
             pattern = pattern.toLowerCase();
         }
 
-        return data.endsWith(pattern);
+        var dc = node.getData('data');
+        dc.data = data.endsWith(pattern);
+        return dc;
     }
 
 };

@@ -10,8 +10,9 @@ module.exports = class text_begins extends Process {
             data = data.toLowerCase();
             pattern = pattern.toLowerCase();
         }
-
-        return data.startsWith(pattern);
+        var dc = node.getData('data');
+        dc.data = data.startsWith(pattern);
+        return dc;
     }
 
 };
