@@ -79,6 +79,10 @@ module.exports = class Dimension {
 		this.extent = [];
 	}
 
+	getValues(){
+		return this.values;
+	}
+
 	addValue(value) {
 		this.values.push(value);
 	}

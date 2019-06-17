@@ -1,5 +1,7 @@
 const Process = require('../processgraph/process');
+const Errors = require('../errors');
 
+// TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
 module.exports = class reduce extends Process {
 
 	async execute(node, context) {

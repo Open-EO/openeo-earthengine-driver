@@ -299,6 +299,22 @@
 			"Processes"
 		]
 	},
+	"QuantilesParameterMissing": {
+		"description": null,
+		"message": "The process 'quantiles' requires either the 'probabilities' or 'q' parameter to be set.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"QuantilesParameterConflict": {
+		"description": null,
+		"message": "The process 'quantiles' only allows that either the 'probabilities' or the 'q' parameter is set.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
 	"JobNotFound": {
 		"description": "The requested job does not exist.",
 		"message": "The job does not exist.",
