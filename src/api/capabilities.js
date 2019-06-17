@@ -4,7 +4,6 @@ const packageInfo = require('../../package.json');
 module.exports = class CapabilitiesAPI {
 
 	constructor(context) {
-		this.apiVersion = '0.4.0';
 		this.endpoints = [];
 		this.context = context;
 	}
@@ -47,7 +46,7 @@ module.exports = class CapabilitiesAPI {
 
 	getCapabilities(req, res, next) {
 		res.json({
-			api_version: this.apiVersion,
+			api_version: this.context.apiVersion,
 			backend_version: packageInfo.version,
 			title: this.context.title,
 			description: this.context.description,
