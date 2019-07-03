@@ -21,40 +21,35 @@
           "null"
         ]
       },
-      "required": true,
-      "name": "x"
+      "required": true
     },
     "inputMin": {
       "description": "Minimum value the input can obtain.",
       "schema": {
         "type": "number"
       },
-      "required": true,
-      "name": "inputMin"
+      "required": true
     },
     "inputMax": {
       "description": "Maximum value the input can obtain.",
       "schema": {
         "type": "number"
       },
-      "required": true,
-      "name": "inputMax"
+      "required": true
     },
     "outputMin": {
       "description": "Minimum value of the desired output range.",
       "schema": {
         "type": "number",
         "default": 0
-      },
-      "name": "outputMin"
+      }
     },
     "outputMax": {
       "description": "Maximum value of the desired output range.",
       "schema": {
         "type": "number",
         "default": 1
-      },
-      "name": "outputMax"
+      }
     }
   },
   "returns": {

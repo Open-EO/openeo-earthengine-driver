@@ -74,7 +74,8 @@ module.exports = class Data {
 				license: d.license,
 				providers: d.providers,
 				extent: d.extent,
-				links: d.links
+				links: d.links,
+				stac_version: d.stac_version
 			};
 		});
 		res.json({

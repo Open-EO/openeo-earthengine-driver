@@ -23,8 +23,7 @@
         },
         "minItems": 2
       },
-      "required": true,
-      "name": "data"
+      "required": true
     }
   },
   "returns": {

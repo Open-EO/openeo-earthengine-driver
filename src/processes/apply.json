@@ -16,8 +16,7 @@
         "type": "object",
         "format": "raster-cube"
       },
-      "required": true,
-      "name": "data"
+      "required": true
     },
     "process": {
       "description": "A process (callback) to be applied on each value. The specified process must be unary meaning that it must work on a single value.",
@@ -30,8 +29,7 @@
           }
         }
       },
-      "required": true,
-      "name": "process"
+      "required": true
     }
   },
   "returns": {

@@ -14,8 +14,7 @@
           "null"
         ]
       },
-      "required": true,
-      "name": "x"
+      "required": true
     }
   },
   "returns": {

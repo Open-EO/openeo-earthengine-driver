@@ -17,8 +17,7 @@
         "type": "object",
         "format": "raster-cube"
       },
-      "required": true,
-      "name": "data"
+      "required": true
     },
     "name": {
       "description": "Name of the newly created band with the computed values. Defaults to `normalized_difference`.",
@@ -26,8 +25,7 @@
         "type": "string",
         "default": "normalized_difference",
         "pattern": "^[A-Za-z0-9_]+$"
-      },
-      "name": "name"
+      }
     }
   },
   "returns": {

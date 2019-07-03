@@ -19,8 +19,7 @@
           "null"
         ]
       },
-      "required": true,
-      "name": "base"
+      "required": true
     },
     "p": {
       "description": "The numerical exponent.",
@@ -30,8 +29,7 @@
           "null"
         ]
       },
-      "required": true,
-      "name": "p"
+      "required": true
     }
   },
   "returns": {

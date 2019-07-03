@@ -17,24 +17,21 @@
       "schema": {
         "type": "string"
       },
-      "required": true,
-      "name": "data"
+      "required": true
     },
     "pattern": {
       "description": "Text to find in `data`.",
       "schema": {
         "type": "string"
       },
-      "required": true,
-      "name": "pattern"
+      "required": true
     },
     "case_sensitive": {
       "description": "Case sensitive comparison can be disabled by setting this parameter to `false`.",
       "schema": {
         "type": "boolean",
         "default": true
-      },
-      "name": "case_sensitive"
+      }
     }
   },
   "returns": {

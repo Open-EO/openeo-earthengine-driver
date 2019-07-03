@@ -19,8 +19,7 @@
           "description": "Any data type is allowed."
         }
       },
-      "required": true,
-      "name": "data"
+      "required": true
     }
   },
   "returns": {
