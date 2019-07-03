@@ -39,7 +39,7 @@ module.exports = class FilesAPI {
 				return {
 					path: this.workspace.getFileName(req.user._id, file.path),
 					size: file.stat.size,
-					modified: file.stat.mtime.toISOString()
+					modified: Utils.getISODateTime(file.stat.mtime)
 				}
 			});
 			res.json( {
@@ -103,7 +103,7 @@ module.exports = class FilesAPI {
 					res.send(200, {
 						path: filePath,
 						size: newFileStat.size,
-						modified: newFileStat.mtime.toISOString()
+						modified: Utils.getISODateTime(newFileStat.mtime)
 					});
 					return next();
 				}).catch(e => {

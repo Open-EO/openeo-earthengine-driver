@@ -64,8 +64,17 @@ var Utils = {
 		return Math.floor(Date.now() / 1000);
 	},
 
-	getISODateTime() {
-		return (new Date()).toISOString().replace(/\.\d{3}/, '');
+	getISODateTime(datetime = null) {
+		if (datetime === null) {
+			datetime = new Date();
+		}
+		else if (typeof datetime === 'string' || typeof datetime === 'number') {
+			datetime = new Date(datetime);
+		}
+		if (datetime instanceof Date) {
+			datetime = datetime.toISOString();
+		}
+		return datetime.replace(/\.\d{3}/, ''); // Remove milliseconds
 	},
 
 	geoJsonBbox(geojson) {
