@@ -248,7 +248,7 @@ module.exports = class ServicesAPI {
 	}
 
 	makeServiceUrl(service) {
-		return Utils.getApiUrl('/' + service.type.toLowerCase() + '/' + service._id);
+		return Utils.getApiUrl('/' + service.type.toLowerCase() + '/' + service._id + "/{z}/{x}/{y}");
 	}
 	
 };
