@@ -195,7 +195,7 @@ var Utils = {
 				const filepath = path.join(dir, file);
 				return fse.stat(filepath).then(stats => {
 					if (stats.isDirectory()) {
-						return walk(filepath);
+						return this.walk(filepath);
 					}
 					else if (stats.isFile()) {
 						return Promise.resolve({
