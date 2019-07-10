@@ -34,7 +34,7 @@ module.exports = class FileWorkspace {
 	}
 
 	getFileName(user_id, p) {
-		return path.relative(this.getUserFolder(user_id), p);
+		return path.relative(this.getUserFolder(user_id), p).replace(/\\/g, '/');
 	}
 
 	getFileContents(user_id, p) {

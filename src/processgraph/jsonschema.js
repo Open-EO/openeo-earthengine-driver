@@ -12,7 +12,7 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 		this.context = context;
 	}
 
-	validateCollectionId(data) {
+	async validateCollectionId(data) {
 		if (this.context.getCollection(data) === null) {
 			throw new ajv.ValidationError([{
 				message: "Collection doesn't exist."
@@ -31,7 +31,7 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 		return true;
 	}
 	
-	validateOutputFormat(data) {
+	async validateOutputFormat(data) {
 		if (!this.context.server().isValidOutputFormat(data)) {
 			throw new ajv.ValidationError([{
 				message: "Output format not supported."
