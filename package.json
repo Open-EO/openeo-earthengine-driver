@@ -1,12 +1,14 @@
 {
   "name": "@openeo/earthengine-driver",
-  "version": "0.3.1",
+  "version": "0.4.0",
   "description": "An openEO driver for Google Earth Engine.",
   "main": "server.js",
   "scripts": {
-    "start": "nodemon server.js",
+    "dev": "nodemon server.js --trace-warnings",
     "up": "forever start -a -l forever.eelog -o out.eelog -e err.eelog server.js",
-    "down": "forever stop server.js"
+    "down": "forever stop server.js",
+    "test": "jest --env=node",
+    "debug": "node --nolazy --inspect-brk=9229 server.js"
   },
   "author": "Matthias Mohr",
   "license": "Apache-2.0",
@@ -19,17 +21,21 @@
     "url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
   },
   "devDependencies": {
-    "nodemon": "^1.18.7",
-    "forever": "^0.15.3"
+    "forever": "^1.0.0",
+    "jest": "^24.5.0",
+    "jest-html-reporter": "^2.4.2",
+    "nodemon": "^1.18.11"
   },
   "dependencies": {
     "@google-cloud/storage": "^2.1.0",
     "@google/earthengine": "^0.1.151",
-    "axios": "^0.18.0",
+    "@openeo/js-commons": "^0.4.0",
+    "ajv": "^6.10.0",
+    "axios": "^0.19.0",
     "fs-extra": "^7.0.0",
-    "jsonschema": "^1.2.4",
     "nedb": "^1.8.0",
     "object-hash": "^1.3.0",
+    "proj4": "^2.5.0",
     "restify": "^7.2.1",
     "ws": "^6.1.0"
   },

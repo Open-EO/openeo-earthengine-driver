@@ -1,16 +1,16 @@
-const CapabilitiesAPI = require('./openeo/capabilities');
-const CollectionsAPI = require('./openeo/collections');
-const FilesAPI = require('./openeo/files');
-const JobsAPI = require('./openeo/jobs');
-const ProcessesAPI = require('./openeo/processes');
-const ProcessGraphsAPI = require('./openeo/processGraphs');
-const ServicesAPI = require('./openeo/services');
-const SubscriptionsAPI = require('./openeo/subscriptions');
-const UsersAPI = require('./openeo/users');
+const CapabilitiesAPI = require('./src/api/capabilities');
+const CollectionsAPI = require('./src/api/collections');
+const FilesAPI = require('./src/api/files');
+const JobsAPI = require('./src/api/jobs');
+const ProcessesAPI = require('./src/api/processes');
+const ProcessGraphsAPI = require('./src/api/storedprocessgraphs');
+const ServicesAPI = require('./src/api/services');
+const SubscriptionsAPI = require('./src/api/subscriptions');
+const UsersAPI = require('./src/api/users');
 
-const Config = require('./openeo/config');
-const ProcessRegistry = require('./openeo/processRegistry');
-const Utils = require('./openeo/utils');
+const Utils = require('./src/utils');
+const ServerContext = require('./src/servercontext');
+
 const fse = require('fs-extra');
 const restify = require('restify');
 global.ee = require('@google/earthengine');
@@ -18,15 +18,11 @@ global.ee = require('@google/earthengine');
 class Server {
 
 	constructor() {
-		console.log('Initializing openEO Google Earth Engine driver...');
+		console.info('Initializing openEO Google Earth Engine driver...');
 
 		this.http_server = null;
 		this.https_server = null;
-		this.config = new Config();
-		this.processRegistry = new ProcessRegistry();
-		for(var i in this.config.processes) {
-			this.processRegistry.add(this.config.processes[i]);
-		}
+		this.afterServerStartListener = [];
 
 		this.serverOptions = {
 			handleUpgrades: true,
@@ -34,50 +30,73 @@ class Server {
 		};
 		this.corsExposeHeaders = 'OpenEO-Identifier, OpenEO-Costs';
 
-		this.api = {};
-		this.api.capabilities = new CapabilitiesAPI(this.config);
-		this.api.collections = new CollectionsAPI();
-		this.api.processes = new ProcessesAPI();
-		this.api.files = new FilesAPI();
-		this.api.jobs = new JobsAPI();
-		this.api.services = new ServicesAPI()  ;
-		this.api.subscriptions = new SubscriptionsAPI();
-		this.api.users = new UsersAPI();
-		this.api.processGraphs = new ProcessGraphsAPI();
+		this.serverContext = new ServerContext();
 
-		const privateKey = fse.readJsonSync(this.config.serviceAccountCredentialsFile);
+		this.api = {};
+		this.api.capabilities = new CapabilitiesAPI(this.serverContext);
+		this.api.collections = new CollectionsAPI(this.serverContext);
+		this.api.processes = new ProcessesAPI(this.serverContext);
+		this.api.files = new FilesAPI(this.serverContext);
+		this.api.jobs = new JobsAPI(this.serverContext);
+		this.api.services = new ServicesAPI(this.serverContext);
+		this.api.subscriptions = new SubscriptionsAPI(this.serverContext);
+		this.api.users = new UsersAPI(this.serverContext);
+		this.api.processGraphs = new ProcessGraphsAPI(this.serverContext);
+
+		const privateKey = fse.readJsonSync(this.serverContext.serviceAccountCredentialsFile);
 		ee.data.authenticateViaPrivateKey(privateKey,
 			() => { 
-				console.log("GEE Authentication succeeded.");
+				console.info("GEE Authentication succeeded.");
 				ee.initialize();
 				this.startServer();
 			},
 			(error) => {
-				console.log("ERROR: GEE Authentication failed: " + error);
+				console.error("ERROR: GEE Authentication failed: " + error);
 				process.exit(1);
 			}
 		);
 	}
 
-	addEndpoint(method, path, callback) {
+	addEndpoint(method, path, callback, root = false) {
 		if (!Array.isArray(path)) {
 			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
 		}
 
-		this.api.capabilities.addEndpoint(method, path[0]);
+		if (!root) {
+			this.api.capabilities.addEndpoint(method, path[0]);
+		}
+		var apiPath = root ? '' : this.serverContext.apiPath;
 
 		if (method === 'delete') {
 			method = 'del';
 		}
 
-		this.http_server[method](this.config.apiPath + path[1], callback);
+		this.http_server[method](apiPath + path[1], callback);
 		if (this.isHttpsEnabled()) {
-			this.https_server[method](this.config.apiPath + path[1], callback);
+			this.https_server[method](apiPath + path[1], callback);
 		}
 	}
 
+	addAfterServerStartListener(callback) {
+		this.afterServerStartListener.push(callback);
+	}
+
+	afterServerStart() {
+		for(var i in this.afterServerStartListener) {
+			this.afterServerStartListener[i](this);
+		}
+	}
+
+	beforeServerStart() {
+		let p = [];
+		for(var i in this.api) {
+			p.push(this.api[i].beforeServerStart(this));
+		}
+		return Promise.all(p);
+	}
+
 	isHttpsEnabled() {
-		return (this.config.ssl && this.config.ssl.port > 0 && typeof this.config.ssl.key === 'string' && typeof this.config.ssl.certificate === 'string') ? true : false;
+		return (this.serverContext.ssl && this.serverContext.ssl.port > 0 && typeof this.serverContext.ssl.key === 'string' && typeof this.serverContext.ssl.certificate === 'string') ? true : false;
 	}
 
 	initHttpServer() {
@@ -88,8 +107,8 @@ class Server {
 	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
 			var https_options = Object.assign({}, this.serverOptions, {
-				key: fse.readFileSync(this.config.ssl.key),
-				certificate: fse.readFileSync(this.config.ssl.certificate)
+				key: fse.readFileSync(this.serverContext.ssl.key),
+				certificate: fse.readFileSync(this.serverContext.ssl.certificate)
 			});
 			this.https_server = restify.createServer(https_options);
 			this.initServer(this.https_server);
@@ -97,6 +116,7 @@ class Server {
 	}
 
 	initServer(server) {
+		server.on('restifyError', this.errorHandler.bind(this));
 		server.pre(this.preflight.bind(this));
 		server.use(this.populateGlobals.bind(this));
 		server.use(restify.plugins.queryParser());
@@ -104,20 +124,32 @@ class Server {
 		server.use(restify.plugins.authorizationParser());
 		server.use(this.injectCorsHeader.bind(this));
 		server.use(this.api.users.checkRequestAuthToken.bind(this.api.users));
+		if (this.serverContext.debug) {
+			server.use(this.logRequest.bind(this));
+		}
+	}
+
+	errorHandler(req, res, e, next) {
+		if (global.server.serverContext.debug) {
+			if (e.originalError) {
+				console.error(e.originalError);
+			}
+			else {
+				console.error(e);
+			}
+		}
+		return next();
 	}
 
 	createSubscriptions(topics) {
 		for(let i in topics) {
-			this.api.subscriptions.registerTopic(topics[i]);
+			this.serverContext.subscriptions().registerTopic(topics[i]);
 		}
 	}
 
 	populateGlobals(req, res, next) {
-		req.config = this.config;
-		req.processRegistry = this.processRegistry;
-		req.user = this.api.users.emptyUser();
-		req.api = this.api;
-		req.downloadRegion = null;
+		req.user = this.serverContext.users().emptyUser();
+		req.serverContext = this.serverContext;
 		return next();
 	}
 
@@ -125,16 +157,13 @@ class Server {
 		this.initHttpServer();
 		this.initHttpsServer();
 
-		let p = [];
-		for(var i in this.api) {
-			p.push(this.api[i].beforeServerStart(this));
-		}
-		Promise.all(p)
+		this.beforeServerStart()
 		.then(() => this.startServerHttp())
 		.then(() => this.startServerHttps())
+		.then(() => this.afterServerStart())
 		.catch(e => {
-			console.log('Server not started due to the following error: ');
-			console.log(e);
+			console.error('Server not started due to the following error: ');
+			console.error(e);
 			process.exit(1);
 		});
 
@@ -142,11 +171,12 @@ class Server {
 
 	startServerHttp() {
 		return new Promise((resolve, reject) => {
-			const port = process.env.PORT || this.config.port;
+			const port = process.env.PORT || this.serverContext.port;
 			this.http_server.listen(port, () => {
-				var exposePortStr = this.config.exposePort != 80 ? ":" + this.config.exposePort : "";
-				Utils.serverUrl = "http://" + this.config.hostname + exposePortStr + this.config.apiPath;
-				console.log('HTTP-Server listening at %s', Utils.getServerUrl());
+				var exposePortStr = this.serverContext.exposePort != 80 ? ":" + this.serverContext.exposePort : "";
+				Utils.serverUrl = "http://" + this.serverContext.hostname + exposePortStr;
+				Utils.apiPath = this.serverContext.apiPath;
+				console.info('HTTP-Server listening at %s', Utils.getApiUrl());
 				resolve();
 			});
 		});
@@ -155,19 +185,25 @@ class Server {
 	startServerHttps() {
 		return new Promise((resolve, reject) => {
 			if (this.isHttpsEnabled()) {
-				var sslport = process.env.SSL_PORT || this.config.ssl.port;
+				var sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
 				this.https_server.listen(sslport, () => {
-					var exposePortStr = this.config.ssl.exposePort != 443 ? ":" + this.config.ssl.exposePort : "";
-					Utils.serverUrl = "https://" + this.config.hostname + exposePortStr + this.config.apiPath;
-					console.log('HTTPS-Server listening at %s', Utils.getServerUrl());
+					var exposePortStr = this.serverContext.ssl.exposePort != 443 ? ":" + this.serverContext.ssl.exposePort : "";
+					Utils.serverUrl = "https://" + this.serverContext.hostname + exposePortStr;
+					Utils.apiPath = this.serverContext.apiPath;
+					console.info('HTTPS-Server listening at %s', Utils.getApiUrl());
 					resolve();
 				});
 			}
 			else {
-				console.log('HTTPS not enabled.');
+				console.warn('HTTPS not enabled.');
 				resolve();
 			}
 		});
+	}
+
+	logRequest(req, res, next) {
+		console.log("Requested: " + req.getRoute().method + " " + req.href());
+		next();
 	}
 
 	injectCorsHeader(req, res, next) {

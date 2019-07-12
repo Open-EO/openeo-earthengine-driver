@@ -1,12 +1,13 @@
 # openeo-earthengine-driver
 openEO back-end driver for [Google Earth Engine](https://earthengine.google.com/).
 
-This back-end currently supports **openEO API version 0.3.1**. Legacy versions are available as releases.
+This back-end currently supports **openEO API version 0.3.1**, version 0.4.0 is currently in development.
+Legacy versions are available as releases.
 
 ## Demo
 
-* The most recent instance (openEO API v0.3.1) is running at https://earthengine.openeo.org/v0.3
-* You can connect to it using any openEO client, e.g. the Web Editor: https://editor.openeo.org/?server=https%3A%2F%2Fearthengine.openeo.org%2Fv0.3
+* The most recent version (openEO API v0.3.1) is running at https://earthengine.openeo.org/v0.3
+* The development version (openEO API v0.4.0) is running at https://earthengine.openeo.org/v0.4
 
 Multiple user accounts are available to be used (`group1`, `group2`, ... until `group15`), each with password `test123`.
 
@@ -46,50 +47,89 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
 
 ```
 {
-  "process_id": "stretch_colors",
-  "imagery": {
-    "process_id": "min_time",
-    "imagery": {
-      "process_id": "NDVI",
-      "imagery": {
-        "process_id": "filter_daterange",
-        "imagery": {
-          "process_id": "get_collection",
-          "name": "COPERNICUS/S2"
-        },
-        "extent": [
-          "2018-01-01T00:00:00Z",
-          "2018-01-31T23:59:59Z"
-        ]
-      },
-      "red": "B4",
-      "nir": "B8"
-    }
+  "load_collection": {
+    "arguments": {
+      "id": "COPERNICUS/S2",
+      "temporal_extent": ["2018-04-30","2018-06-26"],
+      "spatial_extent": null,
+      "bands": ["B4", "B8"]
+    },
+    "process_id": "load_collection"
   },
-  "min": -1,
-  "max": 1
+  "b1": {
+    "arguments": {
+      "data": {"from_node": "load_collection"},
+      "bands": ["B4"]
+    },
+    "process_id": "filter_bands"
+  },
+  "b2": {
+    "arguments": {
+      "data": {"from_node": "load_collection"},
+      "bands": ["B8"]
+    },
+    "process_id": "filter_bands"
+  },
+  "normalized_difference": {
+    "arguments": {
+      "band1": {"from_node": "b1"},
+      "band2": {"from_node": "b2"}
+    },
+    "process_id": "normalized_difference"
+  },
+  "reduce": {
+    "arguments": {
+      "data": {"from_node": "normalized_difference"},
+      "dimension": "temporal",
+      "reducer": {
+        "callback": {
+          "min": {
+            "arguments": {
+              "data": {"from_argument": "data"}
+            },
+            "process_id": "min",
+            "result": true
+          }
+        }
+      }
+    },
+    "process_id": "reduce"
+  },
+  "save_result": {
+    "arguments": {
+      "data": {"from_node": "reduce"},
+      "format": "png"
+    },
+    "process_id": "save_result",
+    "result": true
+  }
 }
 ```
 
 This translates into the following [Google Earth Engine Playground](https://code.earthengine.google.com/) script:
 
 ```
-// create image collection
-var img = ee.ImageCollection('COPERNICUS/S2');
+// load_collection
+var img = ee.ImageCollection("COPERNICUS/S2");
+img = img.filterDate("2018-04-30", "2018-06-26");
 
-// filter_daterange
-img = img.filterDate("2018-01-01T00:00:00Z", "2018-01-31T23:59:59Z");
+// filter_bands (2x)
+var band1 = img.select(["B4"]);
+var band2 = img.select(["B8"]);
 
-// ndvi
-img = img.map(function(image) {
-  return image.normalizedDifference(['B4', 'B8']);
+// normalized_difference
+var combined = band1.combine(band2);
+img = combined.map(function(image) {
+	var normalizedDifference = image.normalizedDifference().rename("normalized_difference");
+	return image.addBands(normalizedDifference).select("normalized_difference");
 });
 
-// min_time
+// reduce with callback min
 img = img.reduce('min');
 
-// stretch_color and mapping
-Map.addLayer(img, {min: -1, max: 1, palette: ['black', 'white']});
+// save_result
+// Either download data with img.getDownloadURL() or show it in in the playground with:
+Map.addLayer(img);
 ```
 
 **[Further documentation](docs/README.md) can be found in the [docs/](docs/) directory, but is currently work in progress.**

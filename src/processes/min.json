@@ -1,0 +1,61 @@
+{
+    "id": "min",
+    "summary": "Minimum value",
+    "description": "Computes the smallest value of an array of numbers, which is is equal to the last element of a sorted (i.e., ordered) version the array.",
+    "categories": [
+        "math",
+        "reducer"
+    ],
+    "gee:custom": true,
+    "parameters": {
+        "data": {
+            "description": "An array of numbers. An empty array resolves always with `null`.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                }
+            },
+            "required": true
+        }
+    },
+    "returns": {
+        "description": "The minimum value.",
+        "schema": {
+            "type": [
+                "number",
+                "null"
+            ]
+        }
+    },
+    "examples": [
+        {
+            "arguments": {
+                "data": [1,0,3,2]
+            },
+            "returns": 0
+        },
+        {
+            "arguments": {
+                "data": [5,2.5,null,-0.7]
+            },
+            "returns": -0.7
+        },
+        {
+            "arguments": {
+                "data": []
+            },
+            "returns": null
+        }
+    ],
+    "links": [
+        {
+            "rel": "about",
+            "href": "http://mathworld.wolfram.com/Minimum.html",
+            "title": "Minimum explained by Wolfram MathWorld"
+        }
+    ]
+}

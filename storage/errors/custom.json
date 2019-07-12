@@ -1,6 +1,5 @@
 {
 	"PermissionsInsufficient": {
-		"code": 403,
 		"description": "The client did provided correct authentication details, but the privileges/permissions of the provided credentials do not allow to request the resource.",
 		"message": "Forbidden.",
 		"http": 403,
@@ -9,7 +8,6 @@
 		]
 	},
 	"PasswordInsecure": {
-		"code": 4001,
 		"description": "The specified password is not considered secure by the policy of the back-end provider or no password was given at all. The user needs to specify a different password to proceed.",
 		"message": "Password does not meet the requirements.",
 		"http": 400,
@@ -18,7 +16,6 @@
 		]
 	},
 	"BoundingBoxMissing": {
-		"code": 619,
 		"description": "No bounding box specified to restrict data processing upon. Use `filter_bbox` to restrict the processed area.",
 		"message": "No bounding box specified. Use `filter_bbox` to restrict the processed area.",
 		"http": 400,
@@ -28,7 +25,6 @@
 		]
 	},
 	"EarthEngineError": {
-		"code": 4000,
 		"description": "An unknown error thrown by GEE code.",
 		"message": "Process '{process}' reports: {message}",
 		"http": 400,
