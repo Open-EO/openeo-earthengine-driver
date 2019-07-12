@@ -1,13 +1,13 @@
 # openeo-earthengine-driver
 openEO back-end driver for [Google Earth Engine](https://earthengine.google.com/).
 
-This back-end currently supports **openEO API version 0.3.1**, version 0.4.0 is currently in development.
+This back-end currently supports **openEO API version 0.4.2**.
 Legacy versions are available as releases.
 
 ## Demo
 
-* The most recent version (openEO API v0.3.1) is running at https://earthengine.openeo.org/v0.3
-* The development version (openEO API v0.4.0) is running at https://earthengine.openeo.org/v0.4
+* The most recent version (openEO API v0.4.2) is running at https://earthengine.openeo.org/v0.4
+* A legacy version (openEO API v0.3.1) is running at https://earthengine.openeo.org/v0.3
 
 Multiple user accounts are available to be used (`group1`, `group2`, ... until `group15`), each with password `test123`.
 
