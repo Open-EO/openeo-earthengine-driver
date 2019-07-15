@@ -6,7 +6,7 @@ const { Utils: CommonUtils } = require('@openeo/js-commons');
 const errors = Object.assign(openeo_errors, custom_errors);
 
 for(var name in errors) {
-	restify_errors.makeConstructor(name, {
+	restify_errors[name] = restify_errors.makeConstructor(name, {
 		code: name,
 		statusCode: errors[name].http,
 		message: errors[name].message,
@@ -42,9 +42,9 @@ for(var name in errors) {
 		this.message = CommonUtils.replacePlaceholders(this.message, this.info);
 	};
 	restify_errors[name].prototype = old;
-};
+}
 
-restify_errors['wrap'] = function(e, callback) {
+restify_errors.wrap = function(e, callback) {
 	if (CommonUtils.isObject(e) && e.native === true) {
 		return e; // An openEO error
 	}
