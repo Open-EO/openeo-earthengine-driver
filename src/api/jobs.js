@@ -134,36 +134,40 @@ module.exports = class JobsAPI {
 			user_id: req.user._id
 		};
 
-		var filePath;
+		var filePath, jobId, processGraph;
 		this.storage.findJob(query)
 		.then(job => {
 			if (job.status === 'queued' || job.status === 'running') {
 				throw new Errors.JobNotFinished();
 			}
 
-			return this.storage.removeResults(job._id)
-			.then(() => this.storage.updateJobStatus(query, 'queued'))
-			.then(() => {
-				this.sendDebugNotifiction(req, res, "Queueing batch job");
+			jobId = job._id;
+			processGraph = job.process_graph;
 
-				res.send(202);
-				next();
+			this.sendDebugNotifiction(req, res, "Queueing batch job");
+			this.storage.updateJobStatus(query, 'queued').catch(() => {});
+		
+			res.send(202);
+			return next();
+		})
+		.then(() => this.storage.removeResults(jobId))
+		.then(() => {
+			this.sendDebugNotifiction(req, res, "Starting batch job");
+			this.storage.updateJobStatus(query, 'running').catch(() => {});
 
-				var context = this.context.processingContext(req);
-				var pg = new ProcessGraph(job.process_graph, context);
-				return pg.execute()
-					.then(resultNode => {
-						var cube = resultNode.getResult();
-						var jobFormat = context.translateOutputFormat(cube.getOutputFormat());
-						filePath = this.storage.getJobFile(job._id, Utils.generateHash() +  "." + jobFormat);
-						return context.retrieveResults(cube);
-					})
-					.catch(e => next(Errors.wrap(e)));
-			});
+			var context = this.context.processingContext(req);
+			var pg = new ProcessGraph(processGraph, context);
+			return pg.execute();
+		})
+		.then(resultNode => {
+			var context = resultNode.getProcessGraph().getContext();
+			var cube = resultNode.getResult();
+			var jobFormat = context.translateOutputFormat(cube.getOutputFormat());
+			filePath = this.storage.getJobFile(jobId, Utils.generateHash() +  "." + jobFormat);
+			return context.retrieveResults(cube);
 		})
 		.then(url => {
-			this.sendDebugNotifiction(req, res, "Downloading " + url);
-			this.storage.updateJobStatus(query, 'running').catch(() => {});
+			this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
 			return Utils.stream({
 				method: 'get',
 				url: url,
@@ -171,7 +175,7 @@ module.exports = class JobsAPI {
 			});
 		})
 		.then(stream => {
-			this.sendDebugNotifiction(req, res, "Storing result to " + filePath);
+			this.sendDebugNotifiction(req, res, "Storing result to: " + filePath);
 			return fse.ensureDir(path.dirname(filePath))
 				.then(() => new Promise((resolve, reject) => {
 					var writer = fse.createWriteStream(filePath);
@@ -191,7 +195,6 @@ module.exports = class JobsAPI {
 		.catch(e => {
 			this.storage.updateJobStatus(query, 'error', e);
 			this.sendDebugNotifiction(req, res, e);
-			next(Errors.wrap(e));
 		});
 	}
 
@@ -386,7 +389,7 @@ module.exports = class JobsAPI {
 			})
 			.then(resultNode => context.retrieveResults(resultNode.getResult(), 1000)) // 1000 = pixel size
 			.then(url => {
-				this.sendDebugNotifiction(req, res, "Downloading " + url);
+				this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
 				return Utils.stream({
 					method: 'get',
 					url: url,

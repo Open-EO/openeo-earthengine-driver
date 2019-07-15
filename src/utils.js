@@ -180,6 +180,7 @@ var Utils = {
 		switch(ext.toLowerCase()) {
 			case 'png':
 				return 'image/png';
+			case 'jpg':
 			case 'jpeg':
 				return 'image/jpeg';
 			case 'json':

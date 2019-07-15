@@ -9,6 +9,10 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		this.context = context;
 	}
 
+	getContext() {
+		return this.context;
+	}
+
 	createNodeInstance(json, id, parent) {
 		return new GeeProcessGraphNode(json, id, parent);
 	}

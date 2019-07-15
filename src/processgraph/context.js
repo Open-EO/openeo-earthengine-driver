@@ -51,25 +51,29 @@ module.exports = class ProcessingContext {
 	getUserId() {
 		return this.userId;
 	}
+
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube, size = 2000, bounds = null) {
-		// Execute graph
 		var format = dataCube.getOutputFormat() || "jpeg";
-        if ((format.toLowerCase() === 'jpeg') || (format.toLowerCase() === 'png')) {
-            var bounds = bounds || dataCube.getSpatialExtentAsGeeGeometry();
-//			if (syncResult) {
+		switch(format.toLowerCase()) {
+			case 'jpeg':
+			case 'png':
+				if (!bounds) {
+					bounds = dataCube.getSpatialExtentAsGeeGeometry();
+				}
 				return new Promise((resolve, reject) => {
 					var visBands = null;
 					var availableBands = dataCube.getBands();
 					var parameters = dataCube.getOutputFormatParameters(); // this will be important/used in the future
 					var nParams = Object.keys(parameters).length;
 					if(nParams === 0){
-						var info = "No bands are specified in the output parameter settings. " +
-							"The first band will be used for a gray-value visualisation.";
-						console.warn(info); // ToDo: Send warning via subscriptions
+						// ToDo: Send warning via subscriptions
+						if (global.server.serverContext.debug) {
+							console.warn("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
+						}
 						visBands = [availableBands[0]];
 					}
-					else{
+					else {
 						if (parameters.red && parameters.green && parameters.blue){
 							visBands = [parameters.red, parameters.green, parameters.blue];
 						}
@@ -89,7 +93,7 @@ module.exports = class ProcessingContext {
 						dimensions: size,
 						region: bounds.bounds().getInfo()
 					}, url => {
-						if (!url) {
+						if (typeof url !== 'string' || url.length === 0) {
 							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
 						}
 						else {
@@ -97,30 +101,15 @@ module.exports = class ProcessingContext {
 						}
 					});
 				});
-/*			}
-			else {
-				var options = {
-					name: "openeo",
-					dimensions: size,
-					region: bounds
-				};
-				image.getDownloadURL(options, url => {
-					if (!url) {
-						reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-					}
-					else {
-						resolve(url);
-					}
-				});
-			} */
-		}
-		else if(format.toLowerCase() === 'json') {
-			var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
-			var p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
-			var parent = path.dirname(p);
-			await fse.ensureDir(parent);
-			await fse.writeJson(p, dataCube.getData());
-			return Utils.getApiUrl("/temp/" + fileName);
+			case 'json':
+				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
+				var p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
+				var parent = path.dirname(p);
+				await fse.ensureDir(parent);
+				await fse.writeJson(p, dataCube.getData());
+				return Utils.getApiUrl("/temp/" + fileName);
+			default:
+				throw new Error('File format not supported.');
 		}
 	}
 
