@@ -34,7 +34,10 @@ module.exports = class UsersAPI {
 	}
 
 	getCredentialsBasic(req, res, next) {
-		if (req.authorization.scheme != 'Basic') {
+		if (!req.authorization.scheme) {
+			return next(new Errors.AuthenticationRequired());
+		}
+		else if (req.authorization.scheme != 'Basic') {
 			return next(new Errors.AuthenticationSchemeInvalid());
 		}
 
