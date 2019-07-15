@@ -51,7 +51,12 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
     "arguments": {
       "id": "COPERNICUS/S2",
       "temporal_extent": ["2018-04-30","2018-06-26"],
-      "spatial_extent": null,
+      "spatial_extent": {
+        "west": -2.763447,
+        "south": 43.040791,
+        "east": -1.120991,
+        "north": 43.838489
+      },
       "bands": ["B4", "B8"]
     },
     "process_id": "load_collection"
@@ -95,9 +100,30 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
     },
     "process_id": "reduce"
   },
-  "save_result": {
+  "linear_scaling": {
     "arguments": {
       "data": {"from_node": "reduce"},
+      "process": {
+        "callback": {
+          "lsr": {
+            "arguments": {
+              "x": {"from_argument": "x"},
+              "inputMin": -1,
+              "inputMax": 1,
+              "outputMin": 0,
+              "outputMax": 255
+            },
+            "process_id": "linear_scale_range",
+            "result": true
+          }
+        }
+      }
+    },
+    "process_id": "apply"
+  },
+  "save_result": {
+    "arguments": {
+      "data": {"from_node": "linear_scaling"},
       "format": "png"
     },
     "process_id": "save_result",
@@ -112,6 +138,8 @@ This translates into the following [Google Earth Engine Playground](https://code
 // load_collection
 var img = ee.ImageCollection("COPERNICUS/S2");
 img = img.filterDate("2018-04-30", "2018-06-26");
+var geom = ee.Geometry.Rectangle([-2.763447,43.040791,-1.120991,43.838489], "EPSG:4326");
+img = img.filterBounds(geom);
 
 // filter_bands (2x)
 var band1 = img.select(["B4"]);
@@ -126,6 +154,11 @@ img = combined.map(function(image) {
 
 // reduce with callback min
 img = img.reduce('min');
+
+// apply linear scaling
+var numerator = img.subtract(-1);
+var ratio = numerator.divide(1 - -1);
+img = ratio.multiply(255 - 0).add(0);
 
 // save_result
 // Either download data with img.getDownloadURL() or show it in in the playground with:
