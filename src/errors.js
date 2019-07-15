@@ -44,6 +44,9 @@ for(var name in errors) {
 	restify_errors[name].prototype = old;
 }
 
+// Override the default restify 404 error with the openEO 404 error.
+restify_errors.ResourceNotFoundError = restify_errors.NotFound;
+
 restify_errors.wrap = function(e, callback) {
 	if (CommonUtils.isObject(e) && e.native === true) {
 		return e; // An openEO error
