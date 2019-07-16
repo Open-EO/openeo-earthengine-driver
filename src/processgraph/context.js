@@ -5,7 +5,6 @@ const fse = require('fs-extra');
 
 module.exports = class ProcessingContext {
 
-	// ToDo: extent, dimension and other must be stored per node?! otherwise parallel processing will fail
 	constructor(serverContext, userId = null) {
 		this.serverContext = serverContext;
 		this.userId = userId;

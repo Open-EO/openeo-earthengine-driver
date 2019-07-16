@@ -4,6 +4,7 @@ const Errors = require('../errors');
 const Utils = require('../utils');
 
 // ToDo: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
+// see https://github.com/Open-EO/openeo-earthengine-driver/issues/11
 module.exports = class FilesAPI {
 
 	constructor(context) {
