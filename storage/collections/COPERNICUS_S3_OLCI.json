@@ -2,7 +2,7 @@
   "stac_version": "0.6.2", 
   "properties": {
     "gee:type": "image_collection", 
-    "eo:gsd": "meters", 
+    "gee:gsd": "meters", 
     "eo:platform": "Sentinel-3A", 
     "eo:instrument": "OLCI", 
     "eo:bands": [
@@ -10,147 +10,126 @@
         "name": "Oa01_radiance", 
         "description": "Aerosol correction, improved water constituent retrieval", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "400nm/15nm", 
         "gee:scale": 0.01394646
       }, 
       {
         "name": "Oa02_radiance", 
         "description": "Yellow substance and detrital pigments (turbidity)", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "412.5nm/10nm", 
         "gee:scale": 0.01338726
       }, 
       {
         "name": "Oa03_radiance", 
         "description": "Chl absorption max., biogeochemistry, vegetation", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "442.5nm/10nm", 
         "gee:scale": 0.01214812
       }, 
       {
         "name": "Oa04_radiance", 
         "description": "High Chl, other pigments", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "490nm/10nm", 
         "gee:scale": 0.01151982
       }, 
       {
         "name": "Oa05_radiance", 
         "description": "Chl, sediment, turbidity, red tide", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "510nm/10nm", 
         "gee:scale": 0.01009526
       }, 
       {
         "name": "Oa06_radiance", 
         "description": "Chlorophyll reference (Chl minimum)", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "560nm/10nm", 
         "gee:scale": 0.0123538
       }, 
       {
         "name": "Oa07_radiance", 
         "description": "Sediment loading", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "620nm/10nm", 
         "gee:scale": 0.00879161
       }, 
       {
         "name": "Oa08_radiance", 
         "description": "Chl (2^nd Chl abs. max.), sediment, yellow substance/vegetation", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "665nm/10nm", 
         "gee:scale": 0.00876539
       }, 
       {
         "name": "Oa09_radiance", 
         "description": "For improved fluorescence retrieval and to better account for [smile](https://sentinels.copernicus.eu/web/sentinel/technical-guides/sentinel-3-olci/level-2/smile-correction) together with the bands 665 and 680nm", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "673.75nm/7.5nm", 
         "gee:scale": 0.0095103
       }, 
       {
         "name": "Oa10_radiance", 
         "description": "Chl fluorescence peak, red edge", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "681.25nm/7.5nm", 
         "gee:scale": 0.00773378
       }, 
       {
         "name": "Oa11_radiance", 
         "description": "Chl fluorescence baseline, red edge transition", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "708.75nm/10nm", 
         "gee:scale": 0.00675523
       }, 
       {
         "name": "Oa12_radiance", 
         "description": "O2 absorption/clouds, vegetation", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "753.75nm/7.5nm", 
         "gee:scale": 0.0071996
       }, 
       {
         "name": "Oa13_radiance", 
         "description": "O2 absorption band/aerosol correction", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "761.25nm/7.5nm", 
         "gee:scale": 0.00749684
       }, 
       {
         "name": "Oa14_radiance", 
         "description": "Atmospheric correction", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "764.375nm/3.75nm", 
         "gee:scale": 0.0086512
       }, 
       {
         "name": "Oa15_radiance", 
         "description": "O2A used for cloud top pressure, fluorescence over land", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "767.5nm/2.5nm", 
         "gee:scale": 0.00526779
       }, 
       {
         "name": "Oa16_radiance", 
         "description": "Atmospheric correction/aerosol correction", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "778.75nm/15nm", 
         "gee:scale": 0.00530267
       }, 
       {
         "name": "Oa17_radiance", 
         "description": "Atmospheric correction/aerosol correction, clouds, pixel co-registration", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "865nm/20nm", 
         "gee:scale": 0.00493004
       }, 
       {
         "name": "Oa18_radiance", 
         "description": "Water vapour absorption reference band. Common reference band with SLSTR instrument. Vegetation monitoring", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "885nm/10nm", 
         "gee:scale": 0.00549962
       }, 
       {
         "name": "Oa19_radiance", 
         "description": "Water vapour absorption/vegetation monitoring (max. reflectance)", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "900nm/10nm", 
         "gee:scale": 0.00502847
       }, 
       {
         "name": "Oa20_radiance", 
         "description": "Water vapour absorption, atmospheric/aerosol correction", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "940nm/20nm", 
         "gee:scale": 0.00326378
       }, 
       {
         "name": "Oa21_radiance", 
         "description": "Atmospheric/aerosol correction", 
         "gee:unit": "W m^-2 sr^-1 \u03bcm^-1", 
-        "gee:wavelength": "1029nm/40nm", 
         "gee:scale": 0.00324118
       }, 
       {
@@ -161,154 +140,154 @@
     "gee:revisit_interval": "days", 
     "gee:asset_schema": [
       {
-        "description": "Sentinel Application Platform (SNAP) version", 
+        "name": "SNAP_Graph_Processing_Framework_GPF_vers", 
         "type": "STRING", 
-        "name": "SNAP_Graph_Processing_Framework_GPF_vers"
+        "description": "Sentinel Application Platform (SNAP) version"
       }, 
       {
-        "description": "SNAP version", 
+        "name": "SNAP_Raster_Operators_vers", 
         "type": "STRING", 
-        "name": "SNAP_Raster_Operators_vers"
+        "description": "SNAP version"
       }, 
       {
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "name": "processing_facility_country", 
         "type": "STRING", 
-        "name": "processing_facility_country"
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "name": "processing_facility_name", 
         "type": "STRING", 
-        "name": "processing_facility_name"
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "name": "processing_facility_organisation", 
         "type": "STRING", 
-        "name": "processing_facility_organisation"
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "name": "processing_facility_site", 
         "type": "STRING", 
-        "name": "processing_facility_site"
+        "description": "Geographical location of the facility. This element is configurable within the IPF."
       }, 
       {
-        "description": "Name of the hardware in the facility used for the processing.", 
+        "name": "processing_hardware", 
         "type": "STRING", 
-        "name": "processing_hardware"
+        "description": "Name of the hardware in the facility used for the processing."
       }, 
       {
-        "description": "Name of the software component.", 
+        "name": "processing_software_name", 
         "type": "STRING", 
-        "name": "processing_software_name"
+        "description": "Name of the software component."
       }, 
       {
-        "description": "The version or release identifier of the software", 
+        "name": "processing_software_version", 
         "type": "DOUBLE", 
-        "name": "processing_software_version"
+        "description": "The version or release identifier of the software"
       }, 
       {
-        "description": "The time the product was processed in 'epoch' format", 
+        "name": "processing_time", 
         "type": "DOUBLE", 
-        "name": "processing_time"
+        "description": "The time the product was processed in 'epoch' format"
       }, 
       {
-        "description": "This is always `OL_1_EFR__`", 
+        "name": "product", 
         "type": "STRING", 
-        "name": "product"
+        "description": "This is always `OL_1_EFR__`"
       }, 
       {
-        "description": "The full id of the original Sentinel-3 product", 
+        "name": "PRODUCT_ID", 
         "type": "STRING", 
-        "name": "PRODUCT_ID"
+        "description": "The full id of the original Sentinel-3 product"
       }, 
       {
-        "description": "PASSED or empty", 
+        "name": "productQuality", 
         "type": "STRING", 
-        "name": "productQuality"
+        "description": "PASSED or empty"
       }, 
       {
-        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days.", 
+        "name": "cycle_num", 
         "type": "DOUBLE", 
-        "name": "cycle_num"
+        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days."
       }, 
       {
-        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch.", 
+        "name": "orbitNumber", 
         "type": "DOUBLE", 
-        "name": "orbitNumber"
+        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch."
       }, 
       {
-        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero.", 
+        "name": "relative_orbit_num", 
         "type": "DOUBLE", 
-        "name": "relative_orbit_num"
+        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero."
       }, 
       {
-        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit.", 
+        "name": "groundTrackDirection", 
         "type": "STRING", 
-        "name": "groundTrackDirection"
+        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit."
       }, 
       {
-        "description": "Sentinel-3 spacecraft name: S3A, S3B", 
+        "name": "spacecraft", 
         "type": "STRING", 
-        "name": "spacecraft"
+        "description": "Sentinel-3 spacecraft name: S3A, S3B"
       }, 
       {
-        "description": "Status of the file", 
+        "name": "status", 
         "type": "STRING", 
-        "name": "status"
+        "description": "Status of the file"
       }, 
       {
-        "description": "Timeliness of processing being analysed", 
+        "name": "timeliness", 
         "type": "STRING", 
-        "name": "timeliness"
+        "description": "Timeliness of processing being analysed"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "salineWaterPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "salineWaterPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "coastalPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "coastalPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "freshInlandWaterPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "freshInlandWaterPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "tidalRegionPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "tidalRegionPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "brightPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "brightPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "invalidPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "invalidPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "cosmeticPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "cosmeticPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "duplicatedPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "duplicatedPixelsPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "dubiousSamplesPercent", 
         "type": "DOUBLE", 
-        "name": "dubiousSamplesPercent"
+        "description": "Pixel quality information"
       }, 
       {
-        "description": "Pixel quality information", 
+        "name": "saturatedPixelsPercent", 
         "type": "DOUBLE", 
-        "name": "saturatedPixelsPercent"
+        "description": "Pixel quality information"
       }
     ]
   }, 
@@ -319,16 +298,16 @@
   "license": "proprietary", 
   "links": [
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S3_OLCI.json", 
-      "rel": "self"
+      "rel": "self", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S3_OLCI.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "parent"
+      "rel": "parent", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "root"
+      "rel": "root", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }
   ], 
   "keywords": [
@@ -342,19 +321,19 @@
   ], 
   "providers": [
     {
-      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci", 
+      "name": "European Union/ESA/Copernicus", 
       "roles": [
         "producer", 
         "licensor"
       ], 
-      "name": "European Union/ESA/Copernicus"
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci"
     }, 
     {
-      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI", 
+      "name": "Google Earth Engine", 
       "roles": [
         "host"
       ], 
-      "name": "Google Earth Engine"
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI"
     }
   ], 
   "extent": {

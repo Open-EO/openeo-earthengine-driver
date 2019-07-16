@@ -81,21 +81,12 @@ module.exports = class DataCatalog {
 	fixData() {
 		for(var i in this.collections) {
 			let c = this.collections[i];
-			c.stac_version = "0.6.2";
 
 			// The spatial extent is sometimes invalid, trying to fix them
 			var x2 = c.extent.spatial.length > 4 ? 3 : 2;
 			var minX = Math.min(c.extent.spatial[0], c.extent.spatial[x2]);
 			c.extent.spatial[x2] = Math.max(c.extent.spatial[0], c.extent.spatial[x2]);
 			c.extent.spatial[0] = minX;
-
-			// Remove the invalid gsd entry from the bands
-			if (Array.isArray(c.properties["eo:bands"])) {
-				for(let i in c.properties["eo:bands"]) {
-					// This entry currently holds invalid information
-					delete c.properties["eo:bands"][i].gsd;
-				}
-			}
 
 			// Not a very useful information yet
 			delete c.properties['gee:revisit_interval'];
