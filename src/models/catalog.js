@@ -92,7 +92,9 @@ module.exports = class DataCatalog {
 			delete c.properties['gee:revisit_interval'];
 
 			// Copy asset schema to other properties for now
-			c.other_properties = {};
+			if (!Utils.isObject(c.other_properties)) {
+				c.other_properties = {};
+			}
 			for(var j in c.properties['gee:asset_schema']) {
 				var schema = c.properties['gee:asset_schema'][j];
 				c.other_properties[schema.name] = {
