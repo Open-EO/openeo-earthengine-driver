@@ -48,6 +48,10 @@ module.exports = class ProcessingContext {
 		return this.variables[id];
 	}
 
+	setUserId(userId) {
+		this.userId = userId;
+	}
+
 	getUserId() {
 		return this.userId;
 	}
