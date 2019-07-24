@@ -17,11 +17,9 @@ module.exports = class ProcessCommons {
 			dc.imageCollection(func);
 			// revert renaming of the bands following to the GEE convention
 			var bands = dc.getBands();
-			var renameBand = bandName => bandName + "_" + reducerName;
-			var renamedBands = bands.map(renameBand);
+			var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
 			var renameBands = image => image.select(renamedBands).rename(bands);
-			var mapper = data => data.map(renameBands);
-			dc.imageCollection(mapper);
+			dc.imageCollection(data => data.map(renameBands));
 		}
 		else if (dc.isArray()) {
 			dc.array(func);
@@ -34,10 +32,9 @@ module.exports = class ProcessCommons {
 
 	static applyInCallback(node, imageProcess, arrayProcess, dataArg="x") {
 		var dc = node.getData(dataArg);
-		var dimension = node.getParameter("dimension"); // TODO: use it for apply_dimension
+//		var dimension = node.getParameter("dimension"); // TODO: use it for apply_dimension
 		if (dc.isImageCollection()) {
-			var mapper = data => data.map(imageProcess);
-			dc.imageCollection(mapper);
+			dc.imageCollection(data => data.map(imageProcess));
 		}
 		else if (dc.isImage()){
 			dc.image(imageProcess);
@@ -68,7 +65,7 @@ module.exports = class ProcessCommons {
 
 	// TODO: this changes the dc directly, copy would be more suitable if it does not cost too much
 	static filterBands(dc, bands) {
-		dc.imageCollection(ic => ic.select(bands, bands));
+		dc.imageCollection(ic => ic.select(bands));
 		dc.dimBands().setValues(bands);
 		return dc;
 	}
