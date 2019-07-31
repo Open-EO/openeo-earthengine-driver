@@ -9,6 +9,7 @@ module.exports = class CapabilitiesAPI {
 	}
 
 	beforeServerStart(server) {
+		server.addEndpoint('get', '/', this.getRoot.bind(this), true);
 		server.addEndpoint('get', '/.well-known/openeo', this.getVersions.bind(this), true);
 		server.addEndpoint('get', '/', this.getCapabilities.bind(this));
 		server.addEndpoint('get', '/service_types', this.getServices.bind(this));
@@ -29,6 +30,10 @@ module.exports = class CapabilitiesAPI {
 			path: path,
 			methods: [method]
 		});
+	}
+
+	getRoot(req, res, next) {
+		res.redirect('/.well-known/openeo', next);
 	}
 
 	getVersions(req, res, next) {
