@@ -115,309 +115,309 @@
     "gee:revisit_interval": "days", 
     "gee:asset_schema": [
       {
+        "type": "DOUBLE", 
         "description": "Granule-specific cloudy pixel percentage taken from the original metadata", 
-        "name": "CLOUDY_PIXEL_PERCENTAGE", 
-        "type": "DOUBLE"
+        "name": "CLOUDY_PIXEL_PERCENTAGE"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Cloudy pixel percentage for the whole archive that contains this granule. Taken from the original metadata", 
-        "name": "CLOUD_COVERAGE_ASSESSMENT", 
-        "type": "DOUBLE"
+        "name": "CLOUD_COVERAGE_ASSESSMENT"
       }, 
       {
+        "type": "STRING", 
         "description": "Unique identifier of the datastrip Product Data Item (PDI)", 
-        "name": "DATASTRIP_ID", 
-        "type": "STRING"
+        "name": "DATASTRIP_ID"
       }, 
       {
+        "type": "STRING", 
         "description": "Uniquely identifies a given Datatake. The ID contains the Sentinel-2 satellite, start date and time, absolute orbit number, and processing baseline.", 
-        "name": "DATATAKE_IDENTIFIER", 
-        "type": "STRING"
+        "name": "DATATAKE_IDENTIFIER"
       }, 
       {
+        "type": "STRING", 
         "description": "MSI operation mode", 
-        "name": "DATATAKE_TYPE", 
-        "type": "STRING"
+        "name": "DATATAKE_TYPE"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Percentage of degraded MSI and ancillary data", 
-        "name": "DEGRADED_MSI_DATA_PERCENTAGE", 
-        "type": "DOUBLE"
+        "name": "DEGRADED_MSI_DATA_PERCENTAGE"
       }, 
       {
+        "type": "STRING", 
         "description": "Synthesis of the On-Line Quality Control (OLQC) checks performed at granule (Product_Syntax) and datastrip (Product Syntax and DS_Consistency) levels", 
-        "name": "FORMAT_CORRECTNESS_FLAG", 
-        "type": "STRING"
+        "name": "FORMAT_CORRECTNESS_FLAG"
       }, 
       {
+        "type": "STRING", 
         "description": "Synthesis of the OLQC checks performed at the datastrip level (Relative_Orbit_Number)", 
-        "name": "GENERAL_QUALITY_FLAG", 
-        "type": "STRING"
+        "name": "GENERAL_QUALITY_FLAG"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Product generation time", 
-        "name": "GENERATION_TIME", 
-        "type": "DOUBLE"
+        "name": "GENERATION_TIME"
       }, 
       {
+        "type": "STRING", 
         "description": "Synthesis of the OLQC checks performed at the datastrip level (Attitude_Quality_Indicator)", 
-        "name": "GEOMETRIC_QUALITY_FLAG", 
-        "type": "STRING"
+        "name": "GEOMETRIC_QUALITY_FLAG"
       }, 
       {
+        "type": "STRING", 
         "description": "Unique identifier of the granule PDI (PDI_ID) ", 
-        "name": "GRANULE_ID", 
-        "type": "STRING"
+        "name": "GRANULE_ID"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B1 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B1", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B1"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B2 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B2", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B2"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B3 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B3", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B3"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B4 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B4", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B4"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B5 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B5", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B5"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B6 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B6", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B6"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B7 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B7", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B7"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B8 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B8", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B8"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B8a and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B8A", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B8A"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B9 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B9", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B9"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B10 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B10", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B10"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B11 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B11", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B11"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence azimuth angle average for band B12 and for all detectors", 
-        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B12", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_AZIMUTH_ANGLE_B12"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B1 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B1", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B1"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B2 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B2", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B2"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B3 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B3", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B3"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B4 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B4", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B4"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B5 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B5", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B5"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B6 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B6", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B6"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B7 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B7", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B7"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B8 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B8", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B8"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B8a and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B8A", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B8A"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B9 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B9", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B9"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B10 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B10", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B10"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B11 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B11", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B11"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing viewing incidence zenith angle average for band B12 and for all detectors", 
-        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B12", 
-        "type": "DOUBLE"
+        "name": "MEAN_INCIDENCE_ZENITH_ANGLE_B12"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing sun azimuth angle average for all bands and detectors", 
-        "name": "MEAN_SOLAR_AZIMUTH_ANGLE", 
-        "type": "DOUBLE"
+        "name": "MEAN_SOLAR_AZIMUTH_ANGLE"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean value containing sun zenith angle average for all bands and detectors", 
-        "name": "MEAN_SOLAR_ZENITH_ANGLE", 
-        "type": "DOUBLE"
+        "name": "MEAN_SOLAR_ZENITH_ANGLE"
       }, 
       {
+        "type": "STRING", 
         "description": "US-Military Grid Reference System (MGRS) tile", 
-        "name": "MGRS_TILE", 
-        "type": "STRING"
+        "name": "MGRS_TILE"
       }, 
       {
+        "type": "STRING", 
         "description": "Configuration baseline used at the time of the product generation in terms of processor software version and major Ground Image Processing Parameters (GIPP) version", 
-        "name": "PROCESSING_BASELINE", 
-        "type": "STRING"
+        "name": "PROCESSING_BASELINE"
       }, 
       {
+        "type": "STRING", 
         "description": "The full id of the original Sentinel-2 product", 
-        "name": "PRODUCT_ID", 
-        "type": "STRING"
+        "name": "PRODUCT_ID"
       }, 
       {
+        "type": "STRING", 
         "description": "Based on the OLQC reports contained in the Datastrips/QI_DATA with RADIOMETRIC_QUALITY checklist name", 
-        "name": "RADIOMETRIC_QUALITY_FLAG", 
-        "type": "STRING"
+        "name": "RADIOMETRIC_QUALITY_FLAG"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Earth-Sun distance correction factor", 
-        "name": "REFLECTANCE_CONVERSION_CORRECTION", 
-        "type": "DOUBLE"
+        "name": "REFLECTANCE_CONVERSION_CORRECTION"
       }, 
       {
+        "type": "STRING", 
         "description": "Imaging orbit direction", 
-        "name": "SENSING_ORBIT_DIRECTION", 
-        "type": "STRING"
+        "name": "SENSING_ORBIT_DIRECTION"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Imaging orbit number", 
-        "name": "SENSING_ORBIT_NUMBER", 
-        "type": "DOUBLE"
+        "name": "SENSING_ORBIT_NUMBER"
       }, 
       {
+        "type": "STRING", 
         "description": "Synthesis of the OLQC checks performed at granule (Missing_Lines, Corrupted_ISP, and Sensing_Time) and datastrip (Degraded_SAD and Datation_Model) levels", 
-        "name": "SENSOR_QUALITY_FLAG", 
-        "type": "STRING"
+        "name": "SENSOR_QUALITY_FLAG"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B1", 
-        "name": "SOLAR_IRRADIANCE_B1", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B1"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B2", 
-        "name": "SOLAR_IRRADIANCE_B2", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B2"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B3", 
-        "name": "SOLAR_IRRADIANCE_B3", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B3"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B4", 
-        "name": "SOLAR_IRRADIANCE_B4", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B4"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B5", 
-        "name": "SOLAR_IRRADIANCE_B5", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B5"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B6", 
-        "name": "SOLAR_IRRADIANCE_B6", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B6"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B7", 
-        "name": "SOLAR_IRRADIANCE_B7", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B7"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B8", 
-        "name": "SOLAR_IRRADIANCE_B8", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B8"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B8a", 
-        "name": "SOLAR_IRRADIANCE_B8A", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B8A"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B9", 
-        "name": "SOLAR_IRRADIANCE_B9", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B9"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B10", 
-        "name": "SOLAR_IRRADIANCE_B10", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B10"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B11", 
-        "name": "SOLAR_IRRADIANCE_B11", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B11"
       }, 
       {
+        "type": "DOUBLE", 
         "description": "Mean solar exoatmospheric irradiance for band B12", 
-        "name": "SOLAR_IRRADIANCE_B12", 
-        "type": "DOUBLE"
+        "name": "SOLAR_IRRADIANCE_B12"
       }, 
       {
+        "type": "STRING", 
         "description": "Sentinel-2 spacecraft name: Sentinel-2A, Sentinel-2B", 
-        "name": "SPACECRAFT_NAME", 
-        "type": "STRING"
+        "name": "SPACECRAFT_NAME"
       }
     ]
   }, 
@@ -428,16 +428,16 @@
   "license": "proprietary", 
   "links": [
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S2.json", 
-      "rel": "self"
+      "rel": "self", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/COPERNICUS_S2.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "parent"
+      "rel": "parent", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }, 
     {
-      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json", 
-      "rel": "root"
+      "rel": "root", 
+      "href": "https://earthengine-stac.storage.googleapis.com/catalog/catalog.json"
     }
   ], 
   "keywords": [
@@ -450,19 +450,19 @@
   ], 
   "providers": [
     {
+      "url": "https://earth.esa.int/web/sentinel/user-guides/sentinel-2-msi/product-types/level-1c", 
+      "name": "European Union/ESA/Copernicus", 
       "roles": [
         "producer", 
         "licensor"
-      ], 
-      "url": "https://earth.esa.int/web/sentinel/user-guides/sentinel-2-msi/product-types/level-1c", 
-      "name": "European Union/ESA/Copernicus"
+      ]
     }, 
     {
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2", 
+      "name": "Google Earth Engine", 
       "roles": [
         "host"
-      ], 
-      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S2", 
-      "name": "Google Earth Engine"
+      ]
     }
   ], 
   "extent": {
