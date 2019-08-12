@@ -70,7 +70,7 @@ module.exports = class ProcessCommons {
 		return dc;
 	}
 
-	static filterPolygon(dc, polygons, process_id, paramName) {
+	static filterPolygons(dc, polygons, process_id, paramName) {
 		try {
 			var geom = Utils.geoJsonToGeometry(polygons);
 			dc.setSpatialExtentFromGeometry(polygons);
