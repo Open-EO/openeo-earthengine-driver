@@ -53,6 +53,9 @@ module.exports = class Config {
 		this.otherVersions = [];
 		// Example to add: {url: 'http://xyz.de', production: false, version: '1.0.0'}
 
+		// Path to check disk usage for (e.g. C: on Windows, / on *nix)
+		this.diskUsagePath = null;
+
 		let config = require('../config.json');
 		for(var c in config) {
 			this[c] = config[c];

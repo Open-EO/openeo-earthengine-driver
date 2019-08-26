@@ -1,14 +1,16 @@
 const Errors = require('../errors');
+const checkDiskSpace = require('check-disk-space');
 
 module.exports = class UsersAPI {
 
 	constructor(context) {
 		this.storage = context.users();
-		this.context = context;
+		this.context = context; 
 	}
 
 	beforeServerStart(server) {
 		server.addEndpoint('get', '/credentials/basic', this.getCredentialsBasic.bind(this));
+//		server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
 		server.addEndpoint('post', '/credentials', this.postCredentials.bind(this)); // Proprietary extension to register a user
 		server.addEndpoint('get', '/me', this.getUserInfo.bind(this));
 
@@ -32,6 +34,10 @@ module.exports = class UsersAPI {
 			res.send(err);
 		});
 	}
+
+//	getCredentialsOidc(req, res, next) {
+//		res.redirect('https://accounts.google.com/.well-known/openid-configuration', next);
+//	}
 
 	getCredentialsBasic(req, res, next) {
 		if (!req.authorization.scheme) {
@@ -72,16 +78,43 @@ module.exports = class UsersAPI {
 		});
 	}
 
-	getUserInfo(req, res, next) {
+	async getUserInfo(req, res, next) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-		res.json({
+		var data = {
 			user_id: req.user._id,
-			storage: null,
 			budget: null,
-			links: []
-		});
+			links: [
+				{
+					href: "https://code.earthengine.google.com",
+					rel: "editor",
+					title: "Earth Engine Code Editor"
+				},
+				{
+					href: "https://developers.google.com/earth-engine/datasets/",
+					rel: "datasets",
+					title: "Earth Engine Catalog"
+				},
+				{
+					href: "https://earthengine.google.com/faq/",
+					rel: "about",
+					title: "Earth Engine FAQ"
+				}
+			]
+		};
+		if (this.context.diskUsagePath !== null) {
+			try {
+				var info = await checkDiskSpace(this.context.diskUsagePath);
+				data.storage = {
+					free: info.free,
+					quota: info.size
+				};
+			} catch (e) {
+				console.warn(e);
+			}
+		}
+		res.json(data);
 		return next();
 	}
 
