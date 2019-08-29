@@ -328,6 +328,9 @@ module.exports = class DataCube {
 	}
 
 	getOutputFormatParameters() {
+		if (typeof this.output.parameters !== 'object' || this.output.parameters === null || Array.isArray(this.output.parameters)) {
+			return {};
+		}
 		return this.output.parameters;
 	}
 

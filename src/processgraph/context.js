@@ -68,28 +68,23 @@ module.exports = class ProcessingContext {
 					var visBands = null;
 					var availableBands = dataCube.getBands();
 					var parameters = dataCube.getOutputFormatParameters(); // this will be important/used in the future
-					var nParams = Object.keys(parameters).length;
-					if(nParams === 0){
-						// ToDo: Send warning via subscriptions
-						if (global.server.serverContext.debug) {
-							console.warn("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
-						}
-						visBands = [availableBands[0]];
+					if (parameters.red && parameters.green && parameters.blue){
+						visBands = [parameters.red, parameters.green, parameters.blue];
+					}
+					else if(parameters.gray){
+						visBands = [parameters.gray];
+					}
+					else if (parameters.red || parameters.green || parameters.blue) {
+						throw new Errors.ProcessArgumentInvalid({
+							argument: "options",
+							process: "save_result",
+							reason: "The output band definitions are not properly given."
+						});
 					}
 					else {
-						if (parameters.red && parameters.green && parameters.blue){
-							visBands = [parameters.red, parameters.green, parameters.blue];
-						}
-						else if(parameters.gray){
-							visBands = [parameters.gray];
-						}
-						else {
-							throw new Errors.ProcessArgumentInvalid({
-								argument: "options",
-								process: "save_result",
-								reason: "The output band definitions are not properly given."
-							});
-						}
+						// ToDo: Send the following warning via subscriptions:
+						// "No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation."
+						visBands = [availableBands[0]];
 					}
 					dataCube.image().visualize({min: 0, max: 255, bands: visBands}).getThumbURL({
 						format: this.translateOutputFormat(format),
