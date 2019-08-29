@@ -32,14 +32,60 @@ module.exports = class Config {
 			PNG: {
 				gis_data_types: ['raster'],
 				parameters: {
-					red: {description: 'Band name being used for the red channel.'},
-					green: {description: 'Band name being used for the green channel.'},
-					blue: {description: 'Band name being used for the blue channel.'},
-					gray: {description: 'Band name being used as a gray channel.'},
+					red: {
+						type: 'string',
+						format: 'band-name', // The formats are not specification compliant, but are allowed to be added.
+						description: 'Band name being used for the red channel.',
+						default: null
+					},
+					green: {
+						type: 'string',
+						format: 'band-name',
+						description: 'Band name being used for the green channel.',
+						default: null
+					},
+					blue: {
+						type: 'string',
+						format: 'band-name',
+						description: 'Band name being used for the blue channel.',
+						default: null
+					},
+					gray: {
+						type: 'string',
+						format: 'band-name',
+						description: 'Band name being used as a gray channel.',
+						default: null
+					},
 				}
 			},
 			JPEG: {
-				gis_data_types: ['raster']
+				gis_data_types: ['raster'],
+				parameters: {
+					red: {
+						type: 'string',
+						format: 'band-name', // The formats are not specification compliant, but are allowed to be added.
+						description: 'Band name being used for the red channel.',
+						default: null
+					},
+					green: {
+						type: 'string',
+						format: 'band-name',
+						description: 'Band name being used for the green channel.',
+						default: null
+					},
+					blue: {
+						type: 'string',
+						format: 'band-name',
+						description: 'Band name being used for the blue channel.',
+						default: null
+					},
+					gray: {
+						type: 'string',
+						format: 'band-name',
+						description: 'Band name being used as a gray channel.',
+						default: null
+					},
+				}
 			},
 			JSON: {
 				gis_data_types: ['raster', 'vector', 'table', 'other']
