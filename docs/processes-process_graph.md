@@ -2,6 +2,8 @@
 
 The Google Earth Engine driver allows to load and process stored internal and external process graphs, including process graph variables.
 
+**NOTE: This example is outdated and only valid for openEO API v0.3!**
+
 ## Example workflow
 
 Store a process graph internally with a variable `collection` for the collection name.

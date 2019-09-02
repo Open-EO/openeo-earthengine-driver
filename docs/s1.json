@@ -1,0 +1,108 @@
+{
+  "1": {
+    "process_id": "load_collection",
+    "arguments": {
+      "id": "COPERNICUS/S1_GRD",
+      "spatial_extent": {
+        "west": 16.06,
+        "south": 48.06,
+        "east": 16.65,
+        "north": 48.35
+      },
+      "temporal_extent": [
+        "2017-03-01",
+        "2017-08-01"
+      ]
+    }
+  },
+  "2": {
+    "process_id": "filter_bands",
+    "arguments": {
+      "data": {
+        "from_node": 1
+      },
+      "bands": [
+        "VV"
+      ]
+    }
+  },
+  "3": {
+    "process_id": "apply_dimension",
+    "arguments": {
+      "data": {
+        "from_node": 2
+      },
+      "process": {
+        "callback": {
+          "absolute": {
+            "arguments": {
+              "x": {
+                "from_argument": "data"
+              }
+            },
+            "process_id": "absolute",
+            "result": true
+          }
+        }
+      },
+      "dimension": "temporal"
+    }
+  },
+  "4": {
+    "process_id": "reduce",
+    "arguments": {
+      "data": {
+        "from_node": 3
+      },
+      "reducer": {
+        "callback": {
+          "first": {
+            "arguments": {
+              "data": {
+                "from_argument": "data"
+              }
+            },
+            "process_id": "first",
+            "result": true
+          }
+        }
+      },
+      "dimension": "temporal"
+    }
+  },
+  "5": {
+    "process_id": "apply",
+    "arguments": {
+      "data": {
+        "from_node": 4
+      },
+      "process": {
+        "callback": {
+          "linear_scale_range": {
+            "arguments": {
+              "x": {
+                "from_argument": "x"
+              },
+              "inputMin": 0,
+              "inputMax": 15,
+              "outputMin": 0,
+              "outputMax": 255
+            },
+            "process_id": "linear_scale_range",
+            "result": true
+          }
+        }
+      }
+    }
+  },
+  "6": {
+    "process_id": "save_result",
+    "arguments": {
+      "data": {
+        "from_node": 5
+      },
+      "format": "png"
+    },
+    "result": true
+  }
+}
