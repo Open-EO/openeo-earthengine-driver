@@ -32,7 +32,6 @@ module.exports = class ProcessCommons {
 
 	static applyInCallback(node, imageProcess, arrayProcess = null, dataArg = "x") {
 		var dc = node.getData(dataArg);
-//		var dimension = node.getParameter("dimension"); // TODO: use it for apply_dimension
 		if (dc.isImageCollection()) {
 			dc.imageCollection(data => data.map(imageProcess));
 		}
