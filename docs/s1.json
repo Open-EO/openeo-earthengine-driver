@@ -4,55 +4,25 @@
     "arguments": {
       "id": "COPERNICUS/S1_GRD",
       "spatial_extent": {
-        "west": 16.06,
-        "south": 48.06,
-        "east": 16.65,
-        "north": 48.35
+        "west": 16.060638427734375,
+        "south": 48.06064312032453,
+        "east": 16.648406982421875,
+        "north": 48.34986079441322
       },
       "temporal_extent": [
         "2017-03-01",
         "2017-08-01"
-      ]
-    }
-  },
-  "2": {
-    "process_id": "filter_bands",
-    "arguments": {
-      "data": {
-        "from_node": 1
-      },
+      ],
       "bands": [
         "VV"
       ]
-    }
-  },
-  "3": {
-    "process_id": "apply_dimension",
-    "arguments": {
-      "data": {
-        "from_node": 2
-      },
-      "process": {
-        "callback": {
-          "absolute": {
-            "arguments": {
-              "x": {
-                "from_argument": "data"
-              }
-            },
-            "process_id": "absolute",
-            "result": true
-          }
-        }
-      },
-      "dimension": "temporal"
     }
   },
   "4": {
     "process_id": "reduce",
     "arguments": {
       "data": {
-        "from_node": 3
+        "from_node": "7"
       },
       "reducer": {
         "callback": {
@@ -104,5 +74,26 @@
       "format": "png"
     },
     "result": true
+  },
+  "7": {
+    "process_id": "apply",
+    "arguments": {
+      "data": {
+        "from_node": "1"
+      },
+      "process": {
+        "callback": {
+          "2": {
+            "process_id": "absolute",
+            "arguments": {
+              "x": {
+                "from_argument": "x"
+              }
+            },
+            "result": true
+          }
+        }
+      }
+    }
   }
 }
