@@ -3,8 +3,12 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class last extends Process {
 
+    geeReducer() {
+        return 'last';
+    }
+
     async execute(node, context) {
-        return Commons.reduceInCallback(node, 'last');
+		return node.getData("data");
     }
 
 };

@@ -3,33 +3,6 @@ const Utils = require('../utils');
 
 module.exports = class ProcessCommons {
 
-	static reduceInCallback(node, reducer, dataArg = "data", reducerName = null) {
-		var isSimpleReducer = node.getProcessGraph().isSimpleReducer();
-		var dc = node.getData(dataArg);
-		if (reducerName === null){
-			reducerName = reducer;
-		}
-		if (!this.isString(reducerName)){
-			throw new Error("The input parameter 'reducerName' is not a string.");
-		}
-		var func = data => data.reduce(reducer);
-		if (isSimpleReducer || dc.isImageCollection()) {
-			dc.imageCollection(func);
-			// revert renaming of the bands following to the GEE convention
-			var bands = dc.getBands();
-			var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
-			var renameBands = image => image.select(renamedBands).rename(bands);
-			dc.imageCollection(data => data.map(renameBands));
-		}
-		else if (dc.isArray()) {
-			dc.array(func);
-		}
-		else {
-			throw new Error("Calculating " + reducer + " not supported for given data type.");
-		}
-		return dc;
-	}
-
 	static applyInCallback(node, imageProcess, arrayProcess = null, dataArg = "x") {
 		var dc = node.getData(dataArg);
 		if (dc.isImageCollection()) {
