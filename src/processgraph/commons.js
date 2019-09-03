@@ -3,7 +3,7 @@ const Utils = require('../utils');
 
 module.exports = class ProcessCommons {
 
-	static reduceInCallback(node, reducer, dataArg="data", reducerName=null) {
+	static reduceInCallback(node, reducer, dataArg = "data", reducerName = null) {
 		var isSimpleReducer = node.getProcessGraph().isSimpleReducer();
 		var dc = node.getData(dataArg);
 		if (reducerName === null){
@@ -30,7 +30,7 @@ module.exports = class ProcessCommons {
 		return dc;
 	}
 
-	static applyInCallback(node, imageProcess, arrayProcess, dataArg="x") {
+	static applyInCallback(node, imageProcess, arrayProcess = null, dataArg = "x") {
 		var dc = node.getData(dataArg);
 //		var dimension = node.getParameter("dimension"); // TODO: use it for apply_dimension
 		if (dc.isImageCollection()) {
@@ -39,7 +39,7 @@ module.exports = class ProcessCommons {
 		else if (dc.isImage()){
 			dc.image(imageProcess);
 		}
-		else if (dc.isArray()) {
+		else if (dc.isArray() && arrayProcess) {
 			dc.array(arrayProcess);
 		}
 		else {
