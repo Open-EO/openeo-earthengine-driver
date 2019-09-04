@@ -1,5 +1,6 @@
 const Process = require('../processgraph/process');
 const Errors = require('../errors');
+const DataCube = require('../processgraph/datacube');
 
 // TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
 module.exports = class reduce extends Process {
@@ -29,26 +30,23 @@ module.exports = class reduce extends Process {
 					reason: 'The specified reducer is invalid.'
 				});
 			}
-			resultDataCube = this.reduceSimple(dc, process.geeReducer());
+			resultDataCube = this.reduceSimple(dc, process.geeReducer(node));
 		}
 		else {
+			// This is a complex reducer
 			var values;
+			var ic = dc.imageCollection();
 			if (dimension.type === 'temporal') {
-				var ic = data.imageCollection();
-				values = ic.toList();
+				values = ic.toList(ic.size());
 			}
 			else if (dimension.type === 'bands') {
-				var ic = data.imageCollection();
-				// ToDo: Ensure that the bands have a fixed order!
-				values = data.getBands().map(band => ic.select(band));
+				values = dimension.getValues().map(band => ic.select(band));
 			}
-			// This is a complex reducer
-//			var resultNode = this.reduceComplex();
 			var resultNode = await callback.execute({
-				data: ic,
-				values: values
+				data: values
 			});
-			resultDataCube = resultNode.getResult();
+			resultDataCube = new DataCube(dc);
+			resultDataCube.setData(resultNode.getResult());
 		}
 		resultDataCube.dropDimension(dimensionName);
 		return resultDataCube;
@@ -64,29 +62,22 @@ module.exports = class reduce extends Process {
 			}
 		}
 
-		var bands = dc.getBands();
-		var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
-		if (dc.isImageCollection()) {
-			dc.imageCollection(data => data.reduce(reducerFunc).map(
-				// revert renaming of the bands following to the GEE convention
-				image => image.select(renamedBands).rename(bands)
-			));
-		}
-		else if (dc.isImage()) {
-			// reduce and revert renaming of the bands following to the GEE convention
-			dc.image(img => img.reduce(reducerFunc).select(renamedBands).rename(bands));
-		}
-		else if (dc.isArray()) {
-			dc.array(data => data.reduce(reducerFunc));
-		}
-		else {
+		if (!dc.isImageCollection() && !dc.isImage()) {
 			throw new Error("Calculating " + reducerName + " not supported for given data type.");
 		}
+	
+		dc.imageCollection(data => data.reduce(reducerFunc));
+
+		// revert renaming of the bands following to the GEE convention
+		var bands = dc.getBands();
+		if (Array.isArray(bands) && bands.length > 0) {
+			var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
+			dc.imageCollection(data => data.map(
+				img => img.select(renamedBands).rename(bands)
+			));
+		}
+
 		return dc;
-	}
-
-	reduceComplex() {
-
 	}
 
 };

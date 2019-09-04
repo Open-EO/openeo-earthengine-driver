@@ -8,7 +8,7 @@ module.exports = class mean extends Process {
     }
 
 	async execute(node, context) {
-		return node.getData("data");
+		throw "Not implemented yet.";
 	}
 
 };

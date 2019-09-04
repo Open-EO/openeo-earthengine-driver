@@ -3,12 +3,12 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class first extends Process {
 
-    geeReducer() {
-        return 'first';
-    }
+	geeReducer(node) {
+		return node.getArgument('ignore_nodata', true) ? 'firstNonNull' : 'first';
+	}
 
-    async execute(node, context) {
-		return node.getData("data");
-    }
+	async execute(node, context) {
+		throw "Not implemented yet.";
+	}
 
 };

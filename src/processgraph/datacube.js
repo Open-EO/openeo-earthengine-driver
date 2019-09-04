@@ -4,8 +4,8 @@ const proj4 = require('proj4');
 
 module.exports = class DataCube {
 
-	constructor(sourceDataCube = null) {
-		this.data = null;
+	constructor(sourceDataCube = null, data = undefined) {
+		this.data = data;
 		this.dimensions = {};
 		this.output = {
 			format: null,
@@ -13,7 +13,9 @@ module.exports = class DataCube {
 		};
 
 		if (sourceDataCube instanceof DataCube) {
-			this.data = sourceDataCube.data;
+			if (data === undefined) {
+				this.data = sourceDataCube.data;
+			}
 			this.output = Object.assign({}, sourceDataCube.output);
 			for(var i in sourceDataCube.dimensions) {
 				this.dimensions[i] = new Dimension(this, sourceDataCube.dimensions[i]);
@@ -225,8 +227,17 @@ module.exports = class DataCube {
 		return this.dimT();
 	}
 
-	getBands() {
-		return this.dimBands().getValues();
+	getBands(force = false) {
+		try {
+			return this.dimBands().getValues();
+		} catch(e) {
+			if (force) {
+				return this.image().bandNames().getInfo();
+			}
+			else {
+				return [];
+			}
+		}
 	}
 
 	setBands(bands) {

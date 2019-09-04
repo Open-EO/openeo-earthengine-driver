@@ -3,12 +3,12 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class variance extends Process {
 
-    geeReducer() {
-        return 'variance';
-    }
+	geeReducer() {
+		return 'variance';
+	}
 
-    async execute(node, context) {
-		return node.getData("data");
-    }
+	async execute(node, context) {
+		throw "Not implemented yet.";
+	}
 
 };

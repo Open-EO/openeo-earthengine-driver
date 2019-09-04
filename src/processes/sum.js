@@ -3,12 +3,16 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class sum extends Process {
 
-    geeReducer() {
-        return 'sum';
-    }
+  geeReducer() {
+      return 'sum';
+  }
 
-    async execute(node, context) {
-		return node.getData("data");
-    }
+	async execute(node, context) {
+		return Commons.reduceInCallback(
+			node,
+			(a,b) => a + b,
+			(a,b) => a.add(b)
+		);
+	}
 
 };

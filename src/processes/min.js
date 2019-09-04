@@ -8,7 +8,11 @@ module.exports = class min extends Process {
     }
 
 	async execute(node, context) {
-		return node.getData("data");
+		return Commons.reduceInCallback(
+			node,
+			(a,b) => Math.min(a,b),
+			(a,b) => a.min(b)
+		);
 	}
 
 };

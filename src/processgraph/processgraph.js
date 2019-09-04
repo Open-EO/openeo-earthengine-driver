@@ -32,15 +32,6 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		return await process.execute(node, this.context);
 	}
 
-	isSimpleReducer() {
-		return (this.isReducer() && this.nodes.length === 1);
-	}
-
-	isReducer() {
-		var process = this.getParentProcess();
-		return (process && process.schema['gee:reducer'] === true);
-	}
-
 	addError(error) {
 		this.errors.add(Errors.wrap(error));
 	}

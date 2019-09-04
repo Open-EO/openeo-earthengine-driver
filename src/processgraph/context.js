@@ -66,7 +66,7 @@ module.exports = class ProcessingContext {
 				}
 				return new Promise((resolve, reject) => {
 					var visBands = null;
-					var availableBands = dataCube.getBands();
+					var availableBands = dataCube.getBands(true);
 					var parameters = dataCube.getOutputFormatParameters(); // this will be important/used in the future
 					if (parameters.red && parameters.green && parameters.blue){
 						visBands = [parameters.red, parameters.green, parameters.blue];

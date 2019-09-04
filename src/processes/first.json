@@ -7,9 +7,9 @@
     "reducer"
   ],
   "parameter_order": [
-    "data"
+    "data",
+    "ignore_nodata"
   ],
-  "gee:custom": true,
   "parameters": {
     "data": {
       "description": "An array with elements of any data type. An empty array resolves always with `null`.",
@@ -20,6 +20,13 @@
         }
       },
       "required": true
+    },
+    "ignore_nodata": {
+      "description": "Indicates whether no-data values are ignored or not. Ignores them by default. Setting this flag to `false` considers no-data values so that `null` is returned if the first value is such a value.",
+      "schema": {
+        "type": "boolean",
+        "default": true
+      }
     }
   },
   "returns": {
@@ -56,9 +63,10 @@
           null,
           2,
           3
-        ]
+        ],
+        "ignore_nodata": false
       },
-      "returns": 2
+      "returns": null
     },
     {
       "description": "The input array is empty: return `null`.",
