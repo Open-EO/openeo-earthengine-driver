@@ -6,10 +6,16 @@ module.exports = class UserStore {
 	
 	constructor() {
 		this.db = Utils.loadDB('users');
+		this.token = Utils.loadDB('token');
+		this.tokenValidity = 24*60*60;
 	}
 
 	database() {
 		return this.db;
+	}
+
+	tokenDatabase() {
+		return this.token;
 	}
 
 	encryptPassword(password){
@@ -27,10 +33,9 @@ module.exports = class UserStore {
 
 	emptyUser(withId = true) {
 		var user = {
+			name: null,
 			password: null,
-			passwordSalt: null,
-			token: null,
-			tokenExpiry: 0
+			passwordSalt: null
 		};
 		if (withId) {
 			user._id = false;
@@ -60,42 +65,81 @@ module.exports = class UserStore {
 					}));
 				}
 
-				user.token = Utils.generateHash();
-				user.tokenTime = Utils.getTimestamp();
-				var dataToUpdate = {
-					token: user.token,
-					tokenTime: user.tokenTime
+				// Delete old token
+				var query = {
+					validity: { $lt: Utils.getTimestamp() }
 				};
-				this.db.update(query, { $set: dataToUpdate }, {}, (err, numReplaced) => {
-					if (numReplaced !== 1) {
-						return reject(Errors.wrap(err));
+				this.token.remove(query, { multi: true }, err => {
+					if (err) {
+						console.error(err);
 					}
-
-					return resolve(user);
 				});
+
+				// Insert new token
+				var tokenData = {
+					user: user._id,
+					token: Utils.generateHash(),
+					validity: Utils.getTimestamp() + this.tokenValidity
+				};
+				this.token.insert(tokenData, (err) => {
+					if (err) {
+						reject(Errors.wrap(err));
+					}
+		
+					resolve(Object.assign({
+						token: tokenData.token,
+						token_valid_until: tokenData.validity
+					}, user));
+				});
+
 			});
+		});
+	}
+
+	register(name, password, callback) {
+		var userData = this.emptyUser(false);
+		var pw = this.storage.encryptPassword(password);
+		userData.name = name;
+		userData.password = pw.passwordHash;
+		userData.passwordSalt = pw.salt;
+		this.db.insert(userData, (err, user) => {
+			if (err) {
+				return next(Errors.wrap(err));
+			}
+
+			callback(user);
 		});
 	}
 
 	checkAuthToken(token) {
 		return new Promise((resolve, reject) => {
-			this.db.findOne({ token: token }, {}, (err, user) => {
+			var query = {
+				token: token,
+				validity: { $gt: Utils.getTimestamp() }
+			};
+			this.token.findOne(query, {}, (err, tokenFromDb) => {
 				if (err) {
 					reject(Errors.wrap(err));
 				}
-				else if (user === null) {
+				else if (tokenFromDb === null) {
 					reject(new Errors.AuthenticationRequired({
-						reason: 'Token invalid.'
+						reason: 'Token invalid or expired.'
 					}));
 				}
 				else {
-					// ToDo: Expire token
-			
-					// Update token time
-					user.tokenTime = Utils.getTimestamp();
-					this.db.update({ token: token }, { $set: { tokenTime: user.tokenTime } }, {});
-
-					resolve(user);
+					this.db.findOne({_id: tokenFromDb.user}, {}, (err, user) => {
+						if (err) {
+							reject(Errors.wrap(err));
+						}
+						else if (user === null) {
+							reject(new Errors.AuthenticationRequired({
+								reason: 'User account got deleted.'
+							}));
+						}
+						else {
+							resolve(user);
+						}
+					});
 				}
 			});
 		});

@@ -11,7 +11,6 @@ module.exports = class UsersAPI {
 	beforeServerStart(server) {
 		server.addEndpoint('get', '/credentials/basic', this.getCredentialsBasic.bind(this));
 //		server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
-		server.addEndpoint('post', '/credentials', this.postCredentials.bind(this)); // Proprietary extension to register a user
 		server.addEndpoint('get', '/me', this.getUserInfo.bind(this));
 
 		return Promise.resolve();
@@ -47,35 +46,16 @@ module.exports = class UsersAPI {
 			return next(new Errors.AuthenticationSchemeInvalid());
 		}
 
-		this.storage.login(req.authorization.basic.username, req.authorization.basic.password).then(user => {
-			req.user = user;
-			res.json({
-				user_id: user._id,
-				access_token: user.token
-			});
-			return next();
-		}).catch(e => next(e));
-	}
-
-	postCredentials(req, res, next) {
-		if (typeof req.body.password !== 'string' || req.body.password.length < 6) {
-			return next(new Errors.PasswordInsecure());
-		}
-
-		var userData = this.emptyUser(false);
-		var pw = this.storage.encryptPassword(req.body.password);
-		userData.password = pw.passwordHash;
-		userData.passwordSalt = pw.salt;
-		this.storage.database().insert(userData, (err, user) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-
-			res.json({
-				user_id: user._id
-			});
-			return next();
-		});
+		this.storage.login(req.authorization.basic.username, req.authorization.basic.password)
+			.then((user) => {
+				req.user = user;
+				res.json({
+					user_id: user._id,
+					access_token: user.token,
+					access_token_valid_until: user.token_valid_until
+				});
+				return next();
+			}).catch(e => next(e));
 	}
 
 	async getUserInfo(req, res, next) {
