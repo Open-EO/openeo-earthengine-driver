@@ -1,0 +1,35 @@
+{
+  "1": {
+    "process_id": "load_collection",
+    "arguments": {
+      "id": "USDA/NAIP/DOQQ",
+      "spatial_extent": {
+        "west": -125.37597656250003,
+        "south": 24.206889622398023,
+        "east": -66.75292968750001,
+        "north": 49.38237278700956
+      },
+      "temporal_extent": [
+        "2017-01-01T00:00:00Z",
+        "2017-12-31T23:59:59Z"
+      ],
+      "bands": null
+    }
+  },
+  "2": {
+    "process_id": "save_result",
+    "arguments": {
+      "data": {
+        "from_node": "1"
+      },
+      "format": "PNG",
+      "options": {
+        "red": "R",
+        "green": "G",
+        "blue": "B",
+        "gray": null
+      }
+    },
+    "result": true
+  }
+}
