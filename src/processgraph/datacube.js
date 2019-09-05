@@ -31,11 +31,13 @@ module.exports = class DataCube {
 		this.data = data;
 	}
 
-	computedObjectType(){
+	computedObjectType() {
+		console.trace("Calling getInfo()");
+		// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
 		return this.data.getInfo().type;
 	}
 
-	objectType(){
+	objectType() {
 		if (this.data instanceof ee.Image){
 			return "Image";
 		}
@@ -205,38 +207,24 @@ module.exports = class DataCube {
 	getSpatialExtent() {
 		var x = this.dimX();
 		var y = this.dimY();
-
 		return {
 			west: x.min(),
 			east: x.max(),
 			south: y.min(),
-			north: y.max()
+			north: y.max(),
+			crs: this.getCrs()
 		};
-	}
-
-	getSpatialExtentAsGeeGeometry() {
-		var x = this.dimX();
-		var y = this.dimY();
-		if (x.crs() != y.crs()) {
-			throw "Spatial dimensions for x and y must not differ.";
-		}
-		return ee.Geometry.Rectangle([x.min(), y.min(), x.max(), y.max()], x.crs());
 	}
 
 	getTemporalExtent() {
 		return this.dimT();
 	}
 
-	getBands(force = false) {
+	getBands() {
 		try {
 			return this.dimBands().getValues();
 		} catch(e) {
-			if (force) {
-				return this.image().bandNames().getInfo();
-			}
-			else {
-				return [];
-			}
+			return [];
 		}
 	}
 

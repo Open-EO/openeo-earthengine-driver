@@ -108,7 +108,7 @@ module.exports = class ProcessCommons {
 	static filterBbox(dc, bbox, process_id, paramName) {
 		try {
 			dc.setSpatialExtent(bbox);
-			var geom = dc.getSpatialExtentAsGeeGeometry();
+			var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], bbox.crs || 'EPSG:4326');
 			dc.imageCollection(ic => ic.filterBounds(geom));
 			return dc;
 		} catch (e) {

@@ -48,6 +48,7 @@ module.exports = class reduce extends Process {
 			resultDataCube = new DataCube(dc);
 			resultDataCube.setData(resultNode.getResult());
 		}
+		// ToDo: We don't know at this point how the bands in the GEE images/imagecollections are called.
 		resultDataCube.dropDimension(dimensionName);
 		return resultDataCube;
 	}
