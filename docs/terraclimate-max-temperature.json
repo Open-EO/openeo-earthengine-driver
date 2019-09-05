@@ -38,8 +38,8 @@
               "x": {
                 "from_argument": "x"
               },
-              "inputMin": -100,
-              "inputMax": 400,
+              "inputMin": -150,
+              "inputMax": 450,
               "outputMax": 255
             },
             "result": true
