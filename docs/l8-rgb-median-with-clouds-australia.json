@@ -1,0 +1,85 @@
+{
+  "4": {
+    "process_id": "load_collection",
+    "arguments": {
+      "id": "LANDSAT/LC08/C01/T1_SR",
+      "spatial_extent": {
+        "west": 110.654296875,
+        "south": -45.58328975600631,
+        "east": 155.47851562499994,
+        "north": -6.31529853833004
+      },
+      "temporal_extent": [
+        "2016-01-01T00:00:00Z",
+        "2016-12-31T23:59:59Z"
+      ],
+      "bands": [
+        "B4",
+        "B3",
+        "B2"
+      ]
+    }
+  },
+  "5": {
+    "process_id": "save_result",
+    "arguments": {
+      "data": {
+        "from_node": "7"
+      },
+      "format": "PNG",
+      "options": {
+        "red": "B4",
+        "green": "B3",
+        "blue": "B2",
+        "gray": null
+      }
+    },
+    "result": true
+  },
+  "6": {
+    "process_id": "reduce",
+    "arguments": {
+      "data": {
+        "from_node": "4"
+      },
+      "reducer": {
+        "callback": {
+          "2": {
+            "process_id": "median",
+            "arguments": {
+              "data": {
+                "from_argument": "data"
+              }
+            },
+            "result": true
+          }
+        }
+      },
+      "dimension": "temporal"
+    }
+  },
+  "7": {
+    "process_id": "apply",
+    "arguments": {
+      "data": {
+        "from_node": "6"
+      },
+      "process": {
+        "callback": {
+          "2": {
+            "process_id": "linear_scale_range",
+            "arguments": {
+              "x": {
+                "from_argument": "x"
+              },
+              "inputMin": 0,
+              "inputMax": 3000,
+              "outputMax": 255
+            },
+            "result": true
+          }
+        }
+      }
+    }
+  }
+}
