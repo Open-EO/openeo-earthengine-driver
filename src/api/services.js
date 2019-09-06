@@ -52,7 +52,7 @@ module.exports = class ServicesAPI {
 					})
 					.catch(e => next(Errors.wrap(e)));
 			} catch(e) {
-				return next(e);
+				return next(Errors.wrap(e));
 			}
 		});
 	}
