@@ -78,7 +78,7 @@ module.exports = class DataCube {
 		else if (dataType === "ImageCollection") {
 			// ToDo: Send warning via subscriptions
 			if (global.server.serverContext.debug) {
-				console.warn("Compositing the image collection to a single image.");
+				console.log("Compositing the image collection to a single image.");
 			}
 			this.data = this.data.mosaic();
 		}
