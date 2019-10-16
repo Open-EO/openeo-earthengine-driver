@@ -35,6 +35,17 @@ The server needs to authenticate with a [service accounts](https://developers.go
 
 More information about authentication can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
 
+### Creating user accounts  
+
+**Be on repository base directory**  
+`$ node`  
+`> userstore = require('./src/models/userstore')`  
+`> auth = new userstore()`  
+`> auth.register('username','password')`  
+> Test account registered  
+`> auth.login('username','password')`  
+> The back-end stores user account information at **./storage/database/users.db**  
+
 ### Starting up the server
 
 After configuration, the server can be started. Run  `npm run start` to start the server. 

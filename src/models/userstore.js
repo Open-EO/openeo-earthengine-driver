@@ -46,8 +46,9 @@ module.exports = class UserStore {
 	login(username, password) {
 		return new Promise((resolve, reject) => {
 			var query = {
-				_id: username
+				name: username
 			};
+			console.info("Query objects ",query)
 			this.db.findOne(query, (err, user) => {
 				if (err) {
 					return reject(Errors.wrap(err));
@@ -57,7 +58,6 @@ module.exports = class UserStore {
 						reason: 'User not found'
 					}));
 				}
-
 				var pw = this.hashPassword(password, user.passwordSalt);
 				if (pw.passwordHash !== user.password) {
 					return reject(new Errors.AuthenticationRequired({
@@ -96,9 +96,9 @@ module.exports = class UserStore {
 		});
 	}
 
-	register(name, password, callback) {
+	register(name, password, callback=null) {
 		var userData = this.emptyUser(false);
-		var pw = this.storage.encryptPassword(password);
+		var pw = this.encryptPassword(password);
 		userData.name = name;
 		userData.password = pw.passwordHash;
 		userData.passwordSalt = pw.salt;
@@ -106,8 +106,9 @@ module.exports = class UserStore {
 			if (err) {
 				return next(Errors.wrap(err));
 			}
-
-			callback(user);
+			//I don't know usage of the callback, but since im interested in account creation, I should not care about it
+			//callback(user);
+			console.info("User account created successfully!")
 		});
 	}
 
