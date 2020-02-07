@@ -57,21 +57,21 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
         "east": -1.120991,
         "north": 43.838489
       },
-      "bands": ["B4", "B8"]
+      "bands": ["B8", "B4"]
     },
     "process_id": "load_collection"
   },
   "b1": {
     "arguments": {
       "data": {"from_node": "load_collection"},
-      "bands": ["B4"]
+      "bands": ["B8"]
     },
     "process_id": "filter_bands"
   },
   "b2": {
     "arguments": {
       "data": {"from_node": "load_collection"},
-      "bands": ["B8"]
+      "bands": ["B4"]
     },
     "process_id": "filter_bands"
   },
@@ -142,8 +142,8 @@ var geom = ee.Geometry.Rectangle([-2.763447,43.040791,-1.120991,43.838489], "EPS
 img = img.filterBounds(geom);
 
 // filter_bands (2x)
-var band1 = img.select(["B4"]);
-var band2 = img.select(["B8"]);
+var band1 = img.select(["B8"]);
+var band2 = img.select(["B4"]);
 
 // normalized_difference
 var combined = band1.combine(band2);
