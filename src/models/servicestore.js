@@ -4,7 +4,7 @@ module.exports = class ServiceStore {
 
 	constructor() {
 		this.db = Utils.loadDB('services');
-		this.editableFields = ['title', 'description', 'process_graph', 'enabled', 'parameters', 'plan', 'budget'];
+		this.editableFields = ['title', 'description', 'process_graph', 'enabled', 'configuration', 'plan', 'budget'];
 	}
 
 	isFieldEditable(name) {

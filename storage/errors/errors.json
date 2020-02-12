@@ -195,6 +195,14 @@
 			"Process Graph Management"
 		]
 	},
+	"ProcessGraphIdInvalid": {
+		"description": "An id for the process is required.",
+		"message": "An id for the process is required.",
+		"http": 400,
+		"tags": [
+			"Process Graph Management"
+		]
+	},
 	"ProcessGraphMissing": {
 		"description": null,
 		"message": "No valid process graph specified.",

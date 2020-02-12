@@ -1,5 +1,5 @@
 const GeeJsonSchemaValidator = require('./jsonschema');
-const { BaseProcess } = require('@openeo/js-commons');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 
 module.exports = class Process extends BaseProcess {
 

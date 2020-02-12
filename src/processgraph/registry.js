@@ -1,7 +1,7 @@
 const Utils = require('../utils');
 const fse = require('fs-extra');
 const path = require('path');
-const { ProcessRegistry } = require('@openeo/js-commons');
+const { ProcessRegistry } = require('@openeo/js-processgraphs');
 
 module.exports = class GeeProcessRegistry extends ProcessRegistry {
 

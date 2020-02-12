@@ -1,5 +1,5 @@
 const DataCube = require('./datacube');
-const { ProcessGraphNode } = require('@openeo/js-commons');
+const { ProcessGraphNode } = require('@openeo/js-processgraphs');
 
 module.exports = class GeeProcessGraphNode extends ProcessGraphNode {
 

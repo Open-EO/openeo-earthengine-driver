@@ -1,10 +1,10 @@
 const Utils = require('../utils');
 
-module.exports = class ProcessGraphStore {
+class ProcessGraphStore {
 
 	constructor() {
 		this.db = Utils.loadDB('process_graphs');
-		this.editableFields = ['title', 'description', 'process_graph', 'public'];
+		this.editableFields = ProcessGraphStore.FIELDS;
 	}
 
 	database() {
@@ -17,11 +17,15 @@ module.exports = class ProcessGraphStore {
 
 	getById(id, user_id) {
 		return new Promise((resolve, reject) => {
-			this.db.findOne({_id: id}, {}, (err, pg) => {
+			let query = {
+				id: id,
+				user_id: user_id
+			};
+			this.db.findOne(query, {}, (err, pg) => {
 				if (err) {
 					reject(Errors.wrap(err));
 				}
-				else if (pg === null || (pg.public !== true && pg.user_id !== user_id)) {
+				else if (pg === null) {
 					reject(new Errors.ProcessGraphNotFound());
 				}
 				else {
@@ -32,3 +36,20 @@ module.exports = class ProcessGraphStore {
 	}
 
 };
+
+ProcessGraphStore.FIELDS = [
+//	'id', // ToDo: The API allows it at the moment, but for simplicity we forbid it for now.
+	'summary',
+	'description',
+	'categories',
+	'parameters',
+	'returns',
+	'deprecated',
+	'experimental',
+	'exceptions',
+	'examples',
+	'links',
+	'process_graph'
+];
+
+module.exports = ProcessGraphStore;

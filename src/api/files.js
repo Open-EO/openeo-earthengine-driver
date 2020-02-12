@@ -13,8 +13,8 @@ module.exports = class FilesAPI {
 	}
 
 	beforeServerStart(server) {
-		var pathRoutes = ['/files/{user_id}/{path}', '/files/:user_id/*'];
-		server.addEndpoint('get', '/files/{user_id}', this.getFiles.bind(this));
+		var pathRoutes = ['/files/{path}', '/files/*'];
+		server.addEndpoint('get', '/files', this.getFiles.bind(this));
 		server.addEndpoint('get', pathRoutes, this.getFileByPath.bind(this));
 		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
 		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));

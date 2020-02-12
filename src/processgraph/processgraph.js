@@ -1,4 +1,4 @@
-const { ProcessGraph } = require('@openeo/js-commons');
+const { ProcessGraph } = require('@openeo/js-processgraphs');
 const GeeProcessGraphNode = require('./node');
 const Errors = require('../errors');
 const Utils = require('../utils');

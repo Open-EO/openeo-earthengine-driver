@@ -207,11 +207,11 @@ module.exports = class ServicesAPI {
 				title: req.body.title || null,
 				description: req.body.description || null,
 				process_graph: req.body.process_graph,
-				parameters: (typeof req.body === 'object' && Utils.isObject(req.body.parameters)) ? req.body.parameters : {},
+				configuration: (typeof req.body === 'object' && Utils.isObject(req.body.configuration)) ? req.body.configuration : {},
 				attributes: {},
 				type: req.body.type,
 				enabled: typeof req.body.enabled === 'boolean' ? req.body.enabled : true,
-				submitted: Utils.getISODateTime(),
+				created: Utils.getISODateTime(),
 				plan: req.body.plan || this.context.plans.default,
 				costs: 0,
 				budget: req.body.budget || null,
@@ -237,14 +237,14 @@ module.exports = class ServicesAPI {
 			url: this.makeServiceUrl(service),
 			type: service.type.toLowerCase(),
 			enabled: typeof service.enabled === 'boolean' ? service.enabled : true,
-			submitted: service.submitted,
+			created: service.created,
 			plan: service.plan,
 			costs: service.costs || 0,
 			budget: service.budget || null
 		};
 		if (full) {
 			response.process_graph = service.process_graph;
-			response.parameters = Utils.isObject(service.parameters) ? service.parameters : {};
+			response.configuration = Utils.isObject(service.configuration) ? service.configuration : {};
 			response.attributes = Utils.isObject(service.attributes) ? service.attributes : {};
 		}
 		return response;

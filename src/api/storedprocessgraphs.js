@@ -46,7 +46,7 @@ module.exports = class StoredProcessGraphs {
 			else {
 				var data = graphs.map(pg => this.makeResponse(pg, false));
 				res.json({
-					process_graphs: data,
+					processes: data,
 					links: []
 				});
 				return next();
@@ -59,27 +59,46 @@ module.exports = class StoredProcessGraphs {
 			return next(new Errors.AuthenticationRequired());
 		}
 
-		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
-		pg.validate()
-			.then(() => {
-				var data = {
-					title: req.body.title || null,
-					description: req.body.description || null,
-					process_graph: req.body.process_graph,
-					public: req.body.public || false,
-					user_id: req.user._id
-				};
-				this.storage.database().insert(data, (err, pg) => {
-					if (err) {
-						return next(Errors.wrap(err));
-					}
-					else {
-						res.header('OpenEO-Identifier', pg._id);
-						res.redirect(201, Utils.getApiUrl('/process_graphs/' + pg._id), next);
-					}
-				});
-			})
-			.catch(e => next(e));
+		if (typeof req.body.id !== 'string' || req.body.id.match(/^\w+$/i) === null) {
+			return next(new Errors.ProcessGraphIdInvalid());
+		}
+
+		let query = {
+			id: req.body.id,
+			user_id: user_id
+		};
+		this.db.findOne(query, {}, (err, pg) => {
+			if (err) {
+				return next(Errors.wrap(err));
+			}
+			else if (pg === null) {
+				pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+				pg.validate()
+					.then(() => {
+						var data = {
+							user_id: req.user._id
+						};
+						for(let field of ProcessGraphStore.FIELDS) {
+							if (typeof req.body[field] !== 'undefined') {
+								data[field] = req.body[field];
+							}
+						}
+						this.storage.database().insert(data, (err, pgObj) => {
+							if (err) {
+								return next(Errors.wrap(err));
+							}
+							else {
+								res.header('OpenEO-Identifier', pgObj.id);
+								res.redirect(201, Utils.getApiUrl('/process_graphs/' + pgObj.id), next);
+							}
+						});
+					})
+					.catch(e => next(e));
+			}
+			else {
+				return next(new Errors.ProcessGraphIdInvalid());
+			}
+		});
 	}
 
 	patchProcessGraph(req, res, next) {
@@ -174,13 +193,21 @@ module.exports = class StoredProcessGraphs {
 
 	makeResponse(pg, full = true) {
 		var response = {
-			id: pg._id,
-			title: pg.title || null,
-			description: pg.description || null,
-			public: pg.public || false
+			id: pg.id
 		};
+		let optionalFields = ['summary', 'description', 'categories', 'parameters', 'returns', 'deprecated', 'experimental'];
+		for(let field of optionalFields) {
+			if (typeof pg[field] !== 'undefined') {
+				response[field] = pg[field];
+			}
+		}
 		if (full) {
-			response.process_graph = pg.process_graph;
+			let fullFields = ['exceptions', 'examples', 'links', 'process_graph'];
+			for(let field of fullFields) {
+				if (typeof pg[field] !== 'undefined') {
+					response[field] = pg[field];
+				}
+			}
 		}
 		return response;
 	}

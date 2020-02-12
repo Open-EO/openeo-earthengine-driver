@@ -209,7 +209,7 @@ module.exports = class JobsAPI {
 		this.storage.findJob(query)
 		.then(job => {
 			if (job.status === 'error') {
-				res.send(424, job.error);
+				res.send(424, job.error); // ToDo 1.0: Send latest info from logging
 				return next();
 			}
 			else if (job.status === 'queued' || job.status === 'running') {
@@ -222,22 +222,34 @@ module.exports = class JobsAPI {
 			var folder = this.storage.getJobFolder(job._id);
 			return Utils.walk(folder)
 				.then(files => {
-					var links = [];
+					var assets = {};
 					for(var i in files) {
 						var file = files[i].path;
 						var fileName = path.relative(folder, file);
-						var mediaType = Utils.extensionToMediaType(fileName);
-						links.push({
+						assets[fileName] = {
 							href: Utils.getApiUrl("/storage/" + job._id + "/" + fileName),
-							type: mediaType
-						});
+							rel: "data",
+							type: Utils.extensionToMediaType(fileName)
+						};
 					}
 					res.send({
+						stac_version: this.context.stac_version,
+						stac_extensions: [],
 						id: job._id,
-						title: job.title,
-						description: job.description,
-						updated: job.updated,
-						links: links
+						type: "Feature",
+						bbox: null, // ToDo 1.0: Set correct bbox
+						geometry: null, // ToDo 1.0: Set correct geometry
+						properties: {
+							datetime: null, // ToDo 1.0: Set correct datetimes
+							start_datetime: null,
+							end_datetime: null,
+							title: job.title,
+							description: job.description,
+							created: job.created,
+							updated: job.updated
+						},
+						assets: assets,
+						links: []
 					});
 					next();
 				});
@@ -336,8 +348,8 @@ module.exports = class JobsAPI {
 				title: req.body.title || null,
 				description: req.body.description || null,
 				process_graph: req.body.process_graph,
-				status: "submitted",
-				submitted: Utils.getISODateTime(),
+				status: "created",
+				created: Utils.getISODateTime(),
 				updated: Utils.getISODateTime(),
 				plan: req.body.plan || this.context.plans.default,
 				costs: 0,
@@ -413,8 +425,7 @@ module.exports = class JobsAPI {
 			title: job.title,
 			description: job.description,
 			status: job.status,
-			error: job.error,
-			submitted: job.submitted,
+			created: job.created,
 			updated: job.updated,
 			plan: job.plan,
 			costs: job.costs || 0,
