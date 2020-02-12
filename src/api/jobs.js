@@ -28,8 +28,6 @@ module.exports = class JobsAPI {
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
 		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this));
 
-		server.createSubscriptions(['openeo.jobs.debug']);
-
 		return Promise.resolve();
 	}
 
@@ -247,6 +245,7 @@ module.exports = class JobsAPI {
 		.catch(e => next(Errors.wrap(e)));
 	}
 
+	// Redirect to log file instead of using notifications
 	sendDebugNotifiction(req, res, message, processName = null, processParams = {}) {
 		try {
 			var params = {
@@ -261,7 +260,6 @@ module.exports = class JobsAPI {
 					parameters: processParams
 				};
 			}
-			this.context.subscriptions().publish(req.user._id, "openeo.jobs.debug", params, payload);
 			if (this.context.debug) {
 				console.log(params.job_id + ": " + message);
 			}

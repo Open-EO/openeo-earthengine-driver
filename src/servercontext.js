@@ -19,7 +19,6 @@ module.exports = class ServerContext extends Config {
 		this.processGraphStore = new ProcessGraphStore();
 		this.fileWorkspace = new FileWorkspace();
 		this.jobStore = new JobStore();
-		this.subscriptionPool = new SubscriptionPool();
 		this.userStore = new UserStore();
 		this.serviceStore = new ServiceStore();
 		this.tempFolder = './storage/temp_files';

@@ -19,8 +19,6 @@ module.exports = class FilesAPI {
 		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
 		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));
 
-		server.createSubscriptions(['openeo.files']);
-
 		return Promise.resolve();
 	}
 
@@ -94,12 +92,6 @@ module.exports = class FilesAPI {
 			});
 			stream.on('close', () => {
 				var filePath = this.workspace.getFileName(req.user._id, p);
-				const payload = {
-					user_id: req.user._id,
-					path: filePath,
-					action: fileExists ? 'updated' : 'created'
-				};
-				this.context.subscriptions().publish(req.user._id, 'openeo.files', payload, payload);
 				fse.stat(p).then(newFileStat => {
 					res.send(200, {
 						path: filePath,
@@ -137,12 +129,6 @@ module.exports = class FilesAPI {
 		Utils.isFile(p)
 		.then(() => fse.unlink(p))
 		.then(() => {
-			const payload = {
-				user_id: req.user._id,
-				path: this.workspace.getFileName(req.user._id, p),
-				action: 'deleted'
-			};
-			this.context.subscriptions().publish(req.user._id, 'openeo.files', payload, payload);
 			res.send(204);
 			return next();
 		})

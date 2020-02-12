@@ -5,7 +5,6 @@ const JobsAPI = require('./src/api/jobs');
 const ProcessesAPI = require('./src/api/processes');
 const ProcessGraphsAPI = require('./src/api/storedprocessgraphs');
 const ServicesAPI = require('./src/api/services');
-const SubscriptionsAPI = require('./src/api/subscriptions');
 const UsersAPI = require('./src/api/users');
 
 const Utils = require('./src/utils');
@@ -39,7 +38,6 @@ class Server {
 		this.api.files = new FilesAPI(this.serverContext);
 		this.api.jobs = new JobsAPI(this.serverContext);
 		this.api.services = new ServicesAPI(this.serverContext);
-		this.api.subscriptions = new SubscriptionsAPI(this.serverContext);
 		this.api.users = new UsersAPI(this.serverContext);
 		this.api.processGraphs = new ProcessGraphsAPI(this.serverContext);
 
@@ -139,12 +137,6 @@ class Server {
 			}
 		}
 		return next();
-	}
-
-	createSubscriptions(topics) {
-		for(let i in topics) {
-			this.serverContext.subscriptions().registerTopic(topics[i]);
-		}
 	}
 
 	populateGlobals(req, res, next) {
