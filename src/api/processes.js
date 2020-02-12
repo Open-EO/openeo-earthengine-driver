@@ -1,3 +1,5 @@
+const { MigrateProcesses } = require('@openeo/js-commons');
+
 module.exports = class Processes {
 
 	constructor(context) {
@@ -11,8 +13,9 @@ module.exports = class Processes {
 	}
 
 	getProcesses(req, res, next) {
+		// ToDo 1.0: Remove temporary workaround to convert old processes to current spec
 		res.json({
-			processes: this.registry.getProcessSchemas(),
+			processes: this.registry.getProcessSpecifications().map(p => MigrateProcesses.convertProcessToLatestSpec(p, "0.4.2")),
 			links: []
 		});
 		return next();

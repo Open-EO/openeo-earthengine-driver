@@ -3,11 +3,13 @@ module.exports = class Config {
 	constructor() {
 		// Set default that can be overriden by the config.json
 		this.debug = false;
+		this.production = false;
 
 		this.hostname = "127.0.0.1";
 		this.apiPath = "/";
 		this.apiVersion = "1.0.0-rc.1";
 
+		this.id = "openeo-earthengine-driver";
 		this.title = "Google Earth Engine";
 		this.description = "This is the Google Earth Engine Driver for openEO.";
 
@@ -28,8 +30,10 @@ module.exports = class Config {
 			options: []
 		};
 
+		this.inputFormats = {};
 		this.outputFormats = {
 			PNG: {
+				title: 'PNG',
 				gis_data_types: ['raster'],
 				parameters: {
 					red: {
@@ -59,6 +63,7 @@ module.exports = class Config {
 				}
 			},
 			JPEG: {
+				title: 'JPG / JPEG',
 				gis_data_types: ['raster'],
 				parameters: {
 					red: {

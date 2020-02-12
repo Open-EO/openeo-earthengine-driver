@@ -117,7 +117,7 @@ module.exports = class DataCatalog {
 					axis: "y",
 					extent: [c.extent.spatial[1], c.extent.spatial[y2]]
 				},
-				temporal: {
+				t: {
 					type: "temporal",
 					extent: c.extent.temporal
 				}

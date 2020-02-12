@@ -13,7 +13,7 @@ module.exports = {
   "reporters": [
     "default",
     ["./node_modules/jest-html-reporter", {
-      "pageTitle": "Test Report for openeo-js-commons"
+      "pageTitle": "Test Report for openeo-earthengine-driver"
     }]
   ]
 

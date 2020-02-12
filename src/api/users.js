@@ -47,10 +47,9 @@ module.exports = class UsersAPI {
 		}
 
 		this.storage.login(req.authorization.basic.username, req.authorization.basic.password)
-			.then((user) => {
+			.then(user => {
 				req.user = user;
 				res.json({
-					user_id: user._id,
 					access_token: user.token,
 					access_token_valid_until: user.token_valid_until
 				});

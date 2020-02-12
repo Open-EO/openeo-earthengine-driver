@@ -114,7 +114,7 @@ module.exports = class UserStore {
 	checkAuthToken(token) {
 		return new Promise((resolve, reject) => {
 			var query = {
-				token: token,
+				token: token.replace(/^basic\/\//, ''), // remove token prefix for basic
 				validity: { $gt: Utils.getTimestamp() }
 			};
 			this.token.findOne(query, {}, (err, tokenFromDb) => {

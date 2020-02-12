@@ -1,5 +1,6 @@
 const Utils = require('../utils');
 const Errors = require('../errors');
+const { MigrateCollections } = require('@openeo/js-commons');
 
 module.exports = class Data {
 
@@ -22,7 +23,6 @@ module.exports = class Data {
 	}
 
 	beforeServerStart(server) {
-		server.addEndpoint('get', '/stac', this.getStacRootCatalog.bind(this));
 		server.addEndpoint('get', '/collections', this.getCollections.bind(this));
 		server.addEndpoint('get', ['/collections/{collection_id}', '/collections/*'], this.getCollectionById.bind(this));
 
@@ -30,54 +30,23 @@ module.exports = class Data {
 
 		return this.catalog.loadCatalog();
 	}
-	
-	getStacRootCatalog(req, res, next) {
-		var response = {
-			stac_version: "0.6.2",
-			id: "openeo-earthengine-driver",
-			description: "Google Earth Engine catalog for openEO.",
-			links: [
-				{
-					rel: "self",
-					href: Utils.getApiUrl("/stac")
-				},
-				{
-					rel: "alternate",
-					href: Utils.getApiUrl("/collections"),
-					title: "WFS3 Collections",
-					type: "application/json"
-				},
-				this.geeBrowsableCatalogLink,
-				this.geeSourceCatalogLink
-			]
-		};
-
-		this.catalog.getData().map(d => {
-			response.links.push({
-				rel: "child",
-				href: Utils.getApiUrl("/collections/" + d.id),
-				title: d.title,
-				type: "application/json"
-			});
-		});
-
-		res.json(response);
-		return next();
-	}
 
 	getCollections(req, res, next) {
 		var data = this.catalog.getData().map(d => {
-			return {
+			// ToDo 1.0: Remove temporary workaround to convert old collections to current spec
+			return MigrateCollections.convertCollectionToLatestSpec({
+				stac_version: d.stac_version,
+				stac_extensions: [],
 				id: d.id,
 				title: d.title,
 				description: d.description,
 				license: d.license,
 				providers: d.providers,
 				extent: d.extent,
-				links: d.links,
-				stac_version: d.stac_version
-			};
+				links: d.links
+			}, "0.4.2");
 		});
+
 		res.json({
 			collections: data,
 			links: [
@@ -107,7 +76,7 @@ module.exports = class Data {
 
 		var collection = this.catalog.getData(id);
 		if (collection !== null) {
-			res.json(collection);
+			res.json(MigrateCollections.convertCollectionToLatestSpec(collection, "0.4.2"));
 			return next();
 		}
 		else {
