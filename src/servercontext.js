@@ -1,7 +1,6 @@
 const Config = require('./config');
 const GeeProcessRegistry = require('./processgraph/registry');
 const ProcessingContext = require('./processgraph/context');
-const SubscriptionPool = require('./subscriptions/pool');
 const Utils = require('./utils');
 
 const DataCatalog = require('./models/catalog');
@@ -43,10 +42,6 @@ module.exports = class ServerContext extends Config {
 
 	collections() {
 		return this.dataCatalog;
-	}
-
-	subscriptions() {
-		return this.subscriptionPool;
 	}
 
 	users() {
