@@ -64,11 +64,11 @@
 		  "from_node": 7
 		},
 		"reducer": {
-		  "callback": {
+		  "process_graph": {
 			"min": {
 			  "arguments": {
 				"data": {
-				  "from_argument": "data"
+				  "from_parameter": "data"
 				}
 			  },
 			  "process_id": "min",
@@ -106,12 +106,12 @@
 		  "from_node": 4
 		},
 		"process": {
-		  "callback": {
+		  "process_graph": {
 			"2": {
 			  "process_id": "linear_scale_range",
 			  "arguments": {
 				"x": {
-				  "from_argument": "x"
+				  "from_parameter": "x"
 				},
 				"inputMin": -1,
 				"inputMax": 1,

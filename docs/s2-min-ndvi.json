@@ -31,11 +31,11 @@
 		  "from_node": 2
 		},
 		"reducer": {
-		  "callback": {
+		  "process_graph": {
 			"min": {
 			  "arguments": {
 				"data": {
-				  "from_argument": "data"
+				  "from_parameter": "data"
 				}
 			  },
 			  "process_id": "min",
@@ -53,11 +53,11 @@
 		  "from_node": 3
 		},
 		"process": {
-		  "callback": {
+		  "process_graph": {
 			"lsr": {
 			  "arguments": {
 				"x": {
-				  "from_argument": "x"
+				  "from_parameter": "x"
 				},
 				"inputMin": -1,
 				"inputMax": 1,

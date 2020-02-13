@@ -6,12 +6,12 @@
         "from_node": "mintime"
       },
       "process": {
-        "callback": {
+        "process_graph": {
           "2": {
             "process_id": "linear_scale_range",
             "arguments": {
               "x": {
-                "from_argument": "x"
+                "from_parameter": "x"
               },
               "inputMin": -1,
               "inputMax": 1,
@@ -48,12 +48,12 @@
         "from_node": "dc"
       },
       "reducer": {
-        "callback": {
+        "process_graph": {
           "nir": {
             "process_id": "array_element",
             "arguments": {
               "data": {
-                "from_argument": "data"
+                "from_parameter": "data"
               },
               "index": 0
             }
@@ -117,7 +117,7 @@
             "process_id": "array_element",
             "arguments": {
               "data": {
-                "from_argument": "data"
+                "from_parameter": "data"
               },
               "index": 1
             }
@@ -137,7 +137,7 @@
             "process_id": "array_element",
             "arguments": {
               "data": {
-                "from_argument": "data"
+                "from_parameter": "data"
               },
               "index": 2
             }
@@ -166,12 +166,12 @@
         "from_node": "evi"
       },
       "reducer": {
-        "callback": {
+        "process_graph": {
           "min": {
             "process_id": "min",
             "arguments": {
               "data": {
-                "from_argument": "data"
+                "from_parameter": "data"
               }
             },
             "result": true

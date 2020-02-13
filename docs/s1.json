@@ -25,11 +25,11 @@
         "from_node": "7"
       },
       "reducer": {
-        "callback": {
+        "process_graph": {
           "first": {
             "arguments": {
               "data": {
-                "from_argument": "data"
+                "from_parameter": "data"
               }
             },
             "process_id": "first",
@@ -47,11 +47,11 @@
         "from_node": 4
       },
       "process": {
-        "callback": {
+        "process_graph": {
           "linear_scale_range": {
             "arguments": {
               "x": {
-                "from_argument": "x"
+                "from_parameter": "x"
               },
               "inputMin": 0,
               "inputMax": 15,
@@ -82,12 +82,12 @@
         "from_node": "1"
       },
       "process": {
-        "callback": {
+        "process_graph": {
           "2": {
             "process_id": "absolute",
             "arguments": {
               "x": {
-                "from_argument": "x"
+                "from_parameter": "x"
               }
             },
             "result": true
