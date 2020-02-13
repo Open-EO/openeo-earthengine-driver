@@ -65,9 +65,9 @@ module.exports = class StoredProcessGraphs {
 
 		let query = {
 			id: req.body.id,
-			user_id: user_id
+			user_id: req.user._id
 		};
-		this.db.findOne(query, {}, (err, pg) => {
+		this.storage.database().findOne(query, {}, (err, pg) => {
 			if (err) {
 				return next(Errors.wrap(err));
 			}
@@ -78,7 +78,7 @@ module.exports = class StoredProcessGraphs {
 						var data = {
 							user_id: req.user._id
 						};
-						for(let field of ProcessGraphStore.FIELDS) {
+						for(let field of this.storage.getFields()) {
 							if (typeof req.body[field] !== 'undefined') {
 								data[field] = req.body[field];
 							}
@@ -96,7 +96,7 @@ module.exports = class StoredProcessGraphs {
 					.catch(e => next(e));
 			}
 			else {
-				return next(new Errors.ProcessGraphIdInvalid());
+				return next(new Errors.ProcessGraphIdExists());
 			}
 		});
 	}
@@ -105,8 +105,11 @@ module.exports = class StoredProcessGraphs {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
+		else if (typeof req.body.id !== 'undefined' && req.body.id !== req.params.process_graph_id) {
+			return next(new Errors.PropertyNotEditable({property: 'id'}));
+		}
 		var query = {
-			_id: req.params.process_graph_id,
+			id: req.params.process_graph_id,
 			user_id: req.user._id
 		};
 		this.storage.database().findOne(query, {}, (err, pg) => {
@@ -163,7 +166,7 @@ module.exports = class StoredProcessGraphs {
 			return next(new Errors.AuthenticationRequired());
 		}
 		var query = {
-			_id: req.params.process_graph_id,
+			id: req.params.process_graph_id,
 			user_id: req.user._id
 		};
 		this.storage.database().remove(query, {}, (err, numRemoved) => {

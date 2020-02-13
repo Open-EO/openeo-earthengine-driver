@@ -16,10 +16,6 @@ module.exports = class FileWorkspace {
 	}
 
 	getPathFromRequest(req, p) {
-		if (req.params.user_id != req.user._id) {
-			// The authorized user id and the user_id in the path mismatch
-			return null;
-		}
 		return this.getPath(req.user._id, (p ? p : req.params['*']));
 	}
 

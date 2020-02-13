@@ -3,12 +3,8 @@ const ajv = require('ajv');
 
 module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 
-	constructor(context = null) {
+	constructor(context) {
 		super();
-		this.setContext(context);
-	}
-
-	setContext(context) {
 		this.context = context;
 	}
 
@@ -34,7 +30,16 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 	async validateOutputFormat(data) {
 		if (!this.context.server().isValidOutputFormat(data)) {
 			throw new ajv.ValidationError([{
-				message: "Output format not supported."
+				message: "Output format  '" + data + "' not supported."
+			}]);
+		}
+		return true;
+	}
+	
+	async validateInputFormat(data) {
+		if (!this.context.server().isValidInputFormat(data)) {
+			throw new ajv.ValidationError([{
+				message: "Input format  '" + data + "' not supported."
 			}]);
 		}
 		return true;

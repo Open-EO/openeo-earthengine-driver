@@ -1,13 +1,13 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const DataCube = require('../processgraph/datacube');
 const Commons = require('../processgraph/commons');
 
-module.exports = class load_collection extends Process {
+module.exports = class load_collection extends BaseProcess {
 
-	async execute(node, context) {
+	async execute(node) {
 		// Load data
 		var id = node.getArgument('id');
-		var collection = context.getCollection(id);
+		var collection = node.getContext().getCollection(id);
 		var dc = new DataCube();
 		var images = ee.ImageCollection(id);
 		dc.setData(images);
@@ -23,10 +23,10 @@ module.exports = class load_collection extends Process {
 		var spatial_extent = node.getArgument("spatial_extent");
 		if (spatial_extent !== null) {
 			if (spatial_extent.type) { // GeoJSON
-				dc = Commons.filterPolygons(dc, spatial_extent, this.schema.id, 'spatial_extent');
+				dc = Commons.filterPolygons(dc, spatial_extent, this.spec.id, 'spatial_extent');
 			}
 			else { // Bounding box
-				dc = Commons.filterBbox(dc, spatial_extent, this.schema.id, 'spatial_extent');
+				dc = Commons.filterBbox(dc, spatial_extent, this.spec.id, 'spatial_extent');
 			}
 		}
 

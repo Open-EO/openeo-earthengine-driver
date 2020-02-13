@@ -16,6 +16,14 @@ module.exports = class GeeProcessGraphNode extends ProcessGraphNode {
 		return this.provision[name];
 	}
 
+	getContext() {
+		return this.processGraph.getContext();
+	}
+
+	getServerContext() {
+		return this.getContext().server();
+	}
+
 	getParameter(name) {
 		return this.processGraph.getParameter(name);
 	}

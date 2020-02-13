@@ -1,9 +1,9 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class sin extends Process {
+module.exports = class sin extends BaseProcess {
 
-    async execute(node, context) {
+    async execute(node) {
         return Commons.applyInCallback(node, image => image.sin(), array => array.sin());
     }
 

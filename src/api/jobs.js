@@ -3,6 +3,7 @@ const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
 const ProcessGraph = require('../processgraph/processgraph');
+const packageInfo = require('../../package.json');
 
 module.exports = class JobsAPI {
 
@@ -233,7 +234,7 @@ module.exports = class JobsAPI {
 						};
 					}
 					res.send({
-						stac_version: this.context.stac_version,
+						stac_version: packageInfo.stac_version,
 						stac_extensions: [],
 						id: job._id,
 						type: "Feature",
@@ -243,8 +244,8 @@ module.exports = class JobsAPI {
 							datetime: null, // ToDo 1.0: Set correct datetimes
 							start_datetime: null,
 							end_datetime: null,
-							title: job.title,
-							description: job.description,
+							title: job.title || null,
+							description: job.description || null,
 							created: job.created,
 							updated: job.updated
 						},

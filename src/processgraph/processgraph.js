@@ -1,18 +1,31 @@
 const { ProcessGraph } = require('@openeo/js-processgraphs');
+const GeeJsonSchemaValidator = require('./jsonschema');
 const GeeProcessGraphNode = require('./node');
 const Errors = require('../errors');
 const Utils = require('../utils');
 
 module.exports = class GeeProcessGraph extends ProcessGraph {
 
-	constructor(jsonProcessGraph, context) {
-		super(jsonProcessGraph, context.server().processes());
+	constructor(processGraph, context, jsonSchemaValidator = null) {
+		super(processGraph, context.server().processes(), jsonSchemaValidator);
 		this.context = context;
 		this.loadCollectionRect = null;
 	}
 
+	static fromLegacy(processGraph, processRegistry, version) {
+		processGraph = MigrateProcessGraphs.convertProcessGraphToLatestSpec(processGraph, version);
+		return new GeeProcessGraph(processGraph, processRegistry);
+	}
+
 	getContext() {
 		return this.context;
+	}
+
+	createJsonSchemaValidatorInstance() {
+		let validator = new GeeJsonSchemaValidator(this.context);
+		// ToDo 1.0: Set EPSG Codes
+//		validator.setEpsgCodes();
+		return validator;
 	}
 
 	createNodeInstance(json, id, parent) {

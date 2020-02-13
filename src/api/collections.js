@@ -32,19 +32,20 @@ module.exports = class Data {
 	}
 
 	getCollections(req, res, next) {
-		var data = this.catalog.getData().map(d => {
+		var data = this.catalog.getData().map(c => {
 			// ToDo 1.0: Remove temporary workaround to convert old collections to current spec
-			return MigrateCollections.convertCollectionToLatestSpec({
-				stac_version: d.stac_version,
+			c = MigrateCollections.convertCollectionToLatestSpec(c, "0.4.2");
+			return {
+				stac_version: c.stac_version,
 				stac_extensions: [],
-				id: d.id,
-				title: d.title,
-				description: d.description,
-				license: d.license,
-				providers: d.providers,
-				extent: d.extent,
-				links: d.links
-			}, "0.4.2");
+				id: c.id,
+				title: c.title,
+				description: c.description,
+				license: c.license,
+				providers: c.providers,
+				extent: c.extent,
+				links: c.links
+			};
 		});
 
 		res.json({

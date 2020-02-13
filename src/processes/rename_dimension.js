@@ -1,9 +1,9 @@
 const Errors = require('../errors');
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 
-module.exports = class rename_dimension extends Process {
+module.exports = class rename_dimension extends BaseProcess {
 
-	async execute(node, context) {
+	async execute(node) {
 		var dc = node.getData("data");
 		var oldName = node.getArgument('old');
 		var newName = node.getArgument('new');

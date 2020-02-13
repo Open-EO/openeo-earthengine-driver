@@ -59,6 +59,10 @@ module.exports = class ServerContext extends Config {
 		return (typeof format === 'string' && Utils.isObject(this.outputFormats[format.toUpperCase()]));
 	}
 
+	isValidInputFormat(format) {
+		return (typeof format === 'string' && Utils.isObject(this.inputFormats[format.toUpperCase()]));
+	}
+
 	isValidServiceType(service_type) {
 		return (typeof service_type === 'string' && Utils.isObject(this.services[service_type.toLowerCase()]));
 	}

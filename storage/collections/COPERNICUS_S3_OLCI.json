@@ -4,124 +4,124 @@
     "gee:type": "image_collection", 
     "gee:schema": {
       "SNAP_Graph_Processing_Framework_GPF_vers": {
-        "type": "STRING", 
-        "description": "Sentinel Application Platform (SNAP) version"
+        "description": "Sentinel Application Platform (SNAP) version", 
+        "type": "STRING"
       }, 
       "SNAP_Raster_Operators_vers": {
-        "type": "STRING", 
-        "description": "SNAP version"
+        "description": "SNAP version", 
+        "type": "STRING"
       }, 
       "processing_facility_country": {
-        "type": "STRING", 
-        "description": "Name of the country where the facility is located. This element is configurable within the IPF."
+        "description": "Name of the country where the facility is located. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       "processing_facility_name": {
-        "type": "STRING", 
-        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF."
+        "description": "Name of the facility where the processing step was performed. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       "processing_facility_organisation": {
-        "type": "STRING", 
-        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF."
+        "description": "Name of the organisation responsible for the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       "processing_facility_site": {
-        "type": "STRING", 
-        "description": "Geographical location of the facility. This element is configurable within the IPF."
+        "description": "Geographical location of the facility. This element is configurable within the IPF.", 
+        "type": "STRING"
       }, 
       "processing_hardware": {
-        "type": "STRING", 
-        "description": "Name of the hardware in the facility used for the processing."
+        "description": "Name of the hardware in the facility used for the processing.", 
+        "type": "STRING"
       }, 
       "processing_software_name": {
-        "type": "STRING", 
-        "description": "Name of the software component."
+        "description": "Name of the software component.", 
+        "type": "STRING"
       }, 
       "processing_software_version": {
-        "type": "DOUBLE", 
-        "description": "The version or release identifier of the software"
+        "description": "The version or release identifier of the software", 
+        "type": "DOUBLE"
       }, 
       "processing_time": {
-        "type": "DOUBLE", 
-        "description": "The time the product was processed in 'epoch' format"
+        "description": "The time the product was processed in 'epoch' format", 
+        "type": "DOUBLE"
       }, 
       "product": {
-        "type": "STRING", 
-        "description": "This is always `OL_1_EFR__`"
+        "description": "This is always `OL_1_EFR__`", 
+        "type": "STRING"
       }, 
       "PRODUCT_ID": {
-        "type": "STRING", 
-        "description": "The full id of the original Sentinel-3 product"
+        "description": "The full id of the original Sentinel-3 product", 
+        "type": "STRING"
       }, 
       "productQuality": {
-        "type": "STRING", 
-        "description": "PASSED or empty"
+        "description": "PASSED or empty", 
+        "type": "STRING"
       }, 
       "cycle_num": {
-        "type": "DOUBLE", 
-        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days."
+        "description": "The cycle number is the number of times the satellite passed over the same geographical point on the ground. In the SENTINEL-3 operational phase (after launch and commissioning phases), the orbit cycle is 27 days.", 
+        "type": "DOUBLE"
       }, 
       "orbitNumber": {
-        "type": "DOUBLE", 
-        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch."
+        "description": "The absolute orbit number considers the orbits elapsed since the first ascending node crossing after launch.", 
+        "type": "DOUBLE"
       }, 
       "relative_orbit_num": {
-        "type": "DOUBLE", 
-        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero."
+        "description": "The relative orbit number is the orbit number within a cycle. Every time a cycle starts, the relative orbit number is reset to zero.", 
+        "type": "DOUBLE"
       }, 
       "groundTrackDirection": {
-        "type": "STRING", 
-        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit."
+        "description": "Direction of the trace made by the sub-satellite point on the surface of the Earth's reference ellipsoid due to the motion of the satellite along its orbit.", 
+        "type": "STRING"
       }, 
       "spacecraft": {
-        "type": "STRING", 
-        "description": "Sentinel-3 spacecraft name: S3A, S3B"
+        "description": "Sentinel-3 spacecraft name: S3A, S3B", 
+        "type": "STRING"
       }, 
       "status": {
-        "type": "STRING", 
-        "description": "Status of the file"
+        "description": "Status of the file", 
+        "type": "STRING"
       }, 
       "timeliness": {
-        "type": "STRING", 
-        "description": "Timeliness of processing being analysed"
+        "description": "Timeliness of processing being analysed", 
+        "type": "STRING"
       }, 
       "salineWaterPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "coastalPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "freshInlandWaterPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "tidalRegionPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "brightPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "invalidPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "cosmeticPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "duplicatedPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "dubiousSamplesPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }, 
       "saturatedPixelsPercent": {
-        "type": "DOUBLE", 
-        "description": "Pixel quality information"
+        "description": "Pixel quality information", 
+        "type": "DOUBLE"
       }
     }, 
     "eo:gsd": 300.0, 
@@ -302,6 +302,8 @@
         "gee:bitmask": {
           "bitmask_parts": [
             {
+              "description": "Land", 
+              "bit_count": 1, 
               "first_bit": 31, 
               "values": [
                 {
@@ -312,11 +314,11 @@
                   "value": 1, 
                   "description": "Pixel is over land"
                 }
-              ], 
-              "description": "Land", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Coastline", 
+              "bit_count": 1, 
               "first_bit": 30, 
               "values": [
                 {
@@ -327,11 +329,11 @@
                   "value": 1, 
                   "description": "Pixel is on coastline"
                 }
-              ], 
-              "description": "Coastline", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Fresh inland water", 
+              "bit_count": 1, 
               "first_bit": 29, 
               "values": [
                 {
@@ -342,11 +344,11 @@
                   "value": 1, 
                   "description": "Pixel is over fresh water, rivers, or lakes"
                 }
-              ], 
-              "description": "Fresh inland water", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Tidal region", 
+              "bit_count": 1, 
               "first_bit": 28, 
               "values": [
                 {
@@ -357,11 +359,11 @@
                   "value": 1, 
                   "description": "Pixel is over a tidal region"
                 }
-              ], 
-              "description": "Tidal region", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Bright", 
+              "bit_count": 1, 
               "first_bit": 27, 
               "values": [
                 {
@@ -372,11 +374,11 @@
                   "value": 1, 
                   "description": "Pixel is bright"
                 }
-              ], 
-              "description": "Bright", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Straylight risk", 
+              "bit_count": 1, 
               "first_bit": 26, 
               "values": [
                 {
@@ -387,11 +389,11 @@
                   "value": 1, 
                   "description": "Stray light correction (of the Ground Imager) quality is degraded because not enough neighbour pixels were available for its estimation"
                 }
-              ], 
-              "description": "Straylight risk", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Invalid", 
+              "bit_count": 1, 
               "first_bit": 25, 
               "values": [
                 {
@@ -402,11 +404,11 @@
                   "value": 1, 
                   "description": "Pixel is invalid, i.e. its value is missing either because it is out of the instrument swath or because of missing or unusable Level 0 data"
                 }
-              ], 
-              "description": "Invalid", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Cosmetic", 
+              "bit_count": 1, 
               "first_bit": 24, 
               "values": [
                 {
@@ -417,11 +419,11 @@
                   "value": 1, 
                   "description": "Pixel has been filled with cosmetic values"
                 }
-              ], 
-              "description": "Cosmetic", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Duplicate", 
+              "bit_count": 1, 
               "first_bit": 23, 
               "values": [
                 {
@@ -432,11 +434,11 @@
                   "value": 1, 
                   "description": "Pixel is derived from the same instrument pixel as one of its neighbours during the re-sampling process"
                 }
-              ], 
-              "description": "Duplicate", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Sun-glint risk", 
+              "bit_count": 1, 
               "first_bit": 22, 
               "values": [
                 {
@@ -447,11 +449,11 @@
                   "value": 1, 
                   "description": "The viewing and wind conditions are such that the Sun may cause glint to occur on pixels over water surfaces (this flag is set only on the basis of sun and viewing angles taking into account wind conditions, but it is not set according to radiometric data)"
                 }
-              ], 
-              "description": "Sun-glint risk", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Dubious", 
+              "bit_count": 1, 
               "first_bit": 21, 
               "values": [
                 {
@@ -462,11 +464,11 @@
                   "value": 1, 
                   "description": "Any pixel\u2019s sample is potentially contaminated by a neighbour saturated sample or the Instrument Source Packet it was extracted from is corrupted"
                 }
-              ], 
-              "description": "Dubious", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa01", 
+              "bit_count": 1, 
               "first_bit": 20, 
               "values": [
                 {
@@ -477,11 +479,11 @@
                   "value": 1, 
                   "description": "The sample of Oa01 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa01", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa02", 
+              "bit_count": 1, 
               "first_bit": 19, 
               "values": [
                 {
@@ -492,11 +494,11 @@
                   "value": 1, 
                   "description": "The sample of Oa02 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa02", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa03", 
+              "bit_count": 1, 
               "first_bit": 18, 
               "values": [
                 {
@@ -507,11 +509,11 @@
                   "value": 1, 
                   "description": "The sample of Oa03 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa03", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa04", 
+              "bit_count": 1, 
               "first_bit": 17, 
               "values": [
                 {
@@ -522,11 +524,11 @@
                   "value": 1, 
                   "description": "The sample of Oa04 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa04", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa05", 
+              "bit_count": 1, 
               "first_bit": 16, 
               "values": [
                 {
@@ -537,11 +539,11 @@
                   "value": 1, 
                   "description": "The sample of Oa05 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa05", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa06", 
+              "bit_count": 1, 
               "first_bit": 15, 
               "values": [
                 {
@@ -552,11 +554,11 @@
                   "value": 1, 
                   "description": "The sample of Oa06 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa06", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa07", 
+              "bit_count": 1, 
               "first_bit": 14, 
               "values": [
                 {
@@ -567,11 +569,11 @@
                   "value": 1, 
                   "description": "The sample of Oa07 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa07", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa08", 
+              "bit_count": 1, 
               "first_bit": 13, 
               "values": [
                 {
@@ -582,11 +584,11 @@
                   "value": 1, 
                   "description": "The sample of Oa08 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa08", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa09", 
+              "bit_count": 1, 
               "first_bit": 12, 
               "values": [
                 {
@@ -597,11 +599,11 @@
                   "value": 1, 
                   "description": "The sample of Oa09 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa09", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa10", 
+              "bit_count": 1, 
               "first_bit": 11, 
               "values": [
                 {
@@ -612,11 +614,11 @@
                   "value": 1, 
                   "description": "The sample of Oa10 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa10", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa11", 
+              "bit_count": 1, 
               "first_bit": 10, 
               "values": [
                 {
@@ -627,11 +629,11 @@
                   "value": 1, 
                   "description": "The sample of Oa11 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa11", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa12", 
+              "bit_count": 1, 
               "first_bit": 9, 
               "values": [
                 {
@@ -642,11 +644,11 @@
                   "value": 1, 
                   "description": "The sample of Oa12 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa12", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa13", 
+              "bit_count": 1, 
               "first_bit": 8, 
               "values": [
                 {
@@ -657,11 +659,11 @@
                   "value": 1, 
                   "description": "The sample of Oa13 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa13", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa14", 
+              "bit_count": 1, 
               "first_bit": 7, 
               "values": [
                 {
@@ -672,11 +674,11 @@
                   "value": 1, 
                   "description": "The sample of Oa14 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa14", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa15", 
+              "bit_count": 1, 
               "first_bit": 6, 
               "values": [
                 {
@@ -687,11 +689,11 @@
                   "value": 1, 
                   "description": "The sample of Oa15 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa15", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa16", 
+              "bit_count": 1, 
               "first_bit": 5, 
               "values": [
                 {
@@ -702,11 +704,11 @@
                   "value": 1, 
                   "description": "The sample of Oa16 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa16", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa17", 
+              "bit_count": 1, 
               "first_bit": 4, 
               "values": [
                 {
@@ -717,11 +719,11 @@
                   "value": 1, 
                   "description": "The sample of Oa17 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa17", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa18", 
+              "bit_count": 1, 
               "first_bit": 3, 
               "values": [
                 {
@@ -732,11 +734,11 @@
                   "value": 1, 
                   "description": "The sample of Oa18 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa18", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa19", 
+              "bit_count": 1, 
               "first_bit": 2, 
               "values": [
                 {
@@ -747,11 +749,11 @@
                   "value": 1, 
                   "description": "The sample of Oa19 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa19", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa20", 
+              "bit_count": 1, 
               "first_bit": 1, 
               "values": [
                 {
@@ -762,11 +764,11 @@
                   "value": 1, 
                   "description": "The sample of Oa20 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa20", 
-              "bit_count": 1
+              ]
             }, 
             {
+              "description": "Saturated at Oa21", 
+              "bit_count": 1, 
               "first_bit": 0, 
               "values": [
                 {
@@ -777,13 +779,11 @@
                   "value": 1, 
                   "description": "The sample of Oa21 is saturated"
                 }
-              ], 
-              "description": "Saturated at Oa21", 
-              "bit_count": 1
+              ]
             }
           ], 
-          "description": "Bit 31: Land\n * 0: Pixel is over water\n * 1: Pixel is over land\nBit 30: Coastline\n * 0: Pixel is not on coastline\n * 1: Pixel is on coastline\nBit 29: Fresh inland water\n * 0: Pixel is not over fresh water, rivers, or lakes\n * 1: Pixel is over fresh water, rivers, or lakes\nBit 28: Tidal region\n * 0: Pixel is not over a tidal region\n * 1: Pixel is over a tidal region\nBit 27: Bright\n * 0: Pixel is not bright\n * 1: Pixel is bright\nBit 26: Straylight risk\n * 0: Stray light correction (of the Ground Imager) quality is not degraded\n * 1: Stray light correction (of the Ground Imager) quality is degraded because not enough neighbour pixels were available for its estimation\nBit 25: Invalid\n * 0: Pixel is valid\n * 1: Pixel is invalid, i.e. its value is missing either because it is out of the instrument swath or because of missing or unusable Level 0 data\nBit 24: Cosmetic\n * 0: Pixel has not been filled with cosmetic values\n * 1: Pixel has been filled with cosmetic values\nBit 23: Duplicate\n * 0: Pixel is not derived from the same instrument pixel as one of its neighbours during the re-sampling process\n * 1: Pixel is derived from the same instrument pixel as one of its neighbours during the re-sampling process\nBit 22: Sun-glint risk\n * 0: The viewing and wind conditions are such that the Sun may not cause glint to occur on pixels over water surfaces\n * 1: The viewing and wind conditions are such that the Sun may cause glint to occur on pixels over water surfaces (this flag is set only on the basis of sun and viewing angles taking into account wind conditions, but it is not set according to radiometric data)\nBit 21: Dubious\n * 0: Any pixel\u2019s sample is not contaminated by a neighbour saturated sample or the Instrument Source Packet it was extracted from is not corrupted\n * 1: Any pixel\u2019s sample is potentially contaminated by a neighbour saturated sample or the Instrument Source Packet it was extracted from is corrupted\nBit 20: Saturated at Oa01\n * 0: The sample of Oa01 is not saturated\n * 1: The sample of Oa01 is saturated\nBit 19: Saturated at Oa02\n * 0: The sample of Oa02 is not saturated\n * 1: The sample of Oa02 is saturated\nBit 18: Saturated at Oa03\n * 0: The sample of Oa03 is not saturated\n * 1: The sample of Oa03 is saturated\nBit 17: Saturated at Oa04\n * 0: The sample of Oa04 is not saturated\n * 1: The sample of Oa04 is saturated\nBit 16: Saturated at Oa05\n * 0: The sample of Oa05 is not saturated\n * 1: The sample of Oa05 is saturated\nBit 15: Saturated at Oa06\n * 0: The sample of Oa06 is not saturated\n * 1: The sample of Oa06 is saturated\nBit 14: Saturated at Oa07\n * 0: The sample of Oa07 is not saturated\n * 1: The sample of Oa07 is saturated\nBit 13: Saturated at Oa08\n * 0: The sample of Oa08 is not saturated\n * 1: The sample of Oa08 is saturated\nBit 12: Saturated at Oa09\n * 0: The sample of Oa09 is not saturated\n * 1: The sample of Oa09 is saturated\nBit 11: Saturated at Oa10\n * 0: The sample of Oa10 is not saturated\n * 1: The sample of Oa10 is saturated\nBit 10: Saturated at Oa11\n * 0: The sample of Oa11 is not saturated\n * 1: The sample of Oa11 is saturated\nBit 9: Saturated at Oa12\n * 0: The sample of Oa12 is not saturated\n * 1: The sample of Oa12 is saturated\nBit 8: Saturated at Oa13\n * 0: The sample of Oa13 is not saturated\n * 1: The sample of Oa13 is saturated\nBit 7: Saturated at Oa14\n * 0: The sample of Oa14 is not saturated\n * 1: The sample of Oa14 is saturated\nBit 6: Saturated at Oa15\n * 0: The sample of Oa15 is not saturated\n * 1: The sample of Oa15 is saturated\nBit 5: Saturated at Oa16\n * 0: The sample of Oa16 is not saturated\n * 1: The sample of Oa16 is saturated\nBit 4: Saturated at Oa17\n * 0: The sample of Oa17 is not saturated\n * 1: The sample of Oa17 is saturated\nBit 3: Saturated at Oa18\n * 0: The sample of Oa18 is not saturated\n * 1: The sample of Oa18 is saturated\nBit 2: Saturated at Oa19\n * 0: The sample of Oa19 is not saturated\n * 1: The sample of Oa19 is saturated\nBit 1: Saturated at Oa20\n * 0: The sample of Oa20 is not saturated\n * 1: The sample of Oa20 is saturated\nBit 0: Saturated at Oa21\n * 0: The sample of Oa21 is not saturated\n * 1: The sample of Oa21 is saturated", 
-          "total_bit_count": 32
+          "total_bit_count": 32, 
+          "description": "Bit 31: Land\n * 0: Pixel is over water\n * 1: Pixel is over land\nBit 30: Coastline\n * 0: Pixel is not on coastline\n * 1: Pixel is on coastline\nBit 29: Fresh inland water\n * 0: Pixel is not over fresh water, rivers, or lakes\n * 1: Pixel is over fresh water, rivers, or lakes\nBit 28: Tidal region\n * 0: Pixel is not over a tidal region\n * 1: Pixel is over a tidal region\nBit 27: Bright\n * 0: Pixel is not bright\n * 1: Pixel is bright\nBit 26: Straylight risk\n * 0: Stray light correction (of the Ground Imager) quality is not degraded\n * 1: Stray light correction (of the Ground Imager) quality is degraded because not enough neighbour pixels were available for its estimation\nBit 25: Invalid\n * 0: Pixel is valid\n * 1: Pixel is invalid, i.e. its value is missing either because it is out of the instrument swath or because of missing or unusable Level 0 data\nBit 24: Cosmetic\n * 0: Pixel has not been filled with cosmetic values\n * 1: Pixel has been filled with cosmetic values\nBit 23: Duplicate\n * 0: Pixel is not derived from the same instrument pixel as one of its neighbours during the re-sampling process\n * 1: Pixel is derived from the same instrument pixel as one of its neighbours during the re-sampling process\nBit 22: Sun-glint risk\n * 0: The viewing and wind conditions are such that the Sun may not cause glint to occur on pixels over water surfaces\n * 1: The viewing and wind conditions are such that the Sun may cause glint to occur on pixels over water surfaces (this flag is set only on the basis of sun and viewing angles taking into account wind conditions, but it is not set according to radiometric data)\nBit 21: Dubious\n * 0: Any pixel\u2019s sample is not contaminated by a neighbour saturated sample or the Instrument Source Packet it was extracted from is not corrupted\n * 1: Any pixel\u2019s sample is potentially contaminated by a neighbour saturated sample or the Instrument Source Packet it was extracted from is corrupted\nBit 20: Saturated at Oa01\n * 0: The sample of Oa01 is not saturated\n * 1: The sample of Oa01 is saturated\nBit 19: Saturated at Oa02\n * 0: The sample of Oa02 is not saturated\n * 1: The sample of Oa02 is saturated\nBit 18: Saturated at Oa03\n * 0: The sample of Oa03 is not saturated\n * 1: The sample of Oa03 is saturated\nBit 17: Saturated at Oa04\n * 0: The sample of Oa04 is not saturated\n * 1: The sample of Oa04 is saturated\nBit 16: Saturated at Oa05\n * 0: The sample of Oa05 is not saturated\n * 1: The sample of Oa05 is saturated\nBit 15: Saturated at Oa06\n * 0: The sample of Oa06 is not saturated\n * 1: The sample of Oa06 is saturated\nBit 14: Saturated at Oa07\n * 0: The sample of Oa07 is not saturated\n * 1: The sample of Oa07 is saturated\nBit 13: Saturated at Oa08\n * 0: The sample of Oa08 is not saturated\n * 1: The sample of Oa08 is saturated\nBit 12: Saturated at Oa09\n * 0: The sample of Oa09 is not saturated\n * 1: The sample of Oa09 is saturated\nBit 11: Saturated at Oa10\n * 0: The sample of Oa10 is not saturated\n * 1: The sample of Oa10 is saturated\nBit 10: Saturated at Oa11\n * 0: The sample of Oa11 is not saturated\n * 1: The sample of Oa11 is saturated\nBit 9: Saturated at Oa12\n * 0: The sample of Oa12 is not saturated\n * 1: The sample of Oa12 is saturated\nBit 8: Saturated at Oa13\n * 0: The sample of Oa13 is not saturated\n * 1: The sample of Oa13 is saturated\nBit 7: Saturated at Oa14\n * 0: The sample of Oa14 is not saturated\n * 1: The sample of Oa14 is saturated\nBit 6: Saturated at Oa15\n * 0: The sample of Oa15 is not saturated\n * 1: The sample of Oa15 is saturated\nBit 5: Saturated at Oa16\n * 0: The sample of Oa16 is not saturated\n * 1: The sample of Oa16 is saturated\nBit 4: Saturated at Oa17\n * 0: The sample of Oa17 is not saturated\n * 1: The sample of Oa17 is saturated\nBit 3: Saturated at Oa18\n * 0: The sample of Oa18 is not saturated\n * 1: The sample of Oa18 is saturated\nBit 2: Saturated at Oa19\n * 0: The sample of Oa19 is not saturated\n * 1: The sample of Oa19 is saturated\nBit 1: Saturated at Oa20\n * 0: The sample of Oa20 is not saturated\n * 1: The sample of Oa20 is saturated\nBit 0: Saturated at Oa21\n * 0: The sample of Oa21 is not saturated\n * 1: The sample of Oa21 is saturated"
         }
       }
     ], 
@@ -791,13 +791,19 @@
     "gee:terms_of_use": "The use of Sentinel data is governed by the [Copernicus Sentinel Data Terms and Conditions.](https://sentinel.esa.int/documents/247904/690755/Sentinel_Data_Legal_Notice) ", 
     "gee:visualizations": [
       {
-        "lookat": {
-          "lon": 46.043, 
-          "zoom": 5, 
-          "lat": 1.45
+        "filter": {
+          "filter_name": "LAST_N_DAYS", 
+          "property_value": "14"
         }, 
+        "display_name": "RGB", 
         "image_visualization": {
           "band_vis": {
+            "gamma": [
+              1.5
+            ], 
+            "max": [
+              255.0
+            ], 
             "min": [
               0.0
             ], 
@@ -805,20 +811,14 @@
               "Oa08_radiance", 
               "Oa06_radiance", 
               "Oa04_radiance"
-            ], 
-            "gamma": [
-              1.5
-            ], 
-            "max": [
-              255.0
             ]
           }
         }, 
-        "filter": {
-          "property_value": "14", 
-          "filter_name": "LAST_N_DAYS"
-        }, 
-        "display_name": "RGB"
+        "lookat": {
+          "zoom": 5, 
+          "lat": 1.45, 
+          "lon": 46.043
+        }
       }
     ]
   }, 
@@ -856,19 +856,19 @@
   ], 
   "providers": [
     {
-      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci", 
       "roles": [
         "producer", 
         "licensor"
       ], 
-      "name": "European Union/ESA/Copernicus"
+      "name": "European Union/ESA/Copernicus", 
+      "url": "https://sentinel.esa.int/web/sentinel/user-guides/sentinel-3-olci"
     }, 
     {
-      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI", 
       "roles": [
         "host"
       ], 
-      "name": "Google Earth Engine"
+      "name": "Google Earth Engine", 
+      "url": "https://developers.google.com/earth-engine/datasets/catalog/COPERNICUS_S3_OLCI"
     }
   ], 
   "extent": {

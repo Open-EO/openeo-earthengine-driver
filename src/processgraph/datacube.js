@@ -139,10 +139,10 @@ module.exports = class DataCube {
 		}
 		var dims = Object.values(this.dimensions).filter(filter);
 		if (dims.length > 1) {
-			throw "Multiple dimensions matching "+label+" found. Should be only one.";
+			throw new Error("Multiple dimensions matching "+label+" found. Should be only one.");
 		}
 		else if (dims.length == 0) {
-			throw "No dimension of "+label+" found.";
+			throw new Error("No dimension of "+label+" found.");
 		}
 		return dims[0];
 	}
@@ -216,7 +216,7 @@ module.exports = class DataCube {
 		var x = this.dimX();
 		var y = this.dimY();
 		if (x.crs() != y.crs()) {
-			throw "Spatial dimensions for x and y must not differ.";
+			throw new Error("Spatial dimensions for x and y must not differ.");
 		}
 		return ee.Geometry.Rectangle([x.min(), y.min(), x.max(), y.max()], x.crs());
 	}
@@ -238,7 +238,7 @@ module.exports = class DataCube {
 		var y = this.dimY();
 
 		if (x.crs() != y.crs()) {
-			throw "Spatial dimensions for x and y must not differ.";
+			throw new Error("Spatial dimensions for x and y must not differ.");
 		}
 
 		return x.crs();
@@ -270,7 +270,7 @@ module.exports = class DataCube {
 			return this.dimensions[name];
 		}
 		else {
-			throw "Dimension '" + name + "' does not exist.";
+			throw new Error("Dimension '" + name + "' does not exist.");
 		}
 	}
 
@@ -280,7 +280,7 @@ module.exports = class DataCube {
 
 	addDimension(name, type, axis = null) {
 		if (this.dimensions[name] instanceof Dimension) {
-			throw "Dimension '" + name + "' already exists.";
+			throw new Error("Dimension '" + name + "' already exists.");
 		}
 		var dimension = new Dimension(this, {
 			type: type,

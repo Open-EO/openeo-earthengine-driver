@@ -1,8 +1,8 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 
-module.exports = class pi extends Process {
+module.exports = class pi extends BaseProcess {
 
-    async execute(node, context) {
+    async execute(node) {
         var dc = node.getData('data');
         dc.data = Math.PI;
         return dc;

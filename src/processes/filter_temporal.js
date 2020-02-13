@@ -1,9 +1,9 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class filter_temporal extends Process {
+module.exports = class filter_temporal extends BaseProcess {
 
-	async execute(node, context) {
+	async execute(node) {
 		return Commons.filterTemporal(node.getData("data"), node.getArgument("extent"));
 	}
 

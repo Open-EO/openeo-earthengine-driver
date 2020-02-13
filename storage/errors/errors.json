@@ -203,6 +203,14 @@
 			"Process Graph Management"
 		]
 	},
+	"ProcessGraphIdExists": {
+		"description": "The specified process graph id exists.",
+		"message": "The specified process graph id exists.",
+		"http": 400,
+		"tags": [
+			"Process Graph Management"
+		]
+	},
 	"ProcessGraphMissing": {
 		"description": null,
 		"message": "No valid process graph specified.",

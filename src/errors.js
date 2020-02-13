@@ -48,6 +48,9 @@ for(var name in errors) {
 restify_errors.ResourceNotFoundError = restify_errors.NotFound;
 
 restify_errors.wrap = function(e, callback) {
+	if (typeof e === 'string') {
+		e = new Error(e);
+	}
 	if (CommonUtils.isObject(e) && e.native === true) {
 		return e; // An openEO error
 	}

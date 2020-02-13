@@ -107,7 +107,7 @@ var Utils = {
 						return dump.concat(getCoordinatesDump(f));
 					},[]);
 				default:
-					throw "Invalid GeoJSON type.";
+					throw new Error("Invalid GeoJSON type.");
 			}
 		};
 		var coords = getCoordinatesDump(geojson);

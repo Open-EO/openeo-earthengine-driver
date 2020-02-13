@@ -6,7 +6,7 @@ module.exports = class UserStore {
 	
 	constructor() {
 		this.db = Utils.loadDB('users');
-		this.token = Utils.loadDB('token');
+		this.tokenDb = Utils.loadDB('token');
 		this.tokenValidity = 24*60*60;
 	}
 
@@ -15,7 +15,7 @@ module.exports = class UserStore {
 	}
 
 	tokenDatabase() {
-		return this.token;
+		return this.tokenDb;
 	}
 
 	encryptPassword(password){
@@ -69,7 +69,7 @@ module.exports = class UserStore {
 				var query = {
 					validity: { $lt: Utils.getTimestamp() }
 				};
-				this.token.remove(query, { multi: true }, err => {
+				this.tokenDb.remove(query, { multi: true }, err => {
 					if (err) {
 						console.error(err);
 					}
@@ -81,9 +81,9 @@ module.exports = class UserStore {
 					token: Utils.generateHash(),
 					validity: Utils.getTimestamp() + this.tokenValidity
 				};
-				this.token.insert(tokenData, (err) => {
+				this.tokenDb.insert(tokenData, (err) => {
 					if (err) {
-						reject(Errors.wrap(err));
+						return reject(Errors.wrap(err));
 					}
 		
 					resolve(Object.assign({
@@ -117,7 +117,7 @@ module.exports = class UserStore {
 				token: token.replace(/^basic\/\//, ''), // remove token prefix for basic
 				validity: { $gt: Utils.getTimestamp() }
 			};
-			this.token.findOne(query, {}, (err, tokenFromDb) => {
+			this.tokenDb.findOne(query, {}, (err, tokenFromDb) => {
 				if (err) {
 					reject(Errors.wrap(err));
 				}

@@ -1,19 +1,19 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 
-module.exports = class save_result extends Process {
+module.exports = class save_result extends BaseProcess {
 
-	async validate(node, context) {
-		await super.validate(node, context);
+	async validate(node) {
+		await super.validate(node);
 
 		var format = node.getArgument("format");
-		if (!context.server().isValidOutputFormat(format)) {
+		if (!node.getServerContext().isValidOutputFormat(format)) {
 			throw new Errors.FormatUnsupported();
 		}
 		var options = node.getArgument("options");
 		// ToDo: We don't support any options yet, validate them
 	}
 
-	async execute(node, context) {
+	async execute(node) {
 		var data = node.getData("data");
 		data.setOutputFormat(
 			node.getArgument("format"),

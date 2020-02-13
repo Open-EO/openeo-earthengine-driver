@@ -1,6 +1,6 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 
-module.exports = class normalized_difference extends Process {
+module.exports = class normalized_difference extends BaseProcess {
 
 	process(dc1, dc2, name){
 		dc1.imageCollection(ic => {
@@ -15,7 +15,7 @@ module.exports = class normalized_difference extends Process {
 		return dc1;
 	}
 
-	async execute(node, context) {
+	async execute(node) {
 		var dc1 = node.getData("band1");
 		var dc2 = node.getData("band2");
 		var name = node.getArgument("name", "normalized_difference");

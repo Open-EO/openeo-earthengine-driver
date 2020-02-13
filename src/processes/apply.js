@@ -1,8 +1,8 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 
-module.exports = class apply extends Process {
+module.exports = class apply extends BaseProcess {
 
-    async execute(node, context) {
+    async execute(node) {
         var dc = node.getData("data");
         var callback = node.getArgument("process");
         var resultNode = await callback.execute({x: dc});

@@ -42,7 +42,7 @@ module.exports = class ProcessCommons {
 			dc.array(arrayProcess);
 		}
 		else {
-			throw "Calculating " + process + " not supported for given data type.";
+			throw new Error("Calculating " + process + " not supported for given data type.");
 		}
 		return dc;
 	}

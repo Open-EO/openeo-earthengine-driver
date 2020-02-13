@@ -1,7 +1,7 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class linear_scale_range extends Process {
+module.exports = class linear_scale_range extends BaseProcess {
 
     process(data, inputMin, inputMax, outputMin, outputMax){
         var numerator = data.subtract(inputMin);
@@ -11,7 +11,7 @@ module.exports = class linear_scale_range extends Process {
         return ratio.multiply(scaleFactor).add(outputMin);
     }
 
-    async execute(node, context) {
+    async execute(node) {
         var inputMin = node.getArgument('inputMin');
         var inputMax = node.getArgument('inputMax');
         var outputMin = node.getArgument('outputMin', 0);

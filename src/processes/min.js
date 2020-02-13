@@ -1,9 +1,9 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class min extends Process {
+module.exports = class min extends BaseProcess {
 
-	async execute(node, context) {
+	async execute(node) {
 		return Commons.reduceInCallback(node, 'min');
 	}
 

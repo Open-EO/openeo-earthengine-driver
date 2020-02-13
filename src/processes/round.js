@@ -1,7 +1,7 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class round extends Process {
+module.exports = class round extends BaseProcess {
 
     process(data, p=null){
         if(p===null){
@@ -14,7 +14,7 @@ module.exports = class round extends Process {
 
     }
 
-    async execute(node, context) {
+    async execute(node) {
         var p = node.getArgument("p");
         var process = data => this.process(data, p);
         return Commons.applyInCallback(node, process, process);

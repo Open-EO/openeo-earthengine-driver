@@ -1,10 +1,10 @@
-const Process = require('../processgraph/process');
+const { BaseProcess } = require('@openeo/js-processgraphs');
 const Errors = require('../errors');
 
 // TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
-module.exports = class reduce extends Process {
+module.exports = class reduce extends BaseProcess {
 
-	async execute(node, context) {
+	async execute(node) {
 		var dc = node.getData("data");
 		var dimension = node.getArgument("dimension");
 		var temporalDimension = dc.getDimension(dimension);

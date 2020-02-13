@@ -1,18 +1,22 @@
+const Errors = require('../errors');
 const Utils = require('../utils');
 
 class ProcessGraphStore {
 
 	constructor() {
 		this.db = Utils.loadDB('process_graphs');
-		this.editableFields = ProcessGraphStore.FIELDS;
 	}
 
 	database() {
 		return this.db;
 	}
 
+	getFields() {
+		return ProcessGraphStore.FIELDS;
+	}
+
 	isFieldEditable(name) {
-		return this.editableFields.includes(name);
+		return ProcessGraphStore.FIELDS.includes(name);
 	}
 
 	getById(id, user_id) {
@@ -38,7 +42,7 @@ class ProcessGraphStore {
 };
 
 ProcessGraphStore.FIELDS = [
-//	'id', // ToDo: The API allows it at the moment, but for simplicity we forbid it for now.
+	'id',
 	'summary',
 	'description',
 	'categories',
