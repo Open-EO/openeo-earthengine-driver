@@ -50,7 +50,7 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
   "load_collection": {
     "arguments": {
       "id": "COPERNICUS/S2",
-      "temporal_extent": ["2018-04-30","2018-06-26"],
+      "temporal_extent": ["2018-04-30", "2018-06-26"],
       "spatial_extent": {
         "west": -2.763447,
         "south": 43.040791,
@@ -85,14 +85,14 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
   "reduce": {
     "arguments": {
       "data": {"from_node": "normalized_difference"},
-      "dimension": "temporal",
+      "dimension": "t",
       "reducer": {
-        "callback": {
-          "min": {
+        "process_graph": {
+          "max": {
             "arguments": {
-              "data": {"from_argument": "data"}
+              "data": {"from_parameter": "data"}
             },
-            "process_id": "min",
+            "process_id": "max",
             "result": true
           }
         }
@@ -104,10 +104,10 @@ An exemplary process graph to create an on-demand XYZ web-service looks like thi
     "arguments": {
       "data": {"from_node": "reduce"},
       "process": {
-        "callback": {
+        "process_graph": {
           "lsr": {
             "arguments": {
-              "x": {"from_argument": "x"},
+              "x": {"from_parameter": "x"},
               "inputMin": -1,
               "inputMax": 1,
               "outputMin": 0,
@@ -152,8 +152,8 @@ img = combined.map(function(image) {
 	return image.addBands(normalizedDifference).select("normalized_difference");
 });
 
-// reduce with callback min
-img = img.reduce('min');
+// reduce with callback max
+img = img.reduce('max');
 
 // apply linear scaling
 var numerator = img.subtract(-1);
