@@ -29,7 +29,7 @@
   "dependencies": {
     "@google-cloud/storage": "^3.0.2",
     "@google/earthengine": "0.1.185",
-    "@openeo/js-commons": "^0.4.4",
+    "@openeo/js-commons": "^0.4.7",
     "ajv": "^6.10.0",
     "axios": "^0.19.0",
     "check-disk-space": "^2.1.0",

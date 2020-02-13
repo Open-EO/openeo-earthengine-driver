@@ -5,8 +5,7 @@ module.exports = class power extends Process {
 
     async execute(node, context) {
         var power = node.getArgument('p');
-        return Commons.applyInCallback(node, image => image.pow(power),
-                array => array.pow(power), "base");
+        return Commons.applyInCallback(node, image => image.pow(power), "base");
     }
 
 };

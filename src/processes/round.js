@@ -16,8 +16,7 @@ module.exports = class round extends Process {
 
     async execute(node, context) {
         var p = node.getArgument("p");
-        var process = data => this.process(data, p);
-        return Commons.applyInCallback(node, process, process);
+        return Commons.applyInCallback(node, data => this.process(data, p));
     }
 
 };

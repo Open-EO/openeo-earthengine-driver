@@ -1,36 +1,97 @@
 const Errors = require('../errors');
 const Utils = require('../utils');
+const DataCube = require('./datacube');
 
 module.exports = class ProcessCommons {
 
-	static reduceInCallback(node, reducer, dataArg = "data", reducerName = null) {
-		var isSimpleReducer = node.getProcessGraph().isSimpleReducer();
-		var dc = node.getData(dataArg);
-		if (reducerName === null){
-			reducerName = reducer;
+	static reduceInCallback(node, jsReducer, imgReducer, dataArg = "data") {
+		var list = node.getArgument(dataArg);
+		if (!Array.isArray(list) || list.length <= 1) {
+			throw new Errors.ProcessArgumentInvalid({
+				process: node.process_id,
+				argument: dataArg,
+				reason: "Not enough elements."
+			});
 		}
-		if (!this.isString(reducerName)){
-			throw new Error("The input parameter 'reducerName' is not a string.");
+
+		var result;
+		for(var i = 1; i < list.length; i++) {
+			var valA = list[i-1];
+			var valB = list[i];
+			var dataCubeA = new DataCube(null, valA);
+			var dataCubeB = new DataCube(null, valB);
+			if (typeof valA === 'number') {
+				var imgA = ee.Image(valA);
+				if (typeof valB === 'number') {
+					result = jsReducer(valA, valB);
+				}
+				else if (dataCubeB.isImage()) {
+					result = imgReducer(imgA, dataCubeB.image());
+				}
+				else if (dataCubeB.isImageCollection()) {
+					result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
+				}
+				else {
+					throw new Errors.ProcessArgumentInvalid({
+						process: node.process_id,
+						argument: dataArg,
+						reason: "Reducing number with unknown type not supported (index: "+i+")"
+					});
+				}
+			}
+			else if (dataCubeA.isImageCollection()) {
+				var collA = dataCubeA.imageCollection();
+				if (typeof valB === 'number' || dataCubeB.isImage()) {
+					var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+					result = collA.map(imgA => imgReducer(imgA, imgB));
+				}
+				else if (dataCubeB.isImageCollection()) {
+					var collB = dataCubeB.imageCollection();
+					var listA = collA.toList(collA.size());
+					var listB = collB.toList(collB.size());
+					result = collA.map(imgA => {
+						var index = listA.indexOf(imgA);
+						var imgB = listB.get(index);
+						return imgReducer(imgA, imgB);
+					});
+				}
+				else {
+					throw new Errors.ProcessArgumentInvalid({
+						process: node.process_id,
+						argument: dataArg,
+						reason: "Reducing image collection with unknown type not supported (index: "+i+")"
+					});
+				}
+			}
+			else if (dataCubeA.isImage()) {
+				var imgA = dataCubeA.image();
+				if (typeof valB === 'number' || dataCubeB.isImage()) {
+					var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+					result = imgReducer(imgA, imgB);
+				}
+				else if (dataCubeB.isImageCollection()) {
+					result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
+				}
+				else {
+					throw new Errors.ProcessArgumentInvalid({
+						process: node.process_id,
+						argument: dataArg,
+						reason: "Reducing image with unknown type not supported (index: "+i+")"
+					});
+				}
+			}
+			else {
+				throw new Errors.ProcessArgumentInvalid({
+					process: node.process_id,
+					argument: dataArg,
+					reason: "Reducing an unknwon type is not supported (index: "+i+")"
+				});
+			}
 		}
-		var func = data => data.reduce(reducer);
-		if (isSimpleReducer || dc.isImageCollection()) {
-			dc.imageCollection(func);
-			// revert renaming of the bands following to the GEE convention
-			var bands = dc.getBands();
-			var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
-			var renameBands = image => image.select(renamedBands).rename(bands);
-			dc.imageCollection(data => data.map(renameBands));
-		}
-		else if (dc.isArray()) {
-			dc.array(func);
-		}
-		else {
-			throw new Error("Calculating " + reducer + " not supported for given data type.");
-		}
-		return dc;
+		return result;
 	}
 
-	static applyInCallback(node, imageProcess, arrayProcess = null, dataArg = "x") {
+	static applyInCallback(node, imageProcess, dataArg = "x") {
 		var dc = node.getData(dataArg);
 		if (dc.isImageCollection()) {
 			dc.imageCollection(data => data.map(imageProcess));
@@ -38,11 +99,8 @@ module.exports = class ProcessCommons {
 		else if (dc.isImage()){
 			dc.image(imageProcess);
 		}
-		else if (dc.isArray() && arrayProcess) {
-			dc.array(arrayProcess);
-		}
 		else {
-			throw "Calculating " + process + " not supported for given data type.";
+			throw "Calculating " + node.process_id + " not supported for given data type.";
 		}
 		return dc;
 	}
@@ -50,7 +108,7 @@ module.exports = class ProcessCommons {
 	static filterBbox(dc, bbox, process_id, paramName) {
 		try {
 			dc.setSpatialExtent(bbox);
-			var geom = dc.getSpatialExtentAsGeeGeometry();
+			var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], bbox.crs || 'EPSG:4326');
 			dc.imageCollection(ic => ic.filterBounds(geom));
 			return dc;
 		} catch (e) {
@@ -91,47 +149,6 @@ module.exports = class ProcessCommons {
 		));
 		dc.dimT().setExtent(extent);
 		return dc;
-	}
-
-	//TODO
-	/*
-	static filter(dc, expression, dimensionName){
-		var dimension = dc.findSingleDimension(dimensionName);
-		var values = dimension.getValues();
-		//var selection = => ;
-		//var values_filtered = await expression.execute({x: data});
-		dc.findSingleDimension(dimensionName).setValues(values_filtered);
-
-		return dc;
-	}*/
-
-	static dimOEO2dimGEE(bandName, parName=null){
-		var dimensionString = bandName;
-		if (parName !== null){
-			dimensionString += "_" + parName
-		}
-
-		return dimensionString
-	}
-
-	static dimGEE2dimOEO(dimensionString){
-		var stringParts = dimensionString.split('_');
-		var bandName = (stringParts.length > 0) ? stringParts[0] : null;
-		var parName = (stringParts.length > 1) ? stringParts[1] : null;
-
-		return [bandName, parName]
-	}
-
-	static isString(x) {
-		return typeof(x) === 'string' || x instanceof String;
-	}
-
-	static isNumber(x) {
-		return typeof(x) === 'string' || x instanceof Number;
-	}
-
-	static isBoolean(x) {
-		return typeof(x) === 'boolean' || x instanceof Boolean;
 	}
 
 };

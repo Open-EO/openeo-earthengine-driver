@@ -21,10 +21,6 @@ module.exports = class ServicesAPI {
 		return Promise.resolve();
 	}
 
-	calculateXYZRect(x, y, z) {
-		return ee.Geometry.Rectangle(this.storage.calculateXYZRect(x, y, z), 'EPSG:4326');
-	}
-
 	getXYZ(req, res, next) {
 		var query = {
 			// Tiles are always public!
@@ -40,12 +36,12 @@ module.exports = class ServicesAPI {
 			}
 
 			try {
-				var rect = this.calculateXYZRect(req.params.x, req.params.y, req.params.z);
+				var rect = this.storage.calculateXYZRect(req.params.x, req.params.y, req.params.z);
 				var context = this.context.processingContext(req);
 				// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
 				context.setUserId(service.user_id);
 				var pg = new ProcessGraph(service.process_graph, context);
-				pg.optimizeLoadCollectionRect(this.storage.calculateXYZRect(req.params.x, req.params.y, req.params.z));
+				pg.optimizeLoadCollectionRect(rect);
 				pg.execute()
 					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', rect))
 					.then(url => {
@@ -56,7 +52,7 @@ module.exports = class ServicesAPI {
 					})
 					.catch(e => next(Errors.wrap(e)));
 			} catch(e) {
-				return next(e);
+				return next(Errors.wrap(e));
 			}
 		});
 	}

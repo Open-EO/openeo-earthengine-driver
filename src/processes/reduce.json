@@ -6,7 +6,6 @@
         "cubes",
         "reducer"
     ],
-    "gee:reducer": true,
     "gee:custom": true,
     "parameter_order": ["data", "reducer", "dimension"],
     "parameters": {

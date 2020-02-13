@@ -10,7 +10,6 @@
     "data",
     "ignore_nodata"
   ],
-  "gee:custom": true,
   "parameters": {
     "data": {
       "description": "An array with elements of any data type. An empty array resolves always with `null`.",
@@ -21,6 +20,13 @@
         }
       },
       "required": true
+    },
+    "ignore_nodata": {
+      "description": "Indicates whether no-data values are ignored or not. Ignores them by default. Setting this flag to `false` considers no-data values so that `null` is returned if the last value is such a value.",
+      "schema": {
+        "type": "boolean",
+        "default": true
+      }
     }
   },
   "returns": {
@@ -57,9 +63,10 @@
           0,
           1,
           null
-        ]
+        ],
+        "ignore_nodata": false
       },
-      "returns": 1
+      "returns": null
     },
     {
       "description": "The input array is empty: return `null`.",

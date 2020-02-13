@@ -38,6 +38,9 @@ for(var name in errors) {
 		else if (CommonUtils.isObject(obj)) {
 			args = obj;
 		}
+		else if (typeof obj === 'string') {
+			this.message = obj;
+		}
 		this.info = args;
 		this.message = CommonUtils.replacePlaceholders(this.message, this.info);
 	};

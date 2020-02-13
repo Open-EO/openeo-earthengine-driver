@@ -56,18 +56,17 @@ module.exports = class ProcessingContext {
 	}
 
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
-	async retrieveResults(dataCube, size = 2000, bounds = null) {
+	async retrieveResults(dataCube, size = 2000, bbox = null) {
 		var format = dataCube.getOutputFormat() || "jpeg";
 		switch(format.toLowerCase()) {
 			case 'jpeg':
 			case 'png':
-				if (!bounds) {
-					bounds = dataCube.getSpatialExtentAsGeeGeometry();
+				if (!bbox) {
+					bbox = dataCube.getSpatialExtent();
 				}
 				return new Promise((resolve, reject) => {
 					var visBands = null;
-					var availableBands = dataCube.getBands();
-					var parameters = dataCube.getOutputFormatParameters(); // this will be important/used in the future
+					var parameters = dataCube.getOutputFormatParameters();
 					if (parameters.red && parameters.green && parameters.blue){
 						visBands = [parameters.red, parameters.green, parameters.blue];
 					}
@@ -81,15 +80,12 @@ module.exports = class ProcessingContext {
 							reason: "The output band definitions are not properly given."
 						});
 					}
-					else {
-						// ToDo: Send the following warning via subscriptions:
-						// "No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation."
-						visBands = [availableBands[0]];
-					}
+					var region = Utils.bboxToGeoJson(bbox);
 					dataCube.image().visualize({min: 0, max: 255, bands: visBands}).getThumbURL({
 						format: this.translateOutputFormat(format),
 						dimensions: size,
-						region: bounds.bounds().getInfo()
+						region: region,
+//						crs: 'EPSG:3857' // toDo: Check results
 					}, url => {
 						if (typeof url !== 'string' || url.length === 0) {
 							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
