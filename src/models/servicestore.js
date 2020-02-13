@@ -39,7 +39,14 @@ module.exports = class ServiceStore {
 		var xMax = Math.max(nw_lng, se_lng);
 		var yMin = Math.min(nw_lat, se_lat);
 		var yMax = Math.max(nw_lat, se_lat);
-		return [xMin, yMin, xMax, yMax];
+
+		return {
+			west: xMin,
+			east: xMax,
+			south: yMin,
+			north: yMax,
+//			crs: 'EPSG:3857'
+		};
 	}
 
 };

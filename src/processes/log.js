@@ -5,7 +5,7 @@ module.exports = class log extends BaseProcess {
 
     async execute(node) {
         // GEE only supports log with base 10 (or ln).
-        return Commons.applyInCallback(node, image => image.log10(), array => array.log10());
+        return Commons.applyInCallback(node, image => image.log10());
     }
 
 };

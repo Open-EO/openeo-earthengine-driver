@@ -4,8 +4,8 @@ const proj4 = require('proj4');
 
 module.exports = class DataCube {
 
-	constructor(sourceDataCube = null) {
-		this.data = null;
+	constructor(sourceDataCube = null, data = undefined) {
+		this.data = data;
 		this.dimensions = {};
 		this.output = {
 			format: null,
@@ -13,7 +13,9 @@ module.exports = class DataCube {
 		};
 
 		if (sourceDataCube instanceof DataCube) {
-			this.data = sourceDataCube.data;
+			if (data === undefined) {
+				this.data = sourceDataCube.data;
+			}
 			this.output = Object.assign({}, sourceDataCube.output);
 			for(var i in sourceDataCube.dimensions) {
 				this.dimensions[i] = new Dimension(this, sourceDataCube.dimensions[i]);
@@ -29,11 +31,13 @@ module.exports = class DataCube {
 		this.data = data;
 	}
 
-	computedObjectType(){
+	computedObjectType() {
+		console.trace("Calling getInfo()");
+		// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
 		return this.data.getInfo().type;
 	}
 
-	objectType(){
+	objectType() {
 		if (this.data instanceof ee.Image){
 			return "Image";
 		}
@@ -74,7 +78,7 @@ module.exports = class DataCube {
 		else if (dataType === "ImageCollection") {
 			// ToDo: Write warning to user log
 			if (global.server.serverContext.debug) {
-				console.warn("Compositing the image collection to a single image.");
+				console.log("Compositing the image collection to a single image.");
 			}
 			this.data = this.data.mosaic();
 		}
@@ -203,22 +207,13 @@ module.exports = class DataCube {
 	getSpatialExtent() {
 		var x = this.dimX();
 		var y = this.dimY();
-
 		return {
 			west: x.min(),
 			east: x.max(),
 			south: y.min(),
-			north: y.max()
+			north: y.max(),
+			crs: this.getCrs()
 		};
-	}
-
-	getSpatialExtentAsGeeGeometry() {
-		var x = this.dimX();
-		var y = this.dimY();
-		if (x.crs() != y.crs()) {
-			throw new Error("Spatial dimensions for x and y must not differ.");
-		}
-		return ee.Geometry.Rectangle([x.min(), y.min(), x.max(), y.max()], x.crs());
 	}
 
 	getTemporalExtent() {
@@ -226,7 +221,11 @@ module.exports = class DataCube {
 	}
 
 	getBands() {
-		return this.dimBands().getValues();
+		try {
+			return this.dimBands().getValues();
+		} catch(e) {
+			return [];
+		}
 	}
 
 	setBands(bands) {

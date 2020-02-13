@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class arccos extends BaseProcess {
 
     async execute(node) {
-        return Commons.applyInCallback(node, image => image.acos(), array => array.acos());
+        return Commons.applyInCallback(node, image => image.acos());
     }
 
 };

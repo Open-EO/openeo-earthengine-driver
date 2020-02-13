@@ -77,6 +77,19 @@ var Utils = {
 		return datetime.replace(/\.\d{3}/, ''); // Remove milliseconds
 	},
 
+	bboxToGeoJson(bbox) {
+		return {
+			geodesic: false,
+			type: 'Polygon',
+			coordinates:
+				[ [ [ bbox.west, bbox.south ],
+					[ bbox.east, bbox.south ],
+					[ bbox.east, bbox.north ],
+					[ bbox.west, bbox.north ],
+					[ bbox.west, bbox.south ] ] ]
+		};
+	},
+
 	geoJsonBbox(geojson) {
 		var getCoordinatesDump = function(gj) {
 			switch(gj.type) {

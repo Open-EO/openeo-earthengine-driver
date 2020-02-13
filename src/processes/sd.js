@@ -3,8 +3,12 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class sd extends BaseProcess {
 
-    async execute(node) {
-        return Commons.reduceInCallback(node, 'stdDev');
-    }
+	geeReducer() {
+		return 'stdDev';
+	}
+
+	async execute(node) {
+		throw "Not implemented yet.";
+	}
 
 };

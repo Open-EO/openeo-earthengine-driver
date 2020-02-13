@@ -16,8 +16,7 @@ module.exports = class linear_scale_range extends BaseProcess {
         var inputMax = node.getArgument('inputMax');
         var outputMin = node.getArgument('outputMin', 0);
         var outputMax = node.getArgument('outputMax', 1);
-        var process = data => this.process(data, inputMin, inputMax, outputMin, outputMax);
-        return Commons.applyInCallback(node, process, process);
+        return Commons.applyInCallback(node, data => this.process(data, inputMin, inputMax, outputMin, outputMax));
     }
 
 };

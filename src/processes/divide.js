@@ -1,14 +1,14 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class variance extends BaseProcess {
-
-	geeReducer() {
-		return 'variance';
-	}
+module.exports = class divide extends BaseProcess {
 
 	async execute(node) {
-		throw "Not implemented yet.";
+		return Commons.reduceInCallback(
+			node,
+			(a,b) => a / b,
+			(a,b) => a.divide(b)
+		);
 	}
 
 };

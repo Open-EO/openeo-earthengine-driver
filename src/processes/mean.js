@@ -3,8 +3,12 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class mean extends BaseProcess {
 
+    geeReducer() {
+        return 'mean';
+    }
+
 	async execute(node) {
-		return Commons.reduceInCallback(node, 'mean');
+		throw "Not implemented yet.";
 	}
 
 };

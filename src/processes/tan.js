@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class tan extends BaseProcess {
 
     async execute(node) {
-        return Commons.applyInCallback(node, image => image.tan(), array => array.tan());
+        return Commons.applyInCallback(node, image => image.tan());
     }
 
 };

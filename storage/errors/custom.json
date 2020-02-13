@@ -31,5 +31,13 @@
 		"tags": [
 			"Processes"
 		]
+	},
+	"IndexOutOfBounds": {
+		"description": "The array has no element with the specified index.",
+		"message": "The array has no element with the specified index.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
 	}
 }
