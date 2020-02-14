@@ -1,12 +1,12 @@
 const Errors = require('../errors');
 const { BaseProcess } = require('@openeo/js-processgraphs');
 
-module.exports = class rename_dimension extends BaseProcess {
+module.exports = class add_dimension extends BaseProcess {
 
 	async execute(node) {
 		var dc = node.getData("data");
 		var name = node.getArgument('name');
-		var value = node.getArgument('value');
+		var label = node.getArgument('label');
 		var type = node.getArgument("type");
 
 		if (dc.hasDimension(name)) {
@@ -18,7 +18,7 @@ module.exports = class rename_dimension extends BaseProcess {
 		}
 
 		var dimension = dc.addDimension(name, type);
-		dimension.addValue(value);
+		dimension.addValue(label);
 		// ToDo: Depending on the data in the datacube, we need to also apply changes at Googles side...
 
 		return dc;

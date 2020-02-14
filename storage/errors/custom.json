@@ -39,5 +39,53 @@
 		"tags": [
 			"Processes"
 		]
+	},
+	"LabelMismatch": {
+		"description": "The number of labels in the parameters `source` and `target` don't match.",
+		"message": "The number of labels in the parameters `source` and `target` don't match.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"LabelNotAvailable": {
+		"description": "A label with the specified name does not exist.",
+		"message": "A label with the specified name does not exist.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"LabelExists": {
+		"description": "A label with the specified name exists.",
+		"message": "A label with the specified name exists.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"ArrayElementNotAvailable": {
+		"description": "The array has no element with the specified index or label.",
+		"message": "The array has no element with the specified index or label.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"ArrayElementParameterMissing": {
+		"description": "The process 'array_element' requires either the 'index' or 'labels' parameter to be set.",
+		"message": "The process 'array_element' requires either the 'index' or 'labels' parameter to be set.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"ArrayElementParameterConflict": {
+		"description": "The process 'array_element' only allows that either the 'index' or the 'labels' parameter is set.",
+		"message": "The process 'array_element' only allows that either the 'index' or the 'labels' parameter is set.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
 	}
 }

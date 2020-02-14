@@ -3,7 +3,7 @@ const Errors = require('../errors');
 const DataCube = require('../processgraph/datacube');
 
 // TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
-module.exports = class reduce extends BaseProcess {
+module.exports = class reduce_dimension extends BaseProcess {
 
 	async execute(node) {
 		var dc = node.getData("data");
