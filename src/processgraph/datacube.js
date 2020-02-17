@@ -333,4 +333,28 @@ module.exports = class DataCube {
 		return this.output.parameters;
 	}
 
+	// ToDO: add code for overlap resolver and inplace
+	merge(otherDataCube, overlapResolver=null, inplace=true){
+		if (otherDataCube instanceof DataCube) {
+			if (this.isImageCollection() && otherDataCube.isImageCollection()) {
+				this.data = this.data.merge(otherDataCube.data);
+			}
+			this.output = Object.assign(this.output, otherDataCube.output);
+			for(var i in otherDataCube.dimensions) {
+				if (!(i in this.dimensions)){
+					this.dimensions[i] = new Dimension(this, otherDataCube.dimensions[i]);
+				}
+				else {
+					var this_dim_vals = this.dimensions[i].values;
+					var other_dim_vals = otherDataCube.dimensions[i].values;
+					this.dimensions[i].setValues(this_dim_vals.concat(other_dim_vals));
+				}
+			}
+		}
+		else {
+			throw new Error('The given argument is not a data cube.')
+		}
+
+		return this
+	}
 };

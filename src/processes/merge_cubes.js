@@ -7,7 +7,7 @@ module.exports = class merge_cubes extends BaseProcess {
         var dc1 = node.getArgument("cube1");
         var dc2 = node.getArgument("cube2");
 
-        return dc1.imageCollection().merge(dc2.imageCollection());
+        return dc1.merge(dc2)
     }
 
 };

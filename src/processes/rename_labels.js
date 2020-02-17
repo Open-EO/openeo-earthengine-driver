@@ -38,10 +38,10 @@ module.exports = class rename_labels extends BaseProcess {
         var allOldLabels = null;
         if (source != null) {
             oldLabels = source;
-            allOldLabels = dimension.getValues();
+            allOldLabels = dimension.values;
         }
         else {
-            oldLabels = dimension.getValues();
+            oldLabels = dimension.values;
             allOldLabels = oldLabels;
         }
 
