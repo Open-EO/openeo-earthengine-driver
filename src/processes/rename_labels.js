@@ -12,11 +12,12 @@ module.exports = class rename_labels extends BaseProcess {
 
     async execute(node) {
         var dc = node.getArgument("data");
-        var dimension = node.getArgument("dimension");
+        var dimensionName = node.getArgument("dimension");
         var target = node.getArgument("target");
         var source = node.getArgument("source");
+        var dimension = dc.getDimension(dimensionName);
 
-        if (!dc.hasDimension(dimension)) {
+        if (!dc.hasDimension(dimensionName)) {
             throw new Errors.ProcessArgumentInvalid({
                 process: this.schema.id,
                 argument: 'dimension',
@@ -25,7 +26,7 @@ module.exports = class rename_labels extends BaseProcess {
         }
 
         // ToDO: only bands is currently supported
-        if (dimension !== "bands") {
+        if (dimension.type !== "bands") {
             throw new Errors.ProcessArgumentInvalid({
                 process: this.schema.id,
                 argument: 'dimension',
@@ -37,10 +38,10 @@ module.exports = class rename_labels extends BaseProcess {
         var allOldLabels = null;
         if (source != null) {
             oldLabels = source;
-            allOldLabels = dc.getDimension(dimension).getValues();
+            allOldLabels = dimension.getValues();
         }
         else {
-            oldLabels = dc.getDimension(dimension).getValues();
+            oldLabels = dimension.getValues();
             allOldLabels = oldLabels;
         }
 
