@@ -105,6 +105,9 @@ module.exports = class ServicesAPI {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
 		var query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -192,7 +195,10 @@ module.exports = class ServicesAPI {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-		if (!this.context.isValidServiceType(req.body.type)) {
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
+		else if (!this.context.isValidServiceType(req.body.type)) {
 			return next(new Errors.ServiceUnsupported());
 		}
 

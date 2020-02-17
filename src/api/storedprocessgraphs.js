@@ -21,6 +21,9 @@ module.exports = class StoredProcessGraphs {
 	}
 
 	postValidation(req, res, next) {
+		if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
 		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
 		pg.validate(false)
 			.then(errors => {
@@ -58,8 +61,10 @@ module.exports = class StoredProcessGraphs {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-
-		if (typeof req.body.id !== 'string' || req.body.id.match(/^\w+$/i) === null) {
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
+		else if (typeof req.body.id !== 'string' || req.body.id.match(/^\w+$/i) === null) {
 			return next(new Errors.ProcessGraphIdInvalid());
 		}
 
@@ -104,6 +109,9 @@ module.exports = class StoredProcessGraphs {
 	patchProcessGraph(req, res, next) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
+		}
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
 		}
 		else if (typeof req.body.id !== 'undefined' && req.body.id !== req.params.process_graph_id) {
 			return next(new Errors.PropertyNotEditable({property: 'id'}));
