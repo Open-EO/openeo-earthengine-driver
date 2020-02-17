@@ -84,7 +84,7 @@ module.exports = class ProcessCommons {
 				throw new Errors.ProcessArgumentInvalid({
 					process: node.process_id,
 					argument: dataArg,
-					reason: "Reducing an unknwon type is not supported (index: "+i+")"
+					reason: "Reducing an unknown type is not supported (index: "+i+")"
 				});
 			}
 		}
