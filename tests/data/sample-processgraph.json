@@ -30,7 +30,7 @@
   "reduce": {
     "arguments": {
       "data": {"from_node": "normalized_difference"},
-      "dimension": "temporal",
+      "dimension": "t",
       "reducer": {
         "callback": {
           "min": {

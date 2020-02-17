@@ -43,7 +43,7 @@
 			}
 		  }
 		},
-		"dimension": "temporal"
+		"dimension": "t"
 	  }
 	},
 	"4": {
