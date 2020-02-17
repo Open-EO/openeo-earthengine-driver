@@ -4,6 +4,27 @@ const DataCube = require('./datacube');
 
 module.exports = class ProcessCommons {
 
+	static reduceBinaryInCallback(node, jsReducer, imgReducer, arg1Name = "x", arg2Name = "y") {
+		var arg1 = node.getArgument(arg1Name);
+		var arg2 = node.getArgument(arg2Name);
+		if (typeof arg1 === 'undefined') {
+			throw new Errors.ProcessArgumentInvalid({
+				process: node.process_id,
+				argument: arg1Name,
+				reason: "Argument is undefined."
+			});
+		}
+		if (typeof arg2 === 'undefined') {
+			throw new Errors.ProcessArgumentInvalid({
+				process: node.process_id,
+				argument: arg2Name,
+				reason: "Argument is undefined."
+			});
+		}
+
+		return this._reduceBinary(node, jsReducer, imgReducer, arg1, arg2);
+	}
+
 	static reduceInCallback(node, jsReducer, imgReducer, dataArg = "data") {
 		var list = node.getArgument(dataArg);
 		if (!Array.isArray(list) || list.length <= 1) {
@@ -16,77 +37,81 @@ module.exports = class ProcessCommons {
 
 		var result;
 		for(var i = 1; i < list.length; i++) {
-			var valA = list[i-1];
-			var valB = list[i];
-			var dataCubeA = new DataCube(null, valA);
-			var dataCubeB = new DataCube(null, valB);
-			if (typeof valA === 'number') {
-				var imgA = ee.Image(valA);
-				if (typeof valB === 'number') {
-					result = jsReducer(valA, valB);
-				}
-				else if (dataCubeB.isImage()) {
-					result = imgReducer(imgA, dataCubeB.image());
-				}
-				else if (dataCubeB.isImageCollection()) {
-					result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
-				}
-				else {
-					throw new Errors.ProcessArgumentInvalid({
-						process: node.process_id,
-						argument: dataArg,
-						reason: "Reducing number with unknown type not supported (index: "+i+")"
-					});
-				}
+			result = this._reduceBinary(node, jsReducer, imgReducer, list[i-1], list[i]);
+		}
+		return result;
+	}
+
+	static _reduceBinary(node, jsReducer, imgReducer, valA, valB) {
+		let result;
+		var dataCubeA = new DataCube(null, valA);
+		var dataCubeB = new DataCube(null, valB);
+		if (typeof valA === 'number') {
+			var imgA = ee.Image(valA);
+			if (typeof valB === 'number') {
+				result = jsReducer(valA, valB);
 			}
-			else if (dataCubeA.isImageCollection()) {
-				var collA = dataCubeA.imageCollection();
-				if (typeof valB === 'number' || dataCubeB.isImage()) {
-					var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
-					result = collA.map(imgA => imgReducer(imgA, imgB));
-				}
-				else if (dataCubeB.isImageCollection()) {
-					var collB = dataCubeB.imageCollection();
-					var listA = collA.toList(collA.size());
-					var listB = collB.toList(collB.size());
-					result = collA.map(imgA => {
-						var index = listA.indexOf(imgA);
-						var imgB = listB.get(index);
-						return imgReducer(imgA, imgB);
-					});
-				}
-				else {
-					throw new Errors.ProcessArgumentInvalid({
-						process: node.process_id,
-						argument: dataArg,
-						reason: "Reducing image collection with unknown type not supported (index: "+i+")"
-					});
-				}
+			else if (dataCubeB.isImage()) {
+				result = imgReducer(imgA, dataCubeB.image());
 			}
-			else if (dataCubeA.isImage()) {
-				var imgA = dataCubeA.image();
-				if (typeof valB === 'number' || dataCubeB.isImage()) {
-					var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
-					result = imgReducer(imgA, imgB);
-				}
-				else if (dataCubeB.isImageCollection()) {
-					result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
-				}
-				else {
-					throw new Errors.ProcessArgumentInvalid({
-						process: node.process_id,
-						argument: dataArg,
-						reason: "Reducing image with unknown type not supported (index: "+i+")"
-					});
-				}
+			else if (dataCubeB.isImageCollection()) {
+				result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
 			}
 			else {
 				throw new Errors.ProcessArgumentInvalid({
 					process: node.process_id,
 					argument: dataArg,
-					reason: "Reducing an unknown type is not supported (index: "+i+")"
+					reason: "Reducing number with unknown type not supported (index: "+i+")"
 				});
 			}
+		}
+		else if (dataCubeA.isImageCollection()) {
+			var collA = dataCubeA.imageCollection();
+			if (typeof valB === 'number' || dataCubeB.isImage()) {
+				var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+				result = collA.map(imgA => imgReducer(imgA, imgB));
+			}
+			else if (dataCubeB.isImageCollection()) {
+				var collB = dataCubeB.imageCollection();
+				var listA = collA.toList(collA.size());
+				var listB = collB.toList(collB.size());
+				result = collA.map(imgA => {
+					var index = listA.indexOf(imgA);
+					var imgB = listB.get(index);
+					return imgReducer(imgA, imgB);
+				});
+			}
+			else {
+				throw new Errors.ProcessArgumentInvalid({
+					process: node.process_id,
+					argument: dataArg,
+					reason: "Reducing image collection with unknown type not supported (index: "+i+")"
+				});
+			}
+		}
+		else if (dataCubeA.isImage()) {
+			var imgA = dataCubeA.image();
+			if (typeof valB === 'number' || dataCubeB.isImage()) {
+				var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+				result = imgReducer(imgA, imgB);
+			}
+			else if (dataCubeB.isImageCollection()) {
+				result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
+			}
+			else {
+				throw new Errors.ProcessArgumentInvalid({
+					process: node.process_id,
+					argument: dataArg,
+					reason: "Reducing image with unknown type not supported (index: "+i+")"
+				});
+			}
+		}
+		else {
+			throw new Errors.ProcessArgumentInvalid({
+				process: node.process_id,
+				argument: dataArg,
+				reason: "Reducing an unknown type is not supported (index: "+i+")"
+			});
 		}
 		return result;
 	}

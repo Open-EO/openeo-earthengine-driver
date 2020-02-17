@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class divide extends BaseProcess {
 
 	async execute(node) {
-		return Commons.reduceInCallback(
+		return Commons.reduceBinaryInCallback(
 			node,
 			(a,b) => a / b,
 			(a,b) => a.divide(b)

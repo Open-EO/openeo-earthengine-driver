@@ -20,7 +20,7 @@ module.exports = class array_element extends BaseProcess {
         if (label != null) {
             if(Array.isArray(data)){
                 throw new Errors.ProcessArgumentInvalid({
-                    process: this.schema.id,
+                    process: this.spec.id,
                     argument: 'data',
                     reason: 'A label was specified, but data is an array, not a data cube.'
                 });
@@ -34,7 +34,7 @@ module.exports = class array_element extends BaseProcess {
                 // ToDO: only bands is currently supported
                 if (dimension !== "bands") {
                     throw new Errors.ProcessArgumentInvalid({
-                        process: this.schema.id,
+                        process: this.spec.id,
                         argument: 'dimension',
                         reason: 'Only dimension "bands" is currently supported.'
                     });

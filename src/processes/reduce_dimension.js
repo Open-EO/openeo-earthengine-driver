@@ -12,7 +12,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 		var dimension = dc.getDimension(dimensionName);
 		if (dimension.type !== 'temporal' && dimension.type !== 'bands') {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
+				process: this.spec.id,
 				argument: 'dimension',
 				reason: 'Reducing dimension types other than `temporal` or `bands` is currently not supported.'
 			});
@@ -25,7 +25,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 			var process = callback.getProcess(callback.getResultNode());
 			if (typeof process.geeReducer !== 'function') {
 				throw new Errors.ProcessArgumentInvalid({
-					process: this.schema.id,
+					process: this.spec.id,
 					argument: 'reducer',
 					reason: 'The specified reducer is invalid.'
 				});

@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class filter_polygon extends BaseProcess {
 
 	async execute(node) {
-		return Commons.filterPolygons(node.getData("data"), node.getArgument("polygons"), this.schema.id, 'polygons');
+		return Commons.filterPolygons(node.getData("data"), node.getArgument("polygons"), this.spec.id, 'polygons');
 	}
 
 };

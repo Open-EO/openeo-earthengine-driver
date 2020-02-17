@@ -10,7 +10,7 @@ module.exports = class rename_dimension extends BaseProcess {
 
 		if (dc.hasDimension(oldName)) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
+				process: this.spec.id,
 				argument: 'old',
 				reason: 'A dimension with the specified name does not exist.'
 			});
@@ -18,7 +18,7 @@ module.exports = class rename_dimension extends BaseProcess {
 
 		if (dc.hasDimension(newName)) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
+				process: this.spec.id,
 				argument: 'new',
 				reason: 'A dimension with the specified name already exists.'
 			});
