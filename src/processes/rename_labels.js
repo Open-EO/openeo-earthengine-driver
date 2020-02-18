@@ -34,33 +34,40 @@ module.exports = class rename_labels extends BaseProcess {
             });
         }
 
-        var oldLabels = null;
-        var allOldLabels = null;
-        if (source != null) {
+        var oldLabels;  // array for storing the old label names given by the user
+        var allOldLabels;  // array for storing the old existing label names
+        if (source !== undefined) {
             oldLabels = source;
-            allOldLabels = dimension.values;
+            allOldLabels = Array.from(dimension.values); // deep copy is important
         }
         else {
-            oldLabels = dimension.values;
-            allOldLabels = oldLabels;
+            oldLabels = Array.from(dimension.values); // deep copy is important
+            allOldLabels = Array.from(oldLabels); // deep copy is important
         }
 
         if (target.length !== oldLabels.length) {
             throw new Errors.LabelMismatch();
         }
 
-        for (var i = 1; i < oldLabels.length; i++){
+
+        for (var i = 0; i < oldLabels.length; i++){
             var oldLabel = oldLabels[i];
             var newLabel = target[i];
-            if (oldLabels.includes(newLabel)){
-                throw Errors.LabelExists();
-            }
-            var labelIdx = allOldLabels.indexOf(oldLabel);
-            if(~labelIdx){
-                throw Errors.LabelNotAvailable();
+            if (oldLabel === undefined){  // dimension was previously removed, so the GEE band is named "undefined"
+                oldLabels[i] = "undefined";
+                allOldLabels = Array.from(newLabel);
             }
             else{
-                allOldLabels[labelIdx] = newLabel
+                if (oldLabels.includes(newLabel)){
+                    throw Errors.LabelExists();
+                }
+                var labelIdx = allOldLabels.indexOf(oldLabel);
+                if(labelIdx === null){
+                    throw new Errors.LabelNotAvailable();
+                }
+                else{
+                    allOldLabels[labelIdx] = newLabel
+                }
             }
         }
 

@@ -333,11 +333,22 @@ module.exports = class DataCube {
 		return this.output.parameters;
 	}
 
+	// ToDO: revise this functions for other/more complex use cases
+	stackCollection(collection) {
+		// create an initial image.
+		var first = ee.Image(collection.first()).select([]);
+		// write a function that appends a band to an image.
+		var appendBands = function(image, previous) {
+			return ee.Image(previous).addBands(image);
+		};
+		return ee.ImageCollection([collection.iterate(appendBands, first)]);
+	}
+
 	// ToDO: add code for overlap resolver and inplace
 	merge(otherDataCube, overlapResolver=null, inplace=true){
 		if (otherDataCube instanceof DataCube) {
 			if (this.isImageCollection() && otherDataCube.isImageCollection()) {
-				this.data = this.data.merge(otherDataCube.data);
+				this.data = this.stackCollection(this.data.merge(otherDataCube.data));
 			}
 			this.output = Object.assign(this.output, otherDataCube.output);
 			for(var i in otherDataCube.dimensions) {
@@ -345,9 +356,28 @@ module.exports = class DataCube {
 					this.dimensions[i] = new Dimension(this, otherDataCube.dimensions[i]);
 				}
 				else {
+					// retrieve values and extents
 					var this_dim_vals = this.dimensions[i].values;
 					var other_dim_vals = otherDataCube.dimensions[i].values;
+					var this_extent = this.dimensions[i].extent;
+					var other_extent = otherDataCube.dimensions[i].extent;
+
+					// merge extents
+					var min_extent = [this_extent[0], other_extent[0]];
+					var max_extent = [this_extent[1], other_extent[1]];
+					var merged_extent = [Math.max(...min_extent), Math.min(...max_extent)];
+
+
+					// check if there are duplicate values
+					this_dim_vals.forEach(function (element) {
+						if (other_dim_vals.includes(element)){
+							throw new Error("Label '" + element + "' exists already. Overlap cannot be resolved");
+						}
+					});
+
+					// set values and extent
 					this.dimensions[i].setValues(this_dim_vals.concat(other_dim_vals));
+					this.dimensions[i].extent = merged_extent;
 				}
 			}
 		}

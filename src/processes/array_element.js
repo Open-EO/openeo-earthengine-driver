@@ -9,30 +9,26 @@ module.exports = class array_element extends BaseProcess {
         var label = node.getArgument("label");
         var return_nodata = node.getArgument("return_nodata", false);
 
-        if (index != null && label != null){
+        if ((index !== undefined) && (label !== undefined)){
             throw new Errors.ArrayElementParameterMissing();
         }
 
-        if (index == null && label == null){
+        if ((index === undefined) && (label === undefined)){
             throw new Errors.ArrayElementParameterConflict();
         }
 
-        if (label != null) {
-            if(Array.isArray(data)){
-                throw new Errors.ProcessArgumentInvalid({
-                    process: this.spec.id,
-                    argument: 'data',
-                    reason: 'A label was specified, but data is an array, not a data cube.'
-                });
-            }
-            var dimension = node.getProcessGraph().parentNode.getArgument("dimension"); // ToDo 1.0: Replace with node.getParent()
-            var labels = data.getDimension(dimension).getValues();
+        if (label !== undefined) {
+            // ToDo: check data type of data
+            var dimensionName = node.getProcessGraph().parentNode.getArgument("dimension"); // ToDo 1.0: Replace with node.getParent()
+            var dc = node.getProcessGraph().parentNode.getArgument("data");  // ToDO: @MM is this properly done?
+            var dimension = dc.getDimension(dimensionName);
+            var labels = dimension.getValues();
             if (!labels.includes(label)){
                 throw new Errors.ArrayElementNotAvailable();
             }
             else{
                 // ToDO: only bands is currently supported
-                if (dimension !== "bands") {
+                if (dimension.type !== "bands") {
                     throw new Errors.ProcessArgumentInvalid({
                         process: this.spec.id,
                         argument: 'dimension',
@@ -40,21 +36,19 @@ module.exports = class array_element extends BaseProcess {
                     });
                 }
                 else{
-                    // ToDo; should filter_bands be called here?
-                    return data.imageCollection(ic => ic.select([label]));
+                    index = labels.indexOf(label);
                 }
             }
         }
-        else{
-            if (Array.isArray(data) && typeof data[index] !== 'undefined') {
-                return data[index];
-            }
-            else if (return_nodata) {
-                return null;
-            }
-            else {
-                throw new Errors.ArrayElementNotAvailable();
-            }
+
+        if (Array.isArray(data) && typeof data[index] !== 'undefined') {
+            return data[index];
+        }
+        else if (return_nodata) {
+            return null;
+        }
+        else {
+            throw new Errors.ArrayElementNotAvailable();
         }
     }
 

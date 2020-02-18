@@ -55,6 +55,13 @@ module.exports = class reduce_dimension extends BaseProcess {
 			});
 			resultDataCube = new DataCube(dc);
 			resultDataCube.setData(resultNode.getResult());
+
+			// if we are reducing over bands we need to set the band name in GEE to a default one, e.g., "undefined"
+			if (dimension.type === 'bands') {
+				resultDataCube.imageCollection(data => data.map(
+					img => img.select(resultDataCube.imageCollection().first().bandNames()).rename(["undefined"])
+				));
+			}
 		}
 		// ToDo: We don't know at this point how the bands in the GEE images/imagecollections are called.
 		resultDataCube.dropDimension(dimensionName);
