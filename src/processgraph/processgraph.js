@@ -60,9 +60,4 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		this.errors.add(Errors.wrap(error));
 	}
 
-	// ToDo: Remove once we updated to js-commons v0.4.8, it's available there.
-	getNodeCount() {
-		return Utils.size(this.nodes);
-	}
-
 };

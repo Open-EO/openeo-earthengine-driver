@@ -37,7 +37,7 @@
           }
         }
       },
-      "dimension": "temporal"
+      "dimension": "t"
     }
   },
   "5": {

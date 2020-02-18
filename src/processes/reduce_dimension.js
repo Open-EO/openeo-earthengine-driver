@@ -1,6 +1,7 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 const Errors = require('../errors');
 const DataCube = require('../processgraph/datacube');
+const ProcessGraph = require('../processgraph/processgraph');
 
 // TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
 module.exports = class reduce_dimension extends BaseProcess {
@@ -20,7 +21,14 @@ module.exports = class reduce_dimension extends BaseProcess {
 
 		var resultDataCube;
 		var callback = node.getArgument("reducer");
-		if (callback.getNodeCount() === 1) {
+		if (!(callback instanceof ProcessGraph)) {
+			throw new Errors.ProcessArgumentInvalid({
+				process: this.schema.id,
+				argument: 'reducer',
+				reason: 'No reducer specified.'
+			});
+		}
+		else if (callback.getNodeCount() === 1) {
 			// This is a simple reducer with just one node
 			var process = callback.getProcess(callback.getResultNode());
 			if (typeof process.geeReducer !== 'function') {

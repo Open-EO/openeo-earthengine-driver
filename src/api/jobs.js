@@ -285,6 +285,10 @@ module.exports = class JobsAPI {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
+
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
@@ -341,6 +345,9 @@ module.exports = class JobsAPI {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
 
 		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
 		pg.validate().then(() => {
@@ -374,8 +381,10 @@ module.exports = class JobsAPI {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
-
-		if (typeof req.body !== 'object' || !Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
+		else if (!Utils.isObject(req.body)) {
+			return next(new Errors.RequestBodyMissing());
+		}
+		else if (!Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
 			return next(new Errors.ProcessGraphMissing());
 		}
 

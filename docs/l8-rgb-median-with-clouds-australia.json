@@ -55,7 +55,7 @@
           }
         }
       },
-      "dimension": "temporal"
+      "dimension": "t"
     }
   },
   "7": {

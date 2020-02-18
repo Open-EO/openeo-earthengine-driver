@@ -48,6 +48,14 @@
 			"Job Management"
 		]
 	},
+	"RequestBodyMissing": {
+		"description": null,
+		"message": "Didn't receive any content in the request.",
+		"http": 400,
+		"tags": [
+			"General"
+		]
+	},
 	"CRSInvalid": {
 		"description": "Invalid or unsupported CRS specified.",
 		"message": "CRS '{crs}' is invalid.",
@@ -219,52 +227,6 @@
 			"Process Graph Management",
 			"Job Management",
 			"Secondary Services Management"
-		]
-	},
-	"VariableValueMissing": {
-		"description": null,
-		"message": "No value specified for process graph variable '{variable_id}'.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management",
-			"Job Management",
-			"Secondary Services Management"
-		]
-	},
-	"VariableDefaultValueTypeInvalid": {
-		"description": null,
-		"message": "The default value specified for the process graph variable '{variable_id}' is not of type '{type}'.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management",
-			"Job Management"
-		]
-	},
-	"VariableValueTypeInvalid": {
-		"description": null,
-		"message": "The value specified for the process graph variable '{variable_id}' is not of type '{type}'.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management",
-			"Job Management"
-		]
-	},
-	"VariableIdInvalid": {
-		"description": null,
-		"message": "A specified variable ID is not valid.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management",
-			"Job Management"
-		]
-	},
-	"VariableTypeInvalid": {
-		"description": null,
-		"message": "The data type specified for the process graph variable '{variable_id}' is invalid. Must be one of: string, boolean, number, array or object.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management",
-			"Job Management"
 		]
 	},
 	"ProcessUnsupported": {
