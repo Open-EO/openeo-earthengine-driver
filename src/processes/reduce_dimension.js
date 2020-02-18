@@ -69,6 +69,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 	
 		dc.imageCollection(data => data.reduce(reducerFunc));
 
+		// TODO: Not sure if necessary (in Use Case 1: the mean reducer didn't rename the bands...)
 		// revert renaming of the bands following to the GEE convention
 		var bands = dc.getBands();
 		if (Array.isArray(bands) && bands.length > 0) {

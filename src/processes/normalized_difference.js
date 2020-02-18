@@ -1,5 +1,6 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 
+//ToDo: Reimplementing for verision 1.0.0 --> sub process graph
 module.exports = class normalized_difference extends BaseProcess {
 
 	process(dc1, dc2, name){

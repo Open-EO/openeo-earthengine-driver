@@ -6,7 +6,7 @@ module.exports = class sum extends BaseProcess {
   geeReducer() {
       return 'sum';
   }
-
+// ToDo: ignore_nodata parameter
 	async execute(node) {
 		return Commons.reduceInCallback(
 			node,

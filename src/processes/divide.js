@@ -3,6 +3,7 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class divide extends BaseProcess {
 
+	//TODO: Introducing DivisionByZero error
 	async execute(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
