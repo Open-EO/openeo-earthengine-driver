@@ -1,15 +1,11 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
-module.exports = class sum extends BaseProcess {
+module.exports = class multiply extends BaseProcess {
 
-	geeReducer() {
-		return 'sum';
-	}
-  
-    //ToDo: ignore_nodata parameter
+	// ToDo: 1.0.0: new multiply definition (this is currently the process "product")
 	async execute(node) {
-		return Commons.reduceInCallback(
+		return Commons.reduceBinaryInCallback(
 			node,
 			(a,b) => a + b,
 			(a,b) => a.add(b)
