@@ -5,6 +5,7 @@
     "categories": [
         "filter"
     ],
+    "gee:custom": true,
     "parameters": [
         {
             "name": "data",
@@ -75,12 +76,6 @@
                                 "title": "WKT2",
                                 "type": "string",
                                 "subtype": "wkt2-definition"
-                            },
-                            {
-                                "title": "PROJ definition",
-                                "type": "string",
-                                "subtype": "proj-definition",
-                                "deprecated": true
                             }
                         ],
                         "default": 4326

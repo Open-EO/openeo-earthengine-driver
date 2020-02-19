@@ -117,9 +117,12 @@
 # Filter
 - [ ] filter_spatial
     * currently _filter_polygon_ process
-- [X] filter_bbox
-- [X] filter_temporal
-- [X] filter_bands
+- [ ] filter_bbox
+    * WKT implementation missing
+- [ ] filter_temporal
+    * dimension is missing
+- [ ] filter_bands
+    * usage of common_bands metadata is missing
 # Import
 - [ ] run_udf
     * is not possible to be implemented at the moment
@@ -209,15 +212,15 @@
 - [X] arccos
 - [X] arcsin
 - [X] arctan
-- [X] arcosh
+- [ ] arcosh
     * process is missing in GEE
     * different mathematical formulation?
-- [X] arsinh
+- [ ] arsinh
     * process is missing in GEE
     * different mathematical formulation?
-- [X] artanh
+- [ ] artanh
     * process is missing in GEE
     * different mathematical formulation?
-- [X] arctan2
+- [ ] arctan2
     * needs 2 arrays, i.e. it needs a complex apply
 
