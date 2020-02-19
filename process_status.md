@@ -1,60 +1,83 @@
-# openEO v0.4.0 process status
+# openEO v1.0.0 process status
 ## General TODOs:
 - Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
 - Introduce Numbers for simple processes
 - Properly read the default values from the JSON files
-- Band filtering issue of none available bands (i.e., reduce without band filtering fails)
 ## Aggregate & Resample
-- [ ] aggregate_polygon
+- [ ] aggregate_spatial
+    * convert GeoJson geometry to GEE geometry
+    * use `reduceRegion` from GEE
+    * return result as JSON
 - [ ] aggregate_temporal
+    * use _filter_temporal_ on collection for each interval
+    * apply reducer on each sub collection
+    * apply labels for each sub collection
+    * merge the result again
 - [ ] resample_cube_spatial
+    * use `resample`, `reduceResolution`, and `reproject`
 - [ ] resample_spatial
+    * use `resample`, `reduceResolution`, and `reproject`
+- [ ] resample_cube_temporal
+    * use e.g., _aggregate_temporal_
 ## Arrays
+- [ ] array_apply
+    * use complex apply (should be done by default)
 - [ ] array_contains
     * process is missing in GEE
     * implementation could be somehow done like in _count_
-- [ ] array_element
-    * process is available (_ee.Image.arrayGet(position)_), but not feasible to implement at the moment (position needs to be an image, ...).
+- [X] array_element
+- [ ] array_filter
+    * could be used as a reducer
+    * process is missing in GEE
+    * one could only do it for JS arrays
+- [ ] array_find
+    * could be used as a reducer
+    * process is missing in GEE
+    * one could only do it for JS arrays
+- [ ] array_labels
 - [ ] count 
     * could be theoretically implemented with existing processes:
-        * _ee.ImageCollection.count()_ or _sum()_ as a reducer (mask needed)
-        * _ee.Image.updateMask(mask)_ 
+        * `ee.ImageCollection.count()` or `sum()` as a reducer (mask needed)
+        * `ee.Image.updateMask(mask)` 
+- [X] first
+- [X] last
 - [ ] order
     * process is missing in GEE 
     * maybe conversion to array?
+    * one could only do it for JS arrays
 - [ ] rearrange
     * process is missing in GEE
     * maybe conversion to array?
+    * one could only do it for JS arrays
 - [ ] sort
     * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
-# Comparison
+## Comparison
+- [ ] between
+    * conversion to array necessary
+    * could be used by taking a chained process call into account
 - [ ] eq
-    * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
+    * conversion to array necessary
 - [ ] neq
     * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
 - [ ] gt 
     * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
 - [ ] lt
     * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
 - [ ] gte
     * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
 - [ ] lte
     * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
 - [ ] is_nan
+    * one could only do it for numbers
     * process is missing in GEE
 - [ ] is_nodata
+    * one could only do it for numbers
     * process is missing in GEE
 - [ ] is_valid
+    * one could only do it for numbers
     * process is missing in GEE
 - [ ] if
-    * usage of _ee.Algorithms.If()_
+    * usage of `ee.Algorithms.If()`
 # Texts
 - [X] text_begins
 - [X] text_contains
@@ -62,106 +85,114 @@
 # Cubes
 - [X] add_dimension
 - [ ] apply
-    * maybe better to work on arrays than images and collections
+    * implement complex apply
 - [ ] apply_dimension
-    * selection of different dimensions needs to be done
+    * implement complex apply
 - [ ] apply_kernel
-    * _ee.Image.convolve(kernel)_ with _ee.Kernel.._ could be used
-- [ ] create raster_cube
-- [ ] filter
-- [ ] find_collections
+    * `ee.Image.convolve(kernel)` with `ee.Kernel..` could be used
+- [ ] create_raster_cube
+    * functions already in place
+- [ ] dimension_labels
+    * functions already in place
+- [ ] drop_dimension
+    * functions already in place
+- [ ] filter_labels
+    * functions already in place
 - [X] load_collection
 - [ ] load_result
-- [ ] merge_cubes
-- [ ] property
-- [X] reduce
-- [ ] rename_dimension
-- [ ] save_result
-    * option support still necessary to implement
-- [ ] trim
+- [ ] load_uploaded_files
+- [X] merge_cubes
+- [X] reduce_dimension
+- [X] rename_dimension
+- [X] rename_labels
+- [X] save_result
+- [ ] trim_cube
+    * is not possible to be implemented at the moment
 # Development
 - [ ] debug
-- [ ] output
 # Filter
 - [X] filter_bbox
 - [X] filter_temporal
-- [X] filter_polygon
 - [X] filter_bands
 # Import
-- [ ] run_process_graph
 - [ ] run_udf
+    * is not possible to be implemented at the moment
 - [ ] run_udf_externally
+    * is not possible to be implemented at the moment
 # Logic
+- [ ] all
+    * one could only do it for JS arrays
+    * process is missing in GEE
 - [ ] and
-    * _ee.Array.and()_
-    * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
+    * `ee.Array.and()`
+    * conversion to array necessary
+- [ ] any
+    * one could only do it for JS arrays
+    * process is missing in GEE
 - [ ] not
-    * _ee.Array.not()_
-    * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
+    * `ee.Array.not()`
+    * conversion to array necessary
 - [ ] or
-    * _ee.Array.or()_
-    * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
+    * `ee.Array.or()`
+    * conversion to array necessary
 - [ ] xor
-    * only bitwise xor: _ee.Array.bitwiseXor()_
-    * conversion to array necessary. 
-    * reverse transformation missing: Array -> ImageCollection
+    * only bitwise xor: `ee.Array.bitwiseXor()`
+    * conversion to array necessary
 # Masks
 - [ ] mask
+    * one could use `ee.Image.mask`
+- [ ] mask_polygon
+    * create `ee.Array` mask from the polygon in JS
+    * then apply it in `ee.Image.arrayMask`
 # Math
 - [X] absolute
-- [ ] clip
+- [ ] add
+- [X] clip
 - [ ] divide
 - [ ] extrema
     * multiple return values need to be handled
 - [X] int
-- [ ] linear_scale_range
+- [X] linear_scale_range
 - [X] max
 - [X] mean
 - [X] median
 - [X] min
 - [ ] mod
-- [ ] multiply
-- [ ] power
-* process needs transformation between array and image collection
-* process could be done by mapping the image collection
-- [ ] product
+    * available for arrays and numbers
+- [X] multiply
+- [X] power
+- [X] product
 - [ ] quantiles
+    * multiple return values need to be handled
 - [X] sd
 - [ ] sgn
 - [X] sqrt
-- [ ] subtract
+- [X] subtract
 - [X] sum
-- [ ] variance
+- [X] variance
 - [X] e
 - [X] pi
 - [ ] cummax
     * process accum for arrays and reducer max
+    * complex apply could do the main work
 - [ ] cummin
     * process accum for arrays and reducer min
+    * complex apply could do the main work
 - [ ] cumsum
     * process accum for arrays and reducer sum (default)
+    * complex apply could do the main work
 - [ ] cumproduct
     * process accum for arrays and reducer product
+    * complex apply could do the main work
 - [X] exp
 - [X] ln
 - [X] log
 - [X] normalized_difference
-- [X] ndvi
+- [ ] ndvi
 - [X] floor
-    * process needs transformation between array and image collection
-    * process could be done by mapping the image collection
 - [X] ceil
-    * process needs transformation between array and image collection
-    * process could be done by mapping the image collection
 - [X] int
-    * process needs transformation between array and image collection
-    * process could be done by mapping the image collection
 - [X] round
-    * process needs transformation between array and image collection
-    * process could be done by mapping the image collection
 - [X] cos
 - [X] sin
 - [X] tan
@@ -181,5 +212,5 @@
     * process is missing in GEE
     * different mathematical formulation?
 - [X] arctan2
-    * needs 2 arrays, i.e. it is not a simple apply
+    * needs 2 arrays, i.e. it needs a complex apply
 
