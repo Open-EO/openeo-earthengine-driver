@@ -39,8 +39,10 @@
     * could be theoretically implemented with existing processes:
         * `ee.ImageCollection.count()` or `sum()` as a reducer (mask needed)
         * `ee.Image.updateMask(mask)` 
-- [X] first
-- [X] last
+- [ ] first
+    * new implementation for arrays
+- [ ] last
+    * new implementation for arrays
 - [ ] order
     * process is missing in GEE 
     * maybe conversion to array?
@@ -82,6 +84,7 @@
 - [X] text_begins
 - [X] text_contains
 - [X] text_ends
+- [ ] text_merge
 # Cubes
 - [X] add_dimension
 - [ ] apply
@@ -98,7 +101,8 @@
     * functions already in place
 - [ ] filter_labels
     * functions already in place
-- [X] load_collection
+- [ ] load_collection
+    * filter metadata by properties is missing
 - [ ] load_result
 - [ ] load_uploaded_files
 - [X] merge_cubes
@@ -111,6 +115,8 @@
 # Development
 - [ ] debug
 # Filter
+- [ ] filter_spatial
+    * currently _filter_polygon_ process
 - [X] filter_bbox
 - [X] filter_temporal
 - [X] filter_bands
@@ -146,7 +152,7 @@
     * then apply it in `ee.Image.arrayMask`
 # Math
 - [X] absolute
-- [ ] add
+- [X] add
 - [X] clip
 - [ ] divide
 - [ ] extrema
@@ -187,7 +193,8 @@
 - [X] exp
 - [X] ln
 - [X] log
-- [X] normalized_difference
+- [ ] normalized_difference
+    * needs some restructuring due to different parameter naming 
 - [ ] ndvi
 - [X] floor
 - [X] ceil

@@ -5,11 +5,6 @@
   "categories": [
     "math"
   ],
-  "parameter_order": [
-    "x",
-    "min",
-    "max"
-  ],
   "parameters": [
     {
       "name": "x",
@@ -90,8 +85,7 @@
           {
             "from_parameter": "x"
           }
-        ],
-        "ignore_nodata": false
+        ]
       }
     },
     "max": {
@@ -104,8 +98,7 @@
           {
             "from_node": "min"
           }
-        ],
-        "ignore_nodata": false
+        ]
       },
       "result": true
     }

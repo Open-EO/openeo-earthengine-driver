@@ -5,8 +5,6 @@
     "categories": [
         "cubes"
     ],
-    "experimental": true,
-    "parameter_order": ["data", "source", "target"],
     "parameters": [
         {
             "name": "data",

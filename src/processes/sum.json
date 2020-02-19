@@ -1,7 +1,7 @@
 {
     "id": "sum",
     "summary": "Compute the sum by adding up numbers",
-    "description": "Sums up all elements in a sequential array of numbers and returns the computed sum.\n\nThe computations follow [IEEE Standard 754](https://ieeexplore.ieee.org/document/8766229) whenever the processing environment supports it.",
+    "description": "Sums up all elements in a sequential array of numbers and returns the computed sum.\n\nBy default no-data values are ignored. Setting `ignore_nodata` to `false` considers no-data values so that `null` is returned if any element is such a value.\n\nThe computations follow [IEEE Standard 754](https://ieeexplore.ieee.org/document/8766229) whenever the processing environment supports it.",
     "categories": [
         "math",
         "reducer"
@@ -54,10 +54,33 @@
         {
             "arguments": {
                 "data": [
+                    1,
+                    null
+                ]
+            },
+            "returns": null
+        },
+        {
+            "arguments": {
+                "data": [
                     100
                 ]
             },
             "returns": 100
+        },
+        {
+            "arguments": {
+                "data": [
+                    null
+                ]
+            },
+            "returns": null
+        },
+        {
+            "arguments": {
+                "data": []
+            },
+            "returns": null
         }
     ],
     "links": [
