@@ -5,22 +5,23 @@ module.exports = class array_element extends BaseProcess {
 
     async execute(node) {
         var data = node.getArgument("data");
-        var index = node.getArgument("index");
-        var label = node.getArgument("label");
+        var index = node.getArgument("index", null);
+        var label = node.getArgument("label", null);
         var return_nodata = node.getArgument("return_nodata", false);
 
-        if ((index !== undefined) && (label !== undefined)){
-            throw new Errors.ArrayElementParameterMissing();
-        }
-
-        if ((index === undefined) && (label === undefined)){
+        if (index !== null && label !== null){
             throw new Errors.ArrayElementParameterConflict();
         }
 
-        if (label !== undefined) {
+        if (index === null && label === null){
+            throw new Errors.ArrayElementParameterMissing();
+        }
+
+        let parentNode = node.getParent();
+        if (label !== null && parentNode) {
             // ToDo: check data type of data
-            var dimensionName = node.getProcessGraph().parentNode.getArgument("dimension"); // ToDo 1.0: Replace with node.getParent()
-            var dc = node.getProcessGraph().parentNode.getArgument("data");  // ToDO: @MM is this properly done?
+            var dimensionName = parentNode.getArgument("dimension");
+            var dc = parentNode.getArgument("data");
             var dimension = dc.getDimension(dimensionName);
             var labels = dimension.getValues();
             if (!labels.includes(label)){
