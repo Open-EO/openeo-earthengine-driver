@@ -87,5 +87,21 @@
 		"tags": [
 			"Processes"
 		]
+	},
+	"DimensionLabelCountMismatch": {
+		"description": "The number of dimension labels exceeds one, which requires a reducer",
+		"message": "The number of dimension labels exceeds one, which requires a reducer",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
+	},
+	"DimensionNotAvailable": {
+		"description": "A dimension with the specified name does not exist.",
+		"message": "A dimension with the specified name does not exist.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
 	}
 }

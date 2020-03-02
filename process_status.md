@@ -84,7 +84,7 @@
 - [X] text_begins
 - [X] text_contains
 - [X] text_ends
-- [ ] text_merge
+- [X] text_merge
 # Cubes
 - [X] add_dimension
 - [ ] apply
@@ -93,11 +93,11 @@
     * implement complex apply
 - [ ] apply_kernel
     * `ee.Image.convolve(kernel)` with `ee.Kernel..` could be used
-- [ ] create_raster_cube
+- [X] create_raster_cube
     * functions already in place
-- [ ] dimension_labels
+- [X] dimension_labels
     * functions already in place
-- [ ] drop_dimension
+- [X] drop_dimension
     * functions already in place
 - [ ] filter_labels
     * functions already in place
@@ -212,13 +212,13 @@
 - [X] arccos
 - [X] arcsin
 - [X] arctan
-- [ ] arcosh
+- [X] arcosh
     * process is missing in GEE
     * different mathematical formulation?
-- [ ] arsinh
+- [X] arsinh
     * process is missing in GEE
     * different mathematical formulation?
-- [ ] artanh
+- [X] artanh
     * process is missing in GEE
     * different mathematical formulation?
 - [ ] arctan2
