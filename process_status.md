@@ -78,7 +78,7 @@
 - [ ] is_valid
     * one could only do it for numbers
     * process is missing in GEE
-- [ ] if
+- [X] if
     * usage of `ee.Algorithms.If()`
 # Texts
 - [X] text_begins
