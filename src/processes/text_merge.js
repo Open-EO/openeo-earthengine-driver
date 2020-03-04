@@ -6,11 +6,11 @@ module.exports = class text_merge extends BaseProcess {
         var data = node.getArgument('data');
         var separator = node.getArgument('separator');
 
-        if(separator == null){
+        if (separator === null) {
             separator = "";
         }
 
-        return data.join(separator);;
+        return data.join(separator);
     }
 
 };

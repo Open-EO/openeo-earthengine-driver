@@ -94,14 +94,11 @@
 - [ ] apply_kernel
     * `ee.Image.convolve(kernel)` with `ee.Kernel..` could be used
 - [X] create_raster_cube
-    * functions already in place
 - [X] dimension_labels
-    * functions already in place
 - [X] drop_dimension
-    * functions already in place
 - [ ] filter_labels
     * functions already in place
-- [ ] load_collection
+- [X] load_collection
     * filter metadata by properties is missing
 - [ ] load_result
 - [ ] load_uploaded_files
@@ -117,7 +114,7 @@
 # Filter
 - [ ] filter_spatial
     * currently _filter_polygon_ process
-- [ ] filter_bbox
+- [X] filter_bbox
     * WKT implementation missing
 - [ ] filter_temporal
     * dimension is missing
@@ -157,7 +154,7 @@
 - [X] absolute
 - [X] add
 - [X] clip
-- [ ] divide
+- [X] divide
 - [ ] extrema
     * multiple return values need to be handled
 - [X] int

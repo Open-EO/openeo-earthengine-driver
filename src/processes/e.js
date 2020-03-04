@@ -4,7 +4,7 @@ module.exports = class e extends BaseProcess {
 
     async execute(node) {
         var dc = node.getData('data');
-        dc.data = Math.E;
+        dc.setData(Math.E);
         return dc;
     }
 };

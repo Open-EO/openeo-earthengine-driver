@@ -6,13 +6,13 @@ module.exports = class text_contains extends BaseProcess {
         var data = node.getArgument('data');
         var pattern = node.getArgument('pattern');
         var case_sensitive = node.getArgument('case_sensitive');
-        if(!case_sensitive){
+        if (!case_sensitive) {
             data = data.toLowerCase();
             pattern = pattern.toLowerCase();
         }
 
         var dc = node.getData('data');
-        dc.data = data.includes(pattern);
+        dc.setData(data.includes(pattern));
         return dc;
     }
 
