@@ -116,8 +116,12 @@ module.exports = class ProcessCommons {
 		return result;
 	}
 
-	static applyInCallback(node, imageProcess, dataArg = "x") {
+	static applyInCallback(node, imageProcess, jsProcess = null, dataArg = "x") {
 		var dc = node.getData(dataArg);
+		var data = dc.getData();
+		if (typeof data === 'number' && typeof jsProcess === 'function') {
+			dc.setData(jsProcess(data));
+		}
 		if (dc.isImageCollection()) {
 			dc.imageCollection(data => data.map(imageProcess));
 		}

@@ -4,9 +4,27 @@ const Commons = require('../processgraph/commons');
 module.exports = class log extends BaseProcess {
 
     async execute(node) {
-        // GEE only supports log with base 10 (or ln).
-        //TODO: Check if it is possible to define a base by "log base change formula" (e.g. log3(x) = log10(x)/log10(3))
-        return Commons.applyInCallback(node, image => image.log10());
+        var base = node.getArgument('base');
+        return Commons.applyInCallback(
+            node,
+            image => {
+                switch(base) {
+                    case 10:
+                        return image.log10();
+                    default:
+                        return image.log().divide(ee.Image(base).log());
+                }
+            },
+            x => {
+                switch(base) {
+                    case 10:
+                        return Math.log10(x);
+                    case 2:
+                        return Math.log2(x);
+                    default:
+                        return Math.log(x) / Math.log(base)
+                }
+        );
     }
 
 };
