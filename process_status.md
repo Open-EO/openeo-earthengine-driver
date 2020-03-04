@@ -1,7 +1,6 @@
 # openEO v1.0.0 process status
 ## General TODOs:
 - Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
-- Introduce Numbers for simple processes
 - Properly read the default values from the JSON files
 ## Aggregate & Resample
 - [ ] aggregate_spatial
@@ -39,10 +38,12 @@
     * could be theoretically implemented with existing processes:
         * `ee.ImageCollection.count()` or `sum()` as a reducer (mask needed)
         * `ee.Image.updateMask(mask)` 
-- [ ] first
-    * new implementation for arrays
-- [ ] last
-    * new implementation for arrays
+- [X] first
+    * Only available as simple reducer
+    * implementation for arrays needed
+- [X] last
+    * Only available as simple reducer
+    * implementation for arrays needed
 - [ ] order
     * process is missing in GEE 
     * maybe conversion to array?
@@ -79,12 +80,15 @@
     * one could only do it for numbers
     * process is missing in GEE
 - [X] if
-    * usage of `ee.Algorithms.If()`
+    * usage of `ee.Algorithms.If()` missing, only JS supported atm
 # Texts
 - [X] text_begins
 - [X] text_contains
 - [X] text_ends
 - [X] text_merge
+
+All of them only work in JS only mode, may not work if used with GEE data.
+
 # Cubes
 - [X] add_dimension
 - [ ] apply
@@ -98,11 +102,24 @@
 - [X] drop_dimension
 - [ ] filter_labels
     * functions already in place
+- [ ] filter_spatial
+    * has previously been _filter_polygon_ process, now removed until new implementation. See git history.
+- [X] filter_bbox
+    * WKT implementation missing
+- [X] filter_temporal
+    * Restricts the temporal extent of all temporal dimensions instead of a single one. (GEE restriction?)
+- [x] filter_bands
+    * usage of common_bands metadata is missing
+    * usage of wavelengths metadata is missing
 - [X] load_collection
     * filter metadata by properties is missing
+    * usage of common_bands metadata is missing
+    * spatial filter by geojson is missing
+    * bbox WKT implementation missing
 - [ ] load_result
 - [ ] load_uploaded_files
 - [X] merge_cubes
+    * overlap resolver is missing
 - [X] reduce_dimension
 - [X] rename_dimension
 - [X] rename_labels
@@ -111,15 +128,6 @@
     * is not possible to be implemented at the moment
 # Development
 - [ ] debug
-# Filter
-- [ ] filter_spatial
-    * currently _filter_polygon_ process
-- [X] filter_bbox
-    * WKT implementation missing
-- [ ] filter_temporal
-    * dimension is missing
-- [ ] filter_bands
-    * usage of common_bands metadata is missing
 # Import
 - [ ] run_udf
     * is not possible to be implemented at the moment
@@ -193,8 +201,7 @@
 - [X] exp
 - [X] ln
 - [X] log
-- [ ] normalized_difference
-    * needs some restructuring due to different parameter naming 
+- [X] normalized_difference
 - [ ] ndvi
 - [X] floor
 - [X] ceil
@@ -210,14 +217,8 @@
 - [X] arcsin
 - [X] arctan
 - [X] arcosh
-    * process is missing in GEE
-    * different mathematical formulation?
 - [X] arsinh
-    * process is missing in GEE
-    * different mathematical formulation?
 - [X] artanh
-    * process is missing in GEE
-    * different mathematical formulation?
 - [ ] arctan2
     * needs 2 arrays, i.e. it needs a complex apply
 

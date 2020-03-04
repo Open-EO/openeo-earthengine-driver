@@ -4,7 +4,9 @@ const DataCube = require('./datacube');
 
 module.exports = class ProcessCommons {
 
-	static reduceBinaryInCallback(node, jsReducer, imgReducer, arg1Name = "x", arg2Name = "y") {
+	// ToDo: Also implement ee.Array.* instead only ee.Image.*
+
+	static reduceBinaryInCallback(node, imgReducer, jsReducer, arg1Name = "x", arg2Name = "y") {
 		var arg1 = node.getArgument(arg1Name);
 		var arg2 = node.getArgument(arg2Name);
 		if (typeof arg1 === 'undefined') {
@@ -22,10 +24,10 @@ module.exports = class ProcessCommons {
 			});
 		}
 
-		return this._reduceBinary(node, jsReducer, imgReducer, arg1, arg2);
+		return this._reduceBinary(node, imgReducer, jsReducer, arg1, arg2);
 	}
 
-	static reduceInCallback(node, jsReducer, imgReducer, dataArg = "data") {
+	static reduceInCallback(node, imgReducer, jsReducer, dataArg = "data") {
 		var list = node.getArgument(dataArg);
 		if (!Array.isArray(list) || list.length <= 1) {
 			throw new Errors.ProcessArgumentInvalid({
@@ -37,16 +39,28 @@ module.exports = class ProcessCommons {
 
 		var result;
 		for(var i = 1; i < list.length; i++) {
-			result = this._reduceBinary(node, jsReducer, imgReducer, list[i-1], list[i]);
+			result = this._reduceBinary(node, imgReducer, jsReducer, list[i-1], list[i]);
 		}
 		return result;
 	}
 
-	static _reduceBinary(node, jsReducer, imgReducer, valA, valB) {
+	static _reduceBinary(node, imgReducer, jsReducer, valA, valB) {
 		let result;
 		var dataCubeA = new DataCube(null, valA);
 		var dataCubeB = new DataCube(null, valB);
-		if (typeof valA === 'number') {
+		if (typeof valA === 'undefined' && typeof valB === 'undefined') {
+			// Should be caught by reduce(Binary)InCallback already...
+			throw new Errors.UndefinedElements({
+				process: node.process_id
+			});
+		}
+		else if (typeof valA === 'undefined') {
+			return valB;
+		}
+		else if (typeof valB === 'undefined') {
+			return valA;
+		}
+		else if (typeof valA === 'number') {
 			var imgA = ee.Image(valA);
 			if (typeof valB === 'number') {
 				result = jsReducer(valA, valB);
@@ -122,7 +136,7 @@ module.exports = class ProcessCommons {
 		if (typeof data === 'number' && typeof jsProcess === 'function') {
 			dc.setData(jsProcess(data));
 		}
-		if (dc.isImageCollection()) {
+		else if (dc.isImageCollection()) {
 			dc.imageCollection(data => data.map(imageProcess));
 		}
 		else if (dc.isImage()){
@@ -171,12 +185,29 @@ module.exports = class ProcessCommons {
 		}
 	}
 
-	static filterTemporal(dc, extent) {
+	static filterTemporal(dc, extent, process_id, paramName, dimension = null) {
+		// ToDo: There's not really support for multiple temporal dimensions in GEE?!
+		// Data for all dimensions is restricted on Googles side, but we set the extent in the virtual data cube accordingly.
 		dc.imageCollection(ic => ic.filterDate(
 			extent[0] === null ? '0000-01-01' : extent[0], // If Open date range: We just set the extent to the minimal start date here.
 			extent[1] === null ? Date.now() : extent[1]  // If Open date range: The end date is set to the current date
 		));
-		dc.dimT().setExtent(extent);
+		var dim = null;
+		if (dimension !== null) {
+			dim = dc.dim(dimension);
+		}
+		else {
+			dim = dc.dimT();
+		}
+		if (dim) {
+			dim.setExtent(extent);
+		}
+		else {
+            throw new Errors.DimensionNotAvailable({
+                process: process_id,
+                argument: paramName
+            });
+		}
 		return dc;
 	}
 

@@ -179,6 +179,15 @@ module.exports = class DataCube {
 		return this.findSingleDimension('bands');
 	}
 
+	dim(name) {
+		if (name in this.dimensions) {
+			return this.dimensions[name];
+		}
+		else {
+			return null;
+		}
+	}
+
 	setSpatialExtent(extent) {
 		var crs = extent.crs > 0 ? 'EPSG:' + extent.crs : 'EPSG:4326';
 		var proj = proj4(crs, this.getCrs());

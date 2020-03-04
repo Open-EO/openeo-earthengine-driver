@@ -22,12 +22,13 @@ module.exports = class load_collection extends BaseProcess {
 		// Filter bbox
 		var spatial_extent = node.getArgument("spatial_extent");
 		if (spatial_extent !== null) {
-			if (spatial_extent.type) { // GeoJSON
-				dc = Commons.filterPolygons(dc, spatial_extent, this.spec.id, 'spatial_extent');
-			}
-			else { // Bounding box
+// ToDo: Add GeoJSON support again
+//			if (spatial_extent.type) { // GeoJSON
+//				dc = Commons.filterPolygons(dc, spatial_extent, this.spec.id, 'spatial_extent');
+//			}
+//			else { // Bounding box
 				dc = Commons.filterBbox(dc, spatial_extent, this.spec.id, 'spatial_extent');
-			}
+//			}
 		}
 
 		// Filter bands

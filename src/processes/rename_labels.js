@@ -38,11 +38,11 @@ module.exports = class rename_labels extends BaseProcess {
         var allOldLabels;  // array for storing the old existing label names
         if (source !== undefined) {
             oldLabels = source;
-            allOldLabels = Array.from(dimension.values); // deep copy is important
+            allOldLabels = Array.from(dimension.values); // copy is important
         }
         else {
-            oldLabels = Array.from(dimension.values); // deep copy is important
-            allOldLabels = Array.from(oldLabels); // deep copy is important
+            oldLabels = Array.from(dimension.values); // copy is important
+            allOldLabels = Array.from(oldLabels); // copy is important
         }
 
         if (target.length !== oldLabels.length) {
@@ -53,7 +53,7 @@ module.exports = class rename_labels extends BaseProcess {
         for (var i = 0; i < oldLabels.length; i++){
             var oldLabel = oldLabels[i];
             var newLabel = target[i];
-            if (oldLabel === undefined){  // dimension was previously removed, so the GEE band is named "undefined"
+            if (typeof oldLabel === 'undefined') {  // dimension was previously removed, so the GEE band is named "undefined"
                 oldLabels[i] = "undefined";
                 allOldLabels = Array.from(newLabel);
             }
@@ -62,10 +62,10 @@ module.exports = class rename_labels extends BaseProcess {
                     throw Errors.LabelExists();
                 }
                 var labelIdx = allOldLabels.indexOf(oldLabel);
-                if(labelIdx === null){
+                if (labelIdx === null) {
                     throw new Errors.LabelNotAvailable();
                 }
-                else{
+                else {
                     allOldLabels[labelIdx] = newLabel
                 }
             }

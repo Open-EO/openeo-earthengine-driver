@@ -10,7 +10,7 @@ module.exports = class save_result extends BaseProcess {
 			throw new Errors.FormatUnsupported();
 		}
 		var options = node.getArgument("options");
-		// ToDo: We don't support any options yet, validate them
+		// ToDo: Validate the options
 	}
 
 	async execute(node) {

@@ -11,8 +11,8 @@ module.exports = class sum extends BaseProcess {
 	async execute(node) {
 		return Commons.reduceInCallback(
 			node,
-			(a,b) => a + b,
-			(a,b) => a.add(b)
+			(a,b) => a.add(b),
+			(a,b) => a + b
 		);
 	}
 

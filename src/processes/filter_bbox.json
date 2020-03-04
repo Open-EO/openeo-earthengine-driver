@@ -71,11 +71,6 @@
                                 "examples": [
                                     7099
                                 ]
-                            },
-                            {
-                                "title": "WKT2",
-                                "type": "string",
-                                "subtype": "wkt2-definition"
                             }
                         ],
                         "default": 4326

@@ -10,10 +10,9 @@ module.exports = class add_dimension extends BaseProcess {
 		var type = node.getArgument("type");
 
 		if (dc.hasDimension(name)) {
-			throw new Errors.ProcessArgumentInvalid({
+			throw new Errors.DimensionExists({
 				process: this.spec.id,
-				argument: 'new',
-				reason: 'A dimension with the specified name already exists.'
+				argument: 'name'
 			});
 		}
 

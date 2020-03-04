@@ -8,7 +8,6 @@ module.exports = class ProcessingContext {
 	constructor(serverContext, userId = null) {
 		this.serverContext = serverContext;
 		this.userId = userId;
-		this.variables = {};
 	}
 
 	server() {
@@ -37,10 +36,6 @@ module.exports = class ProcessingContext {
 
 	readFileFromWorkspace(file) { // returns promise
 		return this.serverContext.files().getFileContents(this.userId, file);
-	}
-
-	setVariables(variables) {
-		this.variables = variables;
 	}
 
 	getVariable(id) {

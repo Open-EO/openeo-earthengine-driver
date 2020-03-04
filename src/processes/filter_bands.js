@@ -7,7 +7,6 @@ module.exports = class filter_bands extends BaseProcess {
 		return Commons.filterBands(data, bands);
 	}
 
-
 	async execute(node) {
 		var dc = node.getData('data');
 		var bands = node.getArgument('bands');

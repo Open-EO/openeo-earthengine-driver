@@ -6,8 +6,8 @@ module.exports = class subtract extends BaseProcess {
 	async execute(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a,b) => a - b,
-			(a,b) => a.subtract(b)
+			(a,b) => a.subtract(b),
+			(a,b) => a - b
 		);
 	}
 

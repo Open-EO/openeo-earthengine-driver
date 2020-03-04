@@ -3,7 +3,6 @@ const Errors = require('../errors');
 const DataCube = require('../processgraph/datacube');
 const ProcessGraph = require('../processgraph/processgraph');
 
-// TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
 module.exports = class reduce_dimension extends BaseProcess {
 
 	async execute(node) {
@@ -56,13 +55,15 @@ module.exports = class reduce_dimension extends BaseProcess {
 			resultDataCube = new DataCube(dc);
 			resultDataCube.setData(resultNode.getResult());
 
-			// if we are reducing over bands we need to set the band name in GEE to a default one, e.g., "undefined"
+			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "undefined"
+			// ToDo: Make sure all other processes are aware of this, e.g. save_result
 			if (dimension.type === 'bands') {
 				resultDataCube.imageCollection(data => data.map(
 					img => img.select(resultDataCube.imageCollection().first().bandNames()).rename(["undefined"])
 				));
 			}
 		}
+
 		// ToDo: We don't know at this point how the bands in the GEE images/imagecollections are called.
 		resultDataCube.dropDimension(dimensionName);
 		return resultDataCube;

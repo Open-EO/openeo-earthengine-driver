@@ -6,8 +6,8 @@ module.exports = class multiply extends BaseProcess {
 	async execute(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a,b) => a * b,
-			(a,b) => a.multiply(b)
+			(a,b) => a.multiply(b),
+			(a,b) => a * b
 		);
 	}
 

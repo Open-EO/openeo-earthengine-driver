@@ -11,8 +11,8 @@ module.exports = class product extends BaseProcess {
     async execute(node) {
         return Commons.reduceInCallback(
             node,
-            (a,b) => a * b,
-            (a,b) => a.multiply(b)
+            (a,b) => a.multiply(b),
+            (a,b) => a * b
         );
     }
 };
