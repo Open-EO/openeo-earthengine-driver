@@ -24,6 +24,7 @@ module.exports = class log extends BaseProcess {
                     default:
                         return Math.log(x) / Math.log(base)
                 }
+            }
         );
     }
 
