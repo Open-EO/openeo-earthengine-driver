@@ -88,8 +88,11 @@ module.exports = class ProcessingContext {
 						dimensions: size,
 						region: region,
 //						crs: 'EPSG:3857' // toDo: Check results
-					}, url => {
-						if (typeof url !== 'string' || url.length === 0) {
+					}, (url, err) => {
+						if (typeof err === 'string') {
+							reject(new Errors.Internal({message: err}));
+						}
+						else if (typeof url !== 'string' || url.length === 0) {
 							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
 						}
 						else {
