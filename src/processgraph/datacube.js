@@ -81,6 +81,14 @@ module.exports = class DataCube {
 		return this.type;
 	}
 
+	isNumber() {
+		return this.objectType() === 'number';
+	}
+
+	isNull() {
+		return this.objectType() === 'null';
+	}
+
 	isImage() {
 		return this.objectType() === "eeImage";
 	}

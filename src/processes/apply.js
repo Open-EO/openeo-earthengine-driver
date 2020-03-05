@@ -17,11 +17,10 @@ module.exports = class apply extends BaseProcess {
 		}
 
 		var resultNode = await callback.execute({
-			x: dc,
+			x: dc.getData(),
 			context: node.getArgument("context")
 		});
-
-		dc = resultNode.getResult();
+        dc.setData(resultNode.getResult());
 		return dc;
 	}
 

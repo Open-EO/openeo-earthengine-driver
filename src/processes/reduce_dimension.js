@@ -1,6 +1,5 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 const Errors = require('../errors');
-const DataCube = require('../processgraph/datacube');
 const ProcessGraph = require('../processgraph/processgraph');
 
 module.exports = class reduce_dimension extends BaseProcess {
@@ -18,7 +17,6 @@ module.exports = class reduce_dimension extends BaseProcess {
 			});
 		}
 
-		var resultDataCube;
 		var callback = node.getArgument("reducer");
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
@@ -37,7 +35,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 					reason: 'The specified reducer is invalid.'
 				});
 			}
-			resultDataCube = this.reduceSimple(dc, process.geeReducer(node));
+			dc = this.reduceSimple(dc, process.geeReducer(node));
 		}
 		else {
 			// This is a complex reducer
@@ -53,21 +51,20 @@ module.exports = class reduce_dimension extends BaseProcess {
 				data: values,
 				context: node.getArgument("context")
 			});
-			resultDataCube = new DataCube(dc);
-			resultDataCube.setData(resultNode.getResult());
+			dc.setData(resultNode.getResult());
 
 			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "undefined"
 			// ToDo: Make sure all other processes are aware of this, e.g. save_result
 			if (dimension.type === 'bands') {
-				resultDataCube.imageCollection(data => data.map(
-					img => img.select(resultDataCube.imageCollection().first().bandNames()).rename(["undefined"])
+				dc.imageCollection(data => data.map(
+					img => img.select(dc.imageCollection().first().bandNames()).rename(["undefined"])
 				));
 			}
 		}
 
 		// ToDo: We don't know at this point how the bands in the GEE images/imagecollections are called.
-		resultDataCube.dropDimension(dimensionName);
-		return resultDataCube;
+		dc.dropDimension(dimensionName);
+		return dc;
 	}
 
 	reduceSimple(dc, reducerFunc, reducerName = null) {

@@ -130,24 +130,23 @@ module.exports = class ProcessCommons {
 	}
 
 	static applyInCallback(node, imageProcess, jsProcess = null, dataArg = "x") {
-		var dc = node.getDataCube(dataArg);
-		var data = dc.getData();
-		if (data === null) {
-			dc.setData(null); // this is not really required, it's overriding null with null
+		var data = node.getArgument(dataArg);
+		var dc = new DataCube(null, data);
+		if (dc.isNull()) {
+			return null;
 		}
-		else if (typeof data === 'number' && typeof jsProcess === 'function') {
-			dc.setData(jsProcess(data));
-		}
-		else if (dc.isImageCollection()) {
-			dc.imageCollection(data => data.map(imageProcess));
+		else if (dc.isNumber() && typeof jsProcess === 'function') {
+			return jsProcess(data);
 		}
 		else if (dc.isImage()) {
-			dc.image(imageProcess);
+			return dc.image(imageProcess);
+		}
+		else if (dc.isImageCollection()) {
+			return dc.imageCollection(data => data.map(imageProcess));
 		}
 		else {
 			throw new Error("Applying " + node.process_id + " not supported for given data type: " + dc.objectType());
 		}
-		return dc;
 	}
 
 	static filterBbox(dc, bbox, process_id, paramName) {
