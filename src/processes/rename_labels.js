@@ -53,8 +53,8 @@ module.exports = class rename_labels extends BaseProcess {
         for (var i = 0; i < oldLabels.length; i++){
             var oldLabel = oldLabels[i];
             var newLabel = target[i];
-            if (typeof oldLabel === 'undefined') {  // dimension was previously removed, so the GEE band is named "undefined"
-                oldLabels[i] = "undefined";
+            if (typeof oldLabel === 'undefined') {  // dimension was previously removed, so the GEE band is named "#"
+                oldLabels[i] = "#";
                 allOldLabels = Array.from(newLabel);
             }
             else{

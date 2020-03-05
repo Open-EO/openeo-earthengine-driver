@@ -27,7 +27,8 @@ module.exports = class reduce_dimension extends BaseProcess {
 		}
 		else if (callback.getNodeCount() === 1) {
 			// This is a simple reducer with just one node
-			var process = callback.getProcess(callback.getResultNode());
+			var childNode = callback.getResultNode();
+			var process = callback.getProcess(childNode);
 			if (typeof process.geeReducer !== 'function') {
 				throw new Errors.ProcessArgumentInvalid({
 					process: this.spec.id,
@@ -35,6 +36,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 					reason: 'The specified reducer is invalid.'
 				});
 			}
+			console.log("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
 			dc = this.reduceSimple(dc, process.geeReducer(node));
 		}
 		else {
@@ -53,11 +55,10 @@ module.exports = class reduce_dimension extends BaseProcess {
 			});
 			dc.setData(resultNode.getResult());
 
-			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "undefined"
-			// ToDo: Make sure all other processes are aware of this, e.g. save_result
+			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "#"
 			if (dimension.type === 'bands') {
 				dc.imageCollection(data => data.map(
-					img => img.select(dc.imageCollection().first().bandNames()).rename(["undefined"])
+					img => img.select(dc.imageCollection().first().bandNames()).rename(["#"])
 				));
 			}
 		}
@@ -83,13 +84,27 @@ module.exports = class reduce_dimension extends BaseProcess {
 	
 		dc.imageCollection(data => data.reduce(reducerFunc));
 
-		// TODO: Not sure if necessary (in Use Case 1: the mean reducer didn't rename the bands...)
 		// revert renaming of the bands following to the GEE convention
-		var bands = dc.getBands();
-		if (Array.isArray(bands) && bands.length > 0) {
-			var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
+		var bandNames = dc.getEarthEngineBands();
+		if (bandNames.length > 0) {
+			// Map GEE band names to openEO band names
+			var rename = {};
+			for(let bandName of bandNames) {
+				let geeBandName = bandName + "_" + reducerName;
+				rename[geeBandName] = bandName;
+			}
+			
 			dc.imageCollection(data => data.map(
-				img => img.select(renamedBands).rename(bands)
+				img => {
+					// Create a GEE list with expected band names
+					var geeBands = img.bandNames();
+					for(var geeBandName in rename) {
+						geeBands = geeBands.replace(geeBandName, rename[geeBandName]);
+					}
+			
+					// Rename bands
+					return img.rename(geeBands);
+				}
 			));
 		}
 

@@ -28,7 +28,7 @@ module.exports = class array_element extends BaseProcess {
                 throw new Errors.ArrayElementNotAvailable();
             }
             else{
-                // ToDO: only bands is currently supported
+                // ToDo: only bands is currently supported
                 if (dimension.type !== "bands") {
                     throw new Errors.ProcessArgumentInvalid({
                         process: this.spec.id,

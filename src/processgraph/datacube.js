@@ -257,6 +257,16 @@ module.exports = class DataCube {
 		return this.dimT();
 	}
 
+	// returns: array
+	getEarthEngineBands() {
+		var bands = this.getBands();
+		if (bands.length === 0) {
+			bands.push("#");
+		}
+		return bands;
+	}
+
+	// returns: array
 	getBands() {
 		try {
 			return this.dimBands().getValues();

@@ -48,6 +48,7 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 
 	async executeNode(node) {
 		var process = this.getProcess(node);
+		console.log("Executing node " + node.id);
 		return await process.execute(node, this.context);
 	}
 

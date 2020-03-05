@@ -1,13 +1,13 @@
 {
-  "1": {
+  "apply": {
     "process_id": "apply",
     "arguments": {
       "data": {
-        "from_node": "mintime"
+        "from_node": "reduce_time"
       },
       "process": {
         "process_graph": {
-          "2": {
+          "linear_scale_range": {
             "process_id": "linear_scale_range",
             "arguments": {
               "x": {
@@ -24,7 +24,7 @@
     },
     "description": "Stretch range from -1 / 1 to 0 / 255 for PNG visualization."
   },
-  "dc": {
+  "load_collection": {
     "process_id": "load_collection",
     "arguments": {
       "id": "COPERNICUS/S2",
@@ -39,32 +39,40 @@
         "2018-01-31T23:59:59Z"
       ],
       "bands": [
-        "B8",
         "B4",
-        "B2"
+        "B8"
       ]
     },
     "description": "Loading the data; The order of the specified bands is important for the following reduce operation."
   },
-  "evi": {
+  "reduce_bands": {
     "process_id": "reduce_dimension",
     "arguments": {
       "data": {
-        "from_node": "dc"
+        "from_node": "load_collection"
       },
       "reducer": {
         "process_graph": {
+          "red": {
+            "process_id": "array_element",
+            "arguments": {
+              "data": {
+                "from_parameter": "data"
+              },
+              "label": "B4"
+            }
+          },
           "nir": {
             "process_id": "array_element",
             "arguments": {
               "data": {
                 "from_parameter": "data"
               },
-              "index": 0
+              "label": "B8"
             }
           },
-          "sub": {
-            "process_id": "subtract",
+          "ndvi": {
+            "process_id": "normalized_difference",
             "arguments": {
               "x": {
                 "from_node": "nir"
@@ -72,98 +80,25 @@
               "y": {
                 "from_node": "red"
               }
-            }
-          },
-          "div": {
-            "process_id": "divide",
-            "arguments": {
-              "x": {
-                "from_node": "sub"
-              },
-              "y": {
-                "from_node": "sum"
-              }
-            }
-          },
-          "p3": {
-            "process_id": "multiply",
-            "arguments": {
-              "x": 2.5,
-              "y": {
-                "from_node": "div"
-              }
             },
             "result": true
-          },
-          "sum": {
-            "process_id": "sum",
-            "arguments": {
-              "data": [
-                1,
-                {
-                  "from_node": "nir"
-                },
-                {
-                  "from_node": "p1"
-                },
-                {
-                  "from_node": "p2"
-                }
-              ]
-            }
-          },
-          "red": {
-            "process_id": "array_element",
-            "arguments": {
-              "data": {
-                "from_parameter": "data"
-              },
-              "index": 1
-            }
-          },
-          "p1": {
-            "process_id": "multiply",
-            "arguments": {
-              "x": 6,
-              "y": {
-                "from_node": "red"
-              }
-            }
-          },
-          "blue": {
-            "process_id": "array_element",
-            "arguments": {
-              "data": {
-                "from_parameter": "data"
-              },
-              "index": 2
-            }
-          },
-          "p2": {
-            "process_id": "multiply",
-            "arguments": {
-              "x": -7.5,
-              "y": {
-                "from_node": "blue"
-              }
-            }
           }
         }
       },
       "dimension": "bands"
     },
-    "description": "Compute the EVI. Formula: 2.5 * (NIR - RED) / (1 + NIR + 6*RED + -7.5*BLUE)"
+    "description": "Compute the NDVI: (NIR - RED) / (NIR + RED)"
   },
-  "mintime": {
+  "reduce_time": {
     "process_id": "reduce_dimension",
     "arguments": {
       "data": {
-        "from_node": "evi"
+        "from_node": "reduce_bands"
       },
       "reducer": {
         "process_graph": {
-          "min": {
-            "process_id": "min",
+          "max": {
+            "process_id": "max",
             "arguments": {
               "data": {
                 "from_parameter": "data"
@@ -181,7 +116,7 @@
     "process_id": "save_result",
     "arguments": {
       "data": {
-        "from_node": "1"
+        "from_node": "apply"
       },
       "format": "PNG",
       "options": {

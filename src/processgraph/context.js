@@ -76,10 +76,10 @@ module.exports = class ProcessingContext {
 						});
 					}
 					else {
-						// ToDo: Write the following warning to the logs:
-						// "No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation."
-						var availableBands = dataCube.getBands();
-						visBands = [availableBands[0]];
+						visBands = dataCube.getEarthEngineBands().slice(0, 1);
+						if (visBands[0] !== '#') {
+							console.log("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
+						}
 					}
 
 					var region = Utils.bboxToGeoJson(bbox);
