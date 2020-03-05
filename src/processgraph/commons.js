@@ -80,12 +80,12 @@ module.exports = class ProcessCommons {
 			}
 		}
 		else if (dataCubeA.isImageCollection()) {
-			var collA = dataCubeA.imageCollection();
 			if (typeof valB === 'number' || dataCubeB.isImage()) {
 				var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
-				result = collA.map(imgA => imgReducer(imgA, imgB));
+				result = dataCubeA.imageCollection().map(imgA => imgReducer(imgA, imgB));
 			}
 			else if (dataCubeB.isImageCollection()) {
+				var collA = dataCubeA.imageCollection();
 				var collB = dataCubeB.imageCollection();
 				var listA = collA.toList(collA.size());
 				var listB = collB.toList(collB.size());
@@ -104,13 +104,12 @@ module.exports = class ProcessCommons {
 			}
 		}
 		else if (dataCubeA.isImage()) {
-			var imgA = dataCubeA.image();
 			if (typeof valB === 'number' || dataCubeB.isImage()) {
 				var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
-				result = imgReducer(imgA, imgB);
+				result = imgReducer(dataCubeA.image(), imgB);
 			}
 			else if (dataCubeB.isImageCollection()) {
-				result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
+				result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(dataCubeA.image(), imgB)));
 			}
 			else {
 				throw new Errors.ProcessArgumentInvalid({
@@ -133,17 +132,20 @@ module.exports = class ProcessCommons {
 	static applyInCallback(node, imageProcess, jsProcess = null, dataArg = "x") {
 		var dc = node.getDataCube(dataArg);
 		var data = dc.getData();
-		if (typeof data === 'number' && typeof jsProcess === 'function') {
+		if (data === null) {
+			dc.setData(null); // this is not really required, it's overriding null with null
+		}
+		else if (typeof data === 'number' && typeof jsProcess === 'function') {
 			dc.setData(jsProcess(data));
 		}
 		else if (dc.isImageCollection()) {
 			dc.imageCollection(data => data.map(imageProcess));
 		}
-		else if (dc.isImage()){
+		else if (dc.isImage()) {
 			dc.image(imageProcess);
 		}
 		else {
-			throw new Error("Applying " + node.process_id + " not supported for given data type.");
+			throw new Error("Applying " + node.process_id + " not supported for given data type: " + dc.objectType());
 		}
 		return dc;
 	}
@@ -203,10 +205,10 @@ module.exports = class ProcessCommons {
 			dim.setExtent(extent);
 		}
 		else {
-            throw new Errors.DimensionNotAvailable({
-                process: process_id,
-                argument: paramName
-            });
+			throw new Errors.DimensionNotAvailable({
+				process: process_id,
+				argument: paramName
+			});
 		}
 		return dc;
 	}

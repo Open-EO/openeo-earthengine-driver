@@ -81,7 +81,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 		}
 
 		if (!dc.isImageCollection() && !dc.isImage()) {
-			throw new Error("Calculating " + reducerName + " not supported for given data type.");
+			throw new Error("Calculating " + reducerName + " not supported for given data type: " + dc.objectType());
 		}
 	
 		dc.imageCollection(data => data.reduce(reducerFunc));

@@ -5,7 +5,10 @@ const proj4 = require('proj4');
 module.exports = class DataCube {
 
 	constructor(sourceDataCube = null, data = undefined) {
+		// Don't set this data directly, always use setData() to reset the type cache!
 		this.data = data;
+		// Cache the data type for less overhead, especially for ee.ComputedObject
+		this.type = null;
 		this.dimensions = {};
 		this.output = {
 			format: null,
@@ -15,6 +18,7 @@ module.exports = class DataCube {
 		if (sourceDataCube instanceof DataCube) {
 			if (data === undefined) {
 				this.data = sourceDataCube.data;
+				this.type = sourceDataCube.type;
 			}
 			this.output = Object.assign({}, sourceDataCube.output);
 			for(var i in sourceDataCube.dimensions) {
@@ -29,104 +33,120 @@ module.exports = class DataCube {
 
 	setData(data) {
 		this.data = data;
+		// Reset type cache
+		this.type = null;
 	}
 
-	computedObjectType() {
-		console.trace("Calling getInfo()");
-		// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
-		return this.data.getInfo().type;
+	static getDataType(data) {
+		if (data instanceof ee.Image) {
+			return "eeImage";
+		}
+		else if (data instanceof ee.ImageCollection) {
+			return "eeImageCollection";
+		}
+		else if(data instanceof ee.Array) {
+			return "eeArray";
+		}
+		// Check for ComputedObject only after checking all the other EE types above
+		else if (data instanceof ee.ComputedObject) {
+			console.log("Calling slow function getInfo(); Try to avoid this.");
+			// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
+			var info = data.getInfo();
+			// Only works for Image and ImageCollection and maybe some other types, but not for Array for example.
+			// Arrays, numbers and all other scalars should be handled with the native JS code below.
+			if (Utils.isObject(info) && typeof info.type === 'string') {
+				return "ee" + info.type;
+			}
+		}
+
+		// Check for native JS types
+		if (Array.isArray(data)) {
+			return "array";
+		}
+		else if (data === null) {
+			return "null";
+		}
+		else if (typeof data === 'object' && data.constructor && typeof data.constructor.name === 'string') {
+			return data.constructor.name; // ToDo: This may conflict with other types, e.g. Image or ImageCollection
+		}
+		else {
+			return typeof data;
+		}
 	}
 
 	objectType() {
-		if (this.data instanceof ee.Image){
-			return "Image";
+		if (this.type === null) {
+			this.type = DataCube.getDataType(this.data);
 		}
-		else if (this.data instanceof ee.ImageCollection){
-			return "ImageCollection";
-		}
-		else if(this.data instanceof ee.Array){
-			return "Array";
-		}
-		else if (this.data instanceof ee.ComputedObject){
-			return this.computedObjectType();
-		}
-		else{
-			throw new Error("Data type not understood.")
-		}
-
+		return this.type;
 	}
 
 	isImage() {
-		return this.objectType() === "Image";
+		return this.objectType() === "eeImage";
 	}
 
-	isArray() {
-		return this.objectType() === "Array";
+	isEarthEngineArray() {
+		return this.objectType() === "eeArray";
 	}
 
 	isImageCollection() {
-		return this.objectType() === "ImageCollection";
+		return this.objectType() === "eeImageCollection";
 	}
 
-
-	// TODO: it would be more readable to always call isArray, isImage, ... within the following functions -> evaluate the efficiency of the data type retrieval from a computed object
 	image(callback = null, ...args) {
-		var dataType = this.objectType();
-		if (dataType === "Image"){
+		if (this.isImage()){
 			// no operation
 		}
-		else if (dataType === "ImageCollection") {
+		else if (this.isImageCollection()) {
 			// ToDo: Write warning to user log
 			if (global.server.serverContext.debug) {
 				console.log("Compositing the image collection to a single image.");
 			}
-			this.data = this.data.mosaic();
+			this.setData(this.data.mosaic());
 		}
-		else if (dataType === "Array") {
-			this.data = ee.Image(this.data);
+		else if (this.isEarthEngineArray()) {
+			this.setData(ee.Image(this.data));
 		}
 		else {
-			throw new Error("Can't convert to image.");
+			throw new Error("Can't convert " + this.objectType() + " to image.");
 		}
 		if (callback) {
-			this.data = callback(this.data, ...args);
+			this.setData(callback(this.data, ...args));
 		}
 		return this.data;
 	}
 	
 	imageCollection(callback = null, ...args) {
-		var dataType = this.objectType();
-		if (dataType === "ImageCollection"){
+		if (this.isImageCollection()){
 			// no operation
 		}
-		else if (dataType === "Image") {
-			this.data = ee.ImageCollection(this.data);
+		else if (this.isImage()) {
+			this.setData(ee.ImageCollection(this.data));
 		}
-		else if (dataType === "Array") {
-			this.data = ee.ImageCollection(ee.Image(this.data));
+		else if (this.isEarthEngineArray()) {
+			this.setData(ee.ImageCollection(ee.Image(this.data)));
 		}
 		else {
-			throw new Error("Can't convert to image collection.");
+			throw new Error("Can't convert " + this.objectType() + " to image collection.");
 		}
 		if (callback) {
-			this.data = callback(this.data, ...args);
+			this.setData(callback(this.data, ...args));
 		}
 		return this.data;
 	}
 	
 	array(callback = null, ...args) {
-		var dataType = this.objectType();
-		if (dataType === "Array"){
+		if (this.isEarthEngineArray()) {
 			// no operation
 		}
-		else if (dataType === "Image") {
-			this.data = this.data.toArray();
+		else if (this.isImage()) {
+			this.setData(this.data.toArray());
 		}
 		else {
-			throw new Error("Can't convert to an array.");
+			throw new Error("Can't convert " + this.objectType() + " to an EE array.");
 		}
 		if (callback) {
-			this.data = callback(this.data, ...args);
+			this.setData(callback(this.data, ...args));
 		}
 		return this.data;
 	}
@@ -357,7 +377,7 @@ module.exports = class DataCube {
 	merge(otherDataCube, overlapResolver=null, inplace=true){
 		if (otherDataCube instanceof DataCube) {
 			if (this.isImageCollection() && otherDataCube.isImageCollection()) {
-				this.data = this.stackCollection(this.data.merge(otherDataCube.data));
+				this.setData(this.stackCollection(this.data.merge(otherDataCube.data)));
 			}
 			this.output = Object.assign(this.output, otherDataCube.output);
 			for(var i in otherDataCube.dimensions) {
