@@ -3,20 +3,29 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class round extends BaseProcess {
 
-    process(data, p=null){
-        if(p===null){
-            return data.round();
-        }
-        else{
-            var scaleFactor = 10**p;
-            return data.multiply(scaleFactor).round().divide(scaleFactor);
-        }
-
-    }
-
+    // ToDo: Check whether GEE and JS really follow IEEE 754 rounding behavior
     async execute(node) {
         var p = node.getArgument("p");
-        return Commons.applyInCallback(node, data => this.process(data, p));
+        var scaleFactor = p !== null ? 10**p : null;
+        return Commons.applyInCallback(
+            node,
+            image => {
+                if (p === null) {
+                    return image.round();
+                }
+                else {
+                    return image.multiply(scaleFactor).round().divide(scaleFactor);
+                }
+            },
+            x => {
+                if (p === null) {
+                    return Math.round(x);
+                }
+                else {
+                    return Math.round(x * scaleFactor) / scaleFactor;
+                }
+            }
+        );
     }
 
 };

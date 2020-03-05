@@ -10,8 +10,8 @@ module.exports = class max extends BaseProcess {
 	async execute(node) {
 		return Commons.reduceInCallback(
 			node,
-			(a,b) => Math.max(a,b),
-			(a,b) => a.max(b)
+			(a,b) => a.max(b),
+			(a,b) => Math.max(a,b)
 		);
 	}
 

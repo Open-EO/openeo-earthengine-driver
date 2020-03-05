@@ -8,7 +8,6 @@ module.exports = class ProcessingContext {
 	constructor(serverContext, userId = null) {
 		this.serverContext = serverContext;
 		this.userId = userId;
-		this.variables = {};
 	}
 
 	server() {
@@ -37,10 +36,6 @@ module.exports = class ProcessingContext {
 
 	readFileFromWorkspace(file) { // returns promise
 		return this.serverContext.files().getFileContents(this.userId, file);
-	}
-
-	setVariables(variables) {
-		this.variables = variables;
 	}
 
 	getVariable(id) {
@@ -81,10 +76,10 @@ module.exports = class ProcessingContext {
 						});
 					}
 					else {
-						// ToDo: Write the following warning to the logs:
-						// "No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation."
-						var availableBands = dataCube.getBands();
-						visBands = [availableBands[0]];
+						visBands = dataCube.getEarthEngineBands().slice(0, 1);
+						if (visBands[0] !== '#') {
+							console.log("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
+						}
 					}
 
 					var region = Utils.bboxToGeoJson(bbox);
@@ -93,8 +88,11 @@ module.exports = class ProcessingContext {
 						dimensions: size,
 						region: region,
 //						crs: 'EPSG:3857' // toDo: Check results
-					}, url => {
-						if (typeof url !== 'string' || url.length === 0) {
+					}, (url, err) => {
+						if (typeof err === 'string') {
+							reject(new Errors.Internal({message: err}));
+						}
+						else if (typeof url !== 'string' || url.length === 0) {
 							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
 						}
 						else {

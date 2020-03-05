@@ -1,7 +1,18 @@
-const multiply = require('./multiply');
+const { BaseProcess } = require('@openeo/js-processgraphs');
+const Commons = require('../processgraph/commons');
 
-module.exports = class product extends multiply {
+module.exports = class product extends BaseProcess {
 
-	// product is an alias for multiply
+	geeReducer() {
+		return 'product';
+	}
 
+    //ToDo: ignore_nodata parameter
+    async execute(node) {
+        return Commons.reduceInCallback(
+            node,
+            (a,b) => a.multiply(b),
+            (a,b) => a * b
+        );
+    }
 };

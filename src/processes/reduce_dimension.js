@@ -1,44 +1,43 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 const Errors = require('../errors');
-const DataCube = require('../processgraph/datacube');
 const ProcessGraph = require('../processgraph/processgraph');
 
-// TODO: do we have to change this/reduce the dimension if we get multiple arguments back, e.g. from quantiles?
-module.exports = class reduce extends BaseProcess {
+module.exports = class reduce_dimension extends BaseProcess {
 
 	async execute(node) {
-		var dc = node.getData("data");
+		var dc = node.getDataCube("data");
 
 		var dimensionName = node.getArgument("dimension");
 		var dimension = dc.getDimension(dimensionName);
 		if (dimension.type !== 'temporal' && dimension.type !== 'bands') {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
+				process: this.spec.id,
 				argument: 'dimension',
 				reason: 'Reducing dimension types other than `temporal` or `bands` is currently not supported.'
 			});
 		}
 
-		var resultDataCube;
 		var callback = node.getArgument("reducer");
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
+				process: this.spec.id,
 				argument: 'reducer',
 				reason: 'No reducer specified.'
 			});
 		}
 		else if (callback.getNodeCount() === 1) {
 			// This is a simple reducer with just one node
-			var process = callback.getProcess(callback.getResultNode());
+			var childNode = callback.getResultNode();
+			var process = callback.getProcess(childNode);
 			if (typeof process.geeReducer !== 'function') {
 				throw new Errors.ProcessArgumentInvalid({
-					process: this.schema.id,
+					process: this.spec.id,
 					argument: 'reducer',
 					reason: 'The specified reducer is invalid.'
 				});
 			}
-			resultDataCube = this.reduceSimple(dc, process.geeReducer(node));
+			console.log("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
+			dc = this.reduceSimple(dc, process.geeReducer(node));
 		}
 		else {
 			// This is a complex reducer
@@ -51,14 +50,22 @@ module.exports = class reduce extends BaseProcess {
 				values = dimension.getValues().map(band => ic.select(band));
 			}
 			var resultNode = await callback.execute({
-				data: values
+				data: values,
+				context: node.getArgument("context")
 			});
-			resultDataCube = new DataCube(dc);
-			resultDataCube.setData(resultNode.getResult());
+			dc.setData(resultNode.getResult());
+
+			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "#"
+			if (dimension.type === 'bands') {
+				dc.imageCollection(data => data.map(
+					img => img.select(dc.imageCollection().first().bandNames()).rename(["#"])
+				));
+			}
 		}
+
 		// ToDo: We don't know at this point how the bands in the GEE images/imagecollections are called.
-		resultDataCube.dropDimension(dimensionName);
-		return resultDataCube;
+		dc.dropDimension(dimensionName);
+		return dc;
 	}
 
 	reduceSimple(dc, reducerFunc, reducerName = null) {
@@ -72,17 +79,32 @@ module.exports = class reduce extends BaseProcess {
 		}
 
 		if (!dc.isImageCollection() && !dc.isImage()) {
-			throw new Error("Calculating " + reducerName + " not supported for given data type.");
+			throw new Error("Calculating " + reducerName + " not supported for given data type: " + dc.objectType());
 		}
 	
 		dc.imageCollection(data => data.reduce(reducerFunc));
 
 		// revert renaming of the bands following to the GEE convention
-		var bands = dc.getBands();
-		if (Array.isArray(bands) && bands.length > 0) {
-			var renamedBands = bands.map(bandName => bandName + "_" + reducerName);
+		var bandNames = dc.getEarthEngineBands();
+		if (bandNames.length > 0) {
+			// Map GEE band names to openEO band names
+			var rename = {};
+			for(let bandName of bandNames) {
+				let geeBandName = bandName + "_" + reducerName;
+				rename[geeBandName] = bandName;
+			}
+			
 			dc.imageCollection(data => data.map(
-				img => img.select(renamedBands).rename(bands)
+				img => {
+					// Create a GEE list with expected band names
+					var geeBands = img.bandNames();
+					for(var geeBandName in rename) {
+						geeBands = geeBands.replace(geeBandName, rename[geeBandName]);
+					}
+			
+					// Rename bands
+					return img.rename(geeBands);
+				}
 			));
 		}
 

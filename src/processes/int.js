@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class int extends BaseProcess {
 
     async execute(node) {
-        return Commons.applyInCallback(node, image => image.int());
+        return Commons.applyInCallback(node, image => image.int(), x => parseInt(x, 10));
     }
 
 };

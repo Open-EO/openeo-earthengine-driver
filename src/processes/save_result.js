@@ -10,11 +10,11 @@ module.exports = class save_result extends BaseProcess {
 			throw new Errors.FormatUnsupported();
 		}
 		var options = node.getArgument("options");
-		// ToDo: We don't support any options yet, validate them
+		// ToDo: Validate the options
 	}
 
 	async execute(node) {
-		var data = node.getData("data");
+		var data = node.getDataCube("data");
 		data.setOutputFormat(
 			node.getArgument("format"),
 			node.getArgument("options")

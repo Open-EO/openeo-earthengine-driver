@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class sinh extends BaseProcess {
 
     async execute(node) {
-        return Commons.applyInCallback(node, image => image.sinh());
+        return Commons.applyInCallback(node, image => image.sinh(), x => Math.sinh(x));
     }
 
 };

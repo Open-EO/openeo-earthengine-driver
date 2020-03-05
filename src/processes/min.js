@@ -10,8 +10,8 @@ module.exports = class min extends BaseProcess {
 	async execute(node) {
 		return Commons.reduceInCallback(
 			node,
-			(a,b) => Math.min(a,b),
-			(a,b) => a.min(b)
+			(a,b) => a.min(b),
+			(a,b) => Math.min(a,b)
 		);
 	}
 

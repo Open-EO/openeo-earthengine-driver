@@ -9,8 +9,7 @@ module.exports = class load_collection extends BaseProcess {
 		var id = node.getArgument('id');
 		var collection = node.getContext().getCollection(id);
 		var dc = new DataCube();
-		var images = ee.ImageCollection(id);
-		dc.setData(images);
+		dc.setData(ee.ImageCollection(id));
 		dc.setDimensionsFromSTAC(collection.properties['cube:dimensions']);
 
 		// Filter temporal
@@ -19,11 +18,11 @@ module.exports = class load_collection extends BaseProcess {
 			dc = Commons.filterTemporal(dc, temporal_extent);
 		}
 
-		// Filter bbox
+		// Filter spatial / bbox
 		var spatial_extent = node.getArgument("spatial_extent");
 		if (spatial_extent !== null) {
-			if (spatial_extent.type) { // GeoJSON
-				dc = Commons.filterPolygons(dc, spatial_extent, this.spec.id, 'spatial_extent');
+			if (spatial_extent.type) { // GeoJSON - has been validated before so `type` should be a safe indicator for GeoJSON
+				dc = Commons.filterGeoJSON(dc, spatial_extent, this.spec.id, 'spatial_extent');
 			}
 			else { // Bounding box
 				dc = Commons.filterBbox(dc, spatial_extent, this.spec.id, 'spatial_extent');

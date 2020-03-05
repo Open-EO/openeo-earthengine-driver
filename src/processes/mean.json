@@ -7,8 +7,9 @@
         "reducer"
     ],
     "gee:custom": true,
-    "parameters": {
-        "data": {
+    "parameters": [
+        {
+            "name": "data",
             "description": "An array of numbers. An empty array resolves always with `null`.",
             "schema": {
                 "type": "array",
@@ -18,10 +19,9 @@
                         "null"
                     ]
                 }
-            },
-            "required": true
+            }
         }
-    },
+    ],
     "returns": {
         "description": "The computed arithmetic mean.",
         "schema": {
@@ -34,15 +34,34 @@
     "examples": [
         {
             "arguments": {
-                "data": [1,0,3,2]
+                "data": [
+                    1,
+                    0,
+                    3,
+                    2
+                ]
             },
             "returns": 1.5
         },
         {
             "arguments": {
-                "data": [9,2.5,null,-2.5]
+                "data": [
+                    9,
+                    2.5,
+                    null,
+                    -2.5
+                ]
             },
             "returns": 3
+        },
+        {
+            "arguments": {
+                "data": [
+                    1,
+                    null
+                ]
+            },
+            "returns": null
         },
         {
             "description": "The input array is empty: return `null`.",
