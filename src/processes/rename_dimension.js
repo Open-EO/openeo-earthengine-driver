@@ -3,7 +3,7 @@ const { BaseProcess } = require('@openeo/js-processgraphs');
 
 module.exports = class rename_dimension extends BaseProcess {
 	async execute(node) {
-		var dc = node.getData("data");
+		var dc = node.getDataCube("data");
 		var srcName = node.getArgument('source');
 		var trgName = node.getArgument('target');
 

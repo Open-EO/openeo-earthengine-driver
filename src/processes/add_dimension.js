@@ -4,7 +4,7 @@ const { BaseProcess } = require('@openeo/js-processgraphs');
 module.exports = class add_dimension extends BaseProcess {
 
 	async execute(node) {
-		var dc = node.getData("data");
+		var dc = node.getDataCube("data");
 		var name = node.getArgument('name');
 		var label = node.getArgument('label');
 		var type = node.getArgument("type");

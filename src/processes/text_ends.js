@@ -11,7 +11,7 @@ module.exports = class text_ends extends BaseProcess {
             pattern = pattern.toLowerCase();
         }
 
-        var dc = node.getData('data');
+        var dc = node.getDataCube('data');
         dc.setData(data.endsWith(pattern));
         return dc;
     }

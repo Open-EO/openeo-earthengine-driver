@@ -10,7 +10,7 @@ module.exports = class text_begins extends BaseProcess {
             data = data.toLowerCase();
             pattern = pattern.toLowerCase();
         }
-        var dc = node.getData('data');
+        var dc = node.getDataCube('data');
         dc.setData(data.startsWith(pattern));
         return dc;
     }

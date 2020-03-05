@@ -14,7 +14,7 @@ module.exports = class save_result extends BaseProcess {
 	}
 
 	async execute(node) {
-		var data = node.getData("data");
+		var data = node.getDataCube("data");
 		data.setOutputFormat(
 			node.getArgument("format"),
 			node.getArgument("options")

@@ -8,7 +8,7 @@ module.exports = class filter_bands extends BaseProcess {
 	}
 
 	async execute(node) {
-		var dc = node.getData('data');
+		var dc = node.getDataCube('data');
 		var bands = node.getArgument('bands');
 		return this.process(dc, bands);
 	}

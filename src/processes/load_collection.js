@@ -9,8 +9,7 @@ module.exports = class load_collection extends BaseProcess {
 		var id = node.getArgument('id');
 		var collection = node.getContext().getCollection(id);
 		var dc = new DataCube();
-		var images = ee.ImageCollection(id);
-		dc.setData(images);
+		dc.setData(ee.ImageCollection(id));
 		dc.setDimensionsFromSTAC(collection.properties['cube:dimensions']);
 
 		// Filter temporal

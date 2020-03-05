@@ -131,7 +131,7 @@ module.exports = class ProcessCommons {
 	}
 
 	static applyInCallback(node, imageProcess, jsProcess = null, dataArg = "x") {
-		var dc = node.getData(dataArg);
+		var dc = node.getDataCube(dataArg);
 		var data = dc.getData();
 		if (typeof data === 'number' && typeof jsProcess === 'function') {
 			dc.setData(jsProcess(data));
@@ -143,7 +143,7 @@ module.exports = class ProcessCommons {
 			dc.image(imageProcess);
 		}
 		else {
-			throw new Error("Calculating " + node.process_id + " not supported for given data type.");
+			throw new Error("Applying " + node.process_id + " not supported for given data type.");
 		}
 		return dc;
 	}

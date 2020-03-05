@@ -6,7 +6,7 @@ const ProcessGraph = require('../processgraph/processgraph');
 module.exports = class reduce_dimension extends BaseProcess {
 
 	async execute(node) {
-		var dc = node.getData("data");
+		var dc = node.getDataCube("data");
 
 		var dimensionName = node.getArgument("dimension");
 		var dimension = dc.getDimension(dimensionName);
@@ -22,7 +22,7 @@ module.exports = class reduce_dimension extends BaseProcess {
 		var callback = node.getArgument("reducer");
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.schema.id,
+				process: this.spec.id,
 				argument: 'reducer',
 				reason: 'No reducer specified.'
 			});
@@ -50,7 +50,8 @@ module.exports = class reduce_dimension extends BaseProcess {
 				values = dimension.getValues().map(band => ic.select(band));
 			}
 			var resultNode = await callback.execute({
-				data: values
+				data: values,
+				context: node.getArgument("context")
 			});
 			resultDataCube = new DataCube(dc);
 			resultDataCube.setData(resultNode.getResult());
