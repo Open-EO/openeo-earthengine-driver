@@ -2,7 +2,7 @@ const Errors = require('../errors');
 const Utils = require('../utils');
 const DataCube = require('./datacube');
 
-module.exports = class ProcessCommons {
+module.exports = class Commons {
 
 	// ToDo: Also implement ee.Array.* instead only ee.Image.*
 
@@ -149,12 +149,17 @@ module.exports = class ProcessCommons {
 		}
 	}
 
+	static restrictToSpatialExtent(dc) {
+		var bbox = dc.getSpatialExtent();
+		var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], bbox.crs || 'EPSG:4326');
+		dc.imageCollection(ic => ic.filterBounds(geom));
+		return dc;
+	}
+
 	static filterBbox(dc, bbox, process_id, paramName) {
 		try {
 			dc.setSpatialExtent(bbox);
-			var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], bbox.crs || 'EPSG:4326');
-			dc.imageCollection(ic => ic.filterBounds(geom));
-			return dc;
+			return Commons.restrictToSpatialExtent(dc);
 		} catch (e) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: process_id,
@@ -164,17 +169,17 @@ module.exports = class ProcessCommons {
 		}
 	}
 
-	// TODO: this changes the dc directly, copy would be more suitable if it does not cost too much
 	static filterBands(dc, bands) {
 		dc.imageCollection(ic => ic.select(bands));
 		dc.dimBands().setValues(bands);
 		return dc;
 	}
 
-	static filterPolygons(dc, polygons, process_id, paramName) {
+	static filterGeoJSON(dc, geometries, process_id, paramName) {
 		try {
-			var geom = Utils.geoJsonToGeometry(polygons);
-			dc.setSpatialExtentFromGeometry(polygons);
+			var geom = Utils.geoJsonToGeometry(geometries);
+			dc.setSpatialExtentFromGeometry(geometries);
+			dc = Commons.restrictToSpatialExtent(dc);
 			dc.imageCollection(ic => ic.map(img => img.clip(geom)));
 			return dc;
 		} catch (e) {

@@ -91,10 +91,8 @@ All of them only work in JS only mode, may not work if used with GEE data.
 
 # Cubes
 - [X] add_dimension
-- [ ] apply
-    * implement complex apply
+- [X] apply
 - [ ] apply_dimension
-    * implement complex apply
 - [ ] apply_kernel
     * `ee.Image.convolve(kernel)` with `ee.Kernel..` could be used
 - [X] create_raster_cube
@@ -102,8 +100,8 @@ All of them only work in JS only mode, may not work if used with GEE data.
 - [X] drop_dimension
 - [ ] filter_labels
     * functions already in place
-- [ ] filter_spatial
-    * has previously been _filter_polygon_ process, now removed until new implementation. See git history.
+- [X] filter_spatial
+    * May not exactly follow the spec regarding the pixels covered...
 - [X] filter_bbox
     * WKT implementation missing
 - [X] filter_temporal
@@ -114,7 +112,6 @@ All of them only work in JS only mode, may not work if used with GEE data.
 - [X] load_collection
     * filter metadata by properties is missing
     * usage of common_bands metadata is missing
-    * spatial filter by geojson is missing
     * bbox WKT implementation missing
 - [ ] load_result
 - [ ] load_uploaded_files

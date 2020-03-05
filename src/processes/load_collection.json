@@ -82,6 +82,11 @@
                     }
                 },
                 {
+                    "title": "GeoJSON",
+                    "type": "object",
+                    "subtype": "geojson"
+                },
+                {
                     "title": "No filter",
                     "description": "Don't filter spatially. All data is included in the data cube.",
                     "type": "null"

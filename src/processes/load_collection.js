@@ -18,16 +18,15 @@ module.exports = class load_collection extends BaseProcess {
 			dc = Commons.filterTemporal(dc, temporal_extent);
 		}
 
-		// Filter bbox
+		// Filter spatial / bbox
 		var spatial_extent = node.getArgument("spatial_extent");
 		if (spatial_extent !== null) {
-// ToDo: Add GeoJSON support again
-//			if (spatial_extent.type) { // GeoJSON
-//				dc = Commons.filterPolygons(dc, spatial_extent, this.spec.id, 'spatial_extent');
-//			}
-//			else { // Bounding box
+			if (spatial_extent.type) { // GeoJSON - has been validated before so `type` should be a safe indicator for GeoJSON
+				dc = Commons.filterGeoJSON(dc, spatial_extent, this.spec.id, 'spatial_extent');
+			}
+			else { // Bounding box
 				dc = Commons.filterBbox(dc, spatial_extent, this.spec.id, 'spatial_extent');
-//			}
+			}
 		}
 
 		// Filter bands
