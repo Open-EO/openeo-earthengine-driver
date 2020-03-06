@@ -1,6 +1,7 @@
 const Utils = require('../utils');
 const Errors = require('../errors');
 const ProcessGraph = require('../processgraph/processgraph');
+const { ErrorList } = require('@openeo/js-processgraphs');
 
 module.exports = class StoredProcessGraphs {
 
@@ -12,9 +13,8 @@ module.exports = class StoredProcessGraphs {
 	beforeServerStart(server) {
 		server.addEndpoint('post', '/validation', this.postValidation.bind(this));
 		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this));
-		server.addEndpoint('post', '/process_graphs', this.postProcessGraph.bind(this));
 		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraph.bind(this));
-		server.addEndpoint('patch', '/process_graphs/{process_graph_id}', this.patchProcessGraph.bind(this));
+		server.addEndpoint('put', '/process_graphs/{process_graph_id}', this.putProcessGraph.bind(this));
 		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraph.bind(this));
 
 		return Promise.resolve();
@@ -24,7 +24,7 @@ module.exports = class StoredProcessGraphs {
 		if (!Utils.isObject(req.body)) {
 			return next(new Errors.RequestBodyMissing());
 		}
-		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		var pg = new ProcessGraph(req.body, this.context.processingContext(req));
 		pg.validate(false)
 			.then(errors => {
 				res.send(200, {
@@ -57,116 +57,50 @@ module.exports = class StoredProcessGraphs {
 		});
 	}
 
-	postProcessGraph(req, res, next) {
+	putProcessGraph(req, res, next) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
 		else if (!Utils.isObject(req.body)) {
 			return next(new Errors.RequestBodyMissing());
 		}
-		else if (typeof req.body.id !== 'string' || req.body.id.match(/^\w+$/i) === null) {
+		else if (typeof req.params.process_graph_id !== 'string' || req.params.process_graph_id.match(/^\w+$/i) === null) {
 			return next(new Errors.ProcessGraphIdInvalid());
 		}
-
-		let query = {
-			id: req.body.id,
-			user_id: req.user._id
-		};
-		this.storage.database().findOne(query, {}, (err, pg) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (pg === null) {
-				pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
-				pg.validate()
-					.then(() => {
-						var data = {
-							user_id: req.user._id
-						};
-						for(let field of this.storage.getFields()) {
-							if (typeof req.body[field] !== 'undefined') {
-								data[field] = req.body[field];
-							}
-						}
-						this.storage.database().insert(data, (err, pgObj) => {
-							if (err) {
-								return next(Errors.wrap(err));
-							}
-							else {
-								res.header('OpenEO-Identifier', pgObj.id);
-								res.redirect(201, Utils.getApiUrl('/process_graphs/' + pgObj.id), next);
-							}
-						});
-					})
-					.catch(e => next(e));
-			}
-			else {
-				return next(new Errors.ProcessGraphIdExists());
-			}
-		});
-	}
-
-	patchProcessGraph(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
-		}
 		else if (typeof req.body.id !== 'undefined' && req.body.id !== req.params.process_graph_id) {
-			return next(new Errors.PropertyNotEditable({property: 'id'}));
+			return next(new Errors.ProcessGraphIdDoesntMatch());
 		}
-		var query = {
-			id: req.params.process_graph_id,
-			user_id: req.user._id
-		};
-		this.storage.database().findOne(query, {}, (err, pg) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (pg === null) {
-				return next(new Errors.ProcessGraphNotFound());
-			}
+		else if (this.context.processes().get(req.params.process_graph_id) !== null) {
+			return next(new Errors.PredefinedProcessExists());
+		}
 
-			var data = {};
-			var promises = [];
-			for(let key in req.body) {
-				if (this.storage.isFieldEditable(key)) {
-					switch(key) {
-						case 'process_graph':
-							var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
-							promises.push(pg.validate());
-							break;
-						default:
-							// ToDo: Validate further data
-					}
-					data[key] = req.body[key];
-				}
-				else {
-					return next(new Errors.PropertyNotEditable({property: key}));
-				}
-			}
+		// Set the id in the JSON body if not set by the user
+		req.body.id = req.params.process_graph_id;
 
-			if (Utils.size(data) === 0) {
-				return next(new Errors.NoDataForUpdate());
-			}
-
-			Promise.all(promises).then(() => {
-				this.storage.database().update(query, { $set: data }, {}, function (err, numChanged) {
+		pg = new ProcessGraph(req.body, this.context.processingContext(req));
+		pg.validate().then(() => {
+			let query = {
+				id: req.body.id,
+				user_id: req.user._id
+			};
+			let data = Object.assign({}, query, req.body);
+			this.storage.database().update(
+				query,
+				data,
+				{ upsert: true },
+				(err, numReplaced, upsert) => {
 					if (err) {
 						return next(Errors.wrap(err));
 					}
-					else if (numChanged === 0) {
-						return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
-					}
 					else {
-						res.send(204);
+						console.log(numReplaced, upsert);
+						res.send(200);
 						return next();
 					}
-				});
-			})
-			.catch(e => next(Errors.wrap(e)));
-		});
+				}
+			);
+		})
+		.catch(e => next(e));
 	}
 
 	deleteProcessGraph(req, res, next) {

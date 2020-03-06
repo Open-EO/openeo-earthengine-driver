@@ -133,7 +133,7 @@ module.exports = class JobsAPI {
 			user_id: req.user._id
 		};
 
-		var filePath, jobId, processGraph;
+		var filePath, jobId, process;
 		this.storage.findJob(query)
 		.then(job => {
 			if (job.status === 'queued' || job.status === 'running') {
@@ -141,7 +141,7 @@ module.exports = class JobsAPI {
 			}
 
 			jobId = job._id;
-			processGraph = job.process_graph;
+			process = job.process;
 
 			this.sendDebugNotifiction(req, res, "Queueing batch job");
 			this.storage.updateJobStatus(query, 'queued').catch(() => {});
@@ -155,7 +155,7 @@ module.exports = class JobsAPI {
 			this.storage.updateJobStatus(query, 'running').catch(() => {});
 
 			var context = this.context.processingContext(req);
-			var pg = new ProcessGraph(processGraph, context);
+			var pg = new ProcessGraph(process, context);
 			return pg.execute();
 		})
 		.then(resultNode => {
@@ -303,8 +303,8 @@ module.exports = class JobsAPI {
 			for(let key in req.body) {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
-						case 'process_graph':
-							var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+						case 'process':
+							var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 							promises.push(pg.validate());
 							break;
 						default:
@@ -349,13 +349,13 @@ module.exports = class JobsAPI {
 			return next(new Errors.RequestBodyMissing());
 		}
 
-		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 		pg.validate().then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,
 				description: req.body.description || null,
-				process_graph: req.body.process_graph,
+				process: req.body.process,
 				status: "created",
 				created: Utils.getISODateTime(),
 				updated: Utils.getISODateTime(),
@@ -384,18 +384,15 @@ module.exports = class JobsAPI {
 		else if (!Utils.isObject(req.body)) {
 			return next(new Errors.RequestBodyMissing());
 		}
-		else if (!Utils.isObject(req.body.process_graph) || Utils.size(req.body.process_graph) === 0) {
-			return next(new Errors.ProcessGraphMissing());
-		}
 
 		let plan = req.body.plan || this.context.plans.default;
 		let budget = req.body.budget || null;
 		// ToDo: Validate data, handle budget and plan input
-
+	
 		this.sendDebugNotifiction(req, res, "Starting to process request");
 
 		var context = this.context.processingContext(req);
-		var pg = new ProcessGraph(req.body.process_graph, context);
+		var pg = new ProcessGraph(req.body.process, context);
 		pg.validate(false)
 			.then(errorList => {
 				this.sendDebugNotifiction(req, res, "Validated with " + errorList.count() + " errors");
@@ -403,7 +400,6 @@ module.exports = class JobsAPI {
 					errorList.getAll().forEach(error => this.sendDebugNotifiction(req, res, error));
 					throw errorList.first();
 				}
-
 				this.sendDebugNotifiction(req, res, "Executing processes");
 				return pg.execute();
 			})
@@ -442,7 +438,7 @@ module.exports = class JobsAPI {
 			budget: job.budget || null
 		};
 		if (full) {
-			response.process_graph = job.process_graph;
+			response.process = job.process;
 		}
 		return response;
 	}

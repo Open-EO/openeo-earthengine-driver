@@ -40,7 +40,7 @@ module.exports = class ServicesAPI {
 				var context = this.context.processingContext(req);
 				// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
 				context.setUserId(service.user_id);
-				var pg = new ProcessGraph(service.process_graph, context);
+				var pg = new ProcessGraph(service.process, context);
 				pg.optimizeLoadCollectionRect(rect);
 				pg.execute()
 					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', rect))
@@ -125,8 +125,8 @@ module.exports = class ServicesAPI {
 			for(let key in req.body) {
 				if (this.storage.isFieldEditable(key)) {
 					switch(key) {
-						case 'process_graph':
-						var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+						case 'process':
+							var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 							promises.push(pg.validate());
 							break;
 						case 'type':
@@ -202,13 +202,13 @@ module.exports = class ServicesAPI {
 			return next(new Errors.ServiceUnsupported());
 		}
 
-		var pg = new ProcessGraph(req.body.process_graph, this.context.processingContext(req));
+		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 		pg.validate().then(() => {
 			// ToDo: Validate data
 			var data = {
 				title: req.body.title || null,
 				description: req.body.description || null,
-				process_graph: req.body.process_graph,
+				process: req.body.process,
 				configuration: (typeof req.body === 'object' && Utils.isObject(req.body.configuration)) ? req.body.configuration : {},
 				attributes: {},
 				type: req.body.type,
@@ -245,7 +245,7 @@ module.exports = class ServicesAPI {
 			budget: service.budget || null
 		};
 		if (full) {
-			response.process_graph = service.process_graph;
+			response.process = service.process;
 			response.configuration = Utils.isObject(service.configuration) ? service.configuration : {};
 			response.attributes = Utils.isObject(service.attributes) ? service.attributes : {};
 		}

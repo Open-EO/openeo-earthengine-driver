@@ -6,15 +6,10 @@ const Utils = require('../utils');
 
 module.exports = class GeeProcessGraph extends ProcessGraph {
 
-	constructor(processGraph, context, jsonSchemaValidator = null) {
-		super(processGraph, context.server().processes(), jsonSchemaValidator);
+	constructor(process, context, jsonSchemaValidator = null) {
+		super(process, context.server().processes(), jsonSchemaValidator);
 		this.context = context;
 		this.loadCollectionRect = null;
-	}
-
-	static fromLegacy(processGraph, processRegistry, version) {
-		processGraph = MigrateProcessGraphs.convertProcessGraphToLatestSpec(processGraph, version);
-		return new GeeProcessGraph(processGraph, processRegistry);
 	}
 
 	getContext() {
@@ -37,8 +32,8 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		return new GeeProcessGraphNode(json, id, parent);
 	}
 
-	createProcessGraphInstance(json) {
-		return new GeeProcessGraph(json, this.context);
+	createProcessGraphInstance(process) {
+		return new GeeProcessGraph(process, this.context);
 	}
 
 	async validateNode(node) {

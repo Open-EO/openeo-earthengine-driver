@@ -1,7 +1,7 @@
 # openeo-earthengine-driver
 openEO back-end driver for [Google Earth Engine](https://earthengine.google.com/).
 
-This back-end currently supports **openEO API version 1.0.0-rc.1**.
+This back-end currently supports **openEO API version 1.0.0-rc.2**.
 Legacy versions are available as releases.
 
 ## Demo

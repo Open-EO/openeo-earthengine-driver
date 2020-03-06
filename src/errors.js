@@ -2,6 +2,7 @@ const openeo_errors = require('../storage/errors/errors.json');
 const custom_errors = require('../storage/errors/custom.json');
 const restify_errors = require('restify-errors');
 const { Utils: CommonUtils } = require('@openeo/js-commons');
+const { ErrorList } = require('@openeo/js-processgraphs');
 
 const errors = Object.assign(openeo_errors, custom_errors);
 
@@ -54,6 +55,10 @@ restify_errors.wrap = function(e, callback) {
 	if (typeof e === 'string') {
 		e = new Error(e);
 	}
+	else if (e instanceof ErrorList) {
+		e = e.first();
+	}
+
 	if (CommonUtils.isObject(e) && e.native === true) {
 		return e; // An openEO error
 	}

@@ -7,7 +7,7 @@ module.exports = class Config {
 
 		this.hostname = "127.0.0.1";
 		this.apiPath = "/";
-		this.apiVersion = "1.0.0-rc.1";
+		this.apiVersion = "1.0.0-rc.2";
 
 		this.id = "openeo-earthengine-driver";
 		this.title = "Google Earth Engine";

@@ -119,5 +119,21 @@
 		"tags": [
 			"Processes"
 		]
+	},
+	"ProcessGraphIdDoesntMatch": {
+		"description": null,
+		"message": "The id in the parameter and the id in the document don't match.",
+		"http": 400,
+		"tags": [
+			"Process Graph Management"
+		]
+	},
+	"PredefinedProcessExists": {
+		"description": null,
+		"message": "A pre-defined process with the given id exists.",
+		"http": 400,
+		"tags": [
+			"Process Graph Management"
+		]
 	}
 }
