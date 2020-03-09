@@ -52,18 +52,19 @@ module.exports = class ProcessingContext {
 
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube, bbox = null) {
-		var format = dataCube.getOutputFormat() || "jpeg";
 		if (!bbox) {
 			bbox = dataCube.getSpatialExtent();
 		}
 		var region = Utils.bboxToGeoJson(bbox);
+		var format = dataCube.getOutputFormat() || "png";
+		var parameters = dataCube.getOutputFormatParameters();
+		var crs = 'EPSG:' + (parameters.epsgCode > 0 ? parameters.epsgCode  : 3857);
 		switch(format.toLowerCase()) {
 			case 'jpeg':
 			case 'png':
 				return new Promise((resolve, reject) => {
 					var visBands = null;
 					var visPalette = null;
-					var parameters = dataCube.getOutputFormatParameters();
 					if (Array.isArray(parameters.palette)) {
 						visPalette = parameters.palette;
 					}
@@ -91,7 +92,7 @@ module.exports = class ProcessingContext {
 						format: this.translateOutputFormat(format),
 						dimensions: parameters.size || 2000,
 						region: region,
-//						crs: 'EPSG:3857' // toDo: Check results
+						crs: crs
 					}, (url, err) => {
 						if (typeof err === 'string') {
 							reject(new Errors.Internal({message: err}));
