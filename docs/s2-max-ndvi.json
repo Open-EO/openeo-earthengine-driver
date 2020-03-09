@@ -147,13 +147,7 @@
       "data": {
         "from_node": "apply"
       },
-      "format": "PNG",
-      "options": {
-        "red": null,
-        "green": null,
-        "blue": null,
-        "gray": null
-      }
+      "format": "PNG"
     },
     "result": true
   }

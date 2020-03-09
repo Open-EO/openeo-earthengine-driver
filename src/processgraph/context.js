@@ -51,18 +51,23 @@ module.exports = class ProcessingContext {
 	}
 
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
-	async retrieveResults(dataCube, size = 2000, bbox = null) {
+	async retrieveResults(dataCube, bbox = null) {
 		var format = dataCube.getOutputFormat() || "jpeg";
+		if (!bbox) {
+			bbox = dataCube.getSpatialExtent();
+		}
+		var region = Utils.bboxToGeoJson(bbox);
 		switch(format.toLowerCase()) {
 			case 'jpeg':
 			case 'png':
-				if (!bbox) {
-					bbox = dataCube.getSpatialExtent();
-				}
 				return new Promise((resolve, reject) => {
 					var visBands = null;
+					var visPalette = null;
 					var parameters = dataCube.getOutputFormatParameters();
-					if (parameters.red && parameters.green && parameters.blue){
+					if (Array.isArray(parameters.palette)) {
+						visPalette = parameters.palette;
+					}
+					else if (parameters.red && parameters.green && parameters.blue){
 						visBands = [parameters.red, parameters.green, parameters.blue];
 					}
 					else if(parameters.gray){
@@ -82,10 +87,9 @@ module.exports = class ProcessingContext {
 						}
 					}
 
-					var region = Utils.bboxToGeoJson(bbox);
-					dataCube.image().visualize({min: 0, max: 255, bands: visBands}).getThumbURL({
+					dataCube.image().visualize({min: 0, max: 255, bands: visBands, palette: visPalette}).getThumbURL({
 						format: this.translateOutputFormat(format),
-						dimensions: size,
+						dimensions: parameters.size || 2000,
 						region: region,
 //						crs: 'EPSG:3857' // toDo: Check results
 					}, (url, err) => {
