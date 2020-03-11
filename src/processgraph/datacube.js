@@ -50,7 +50,7 @@ module.exports = class DataCube {
 		// Check for ComputedObject only after checking all the other EE types above
 		else if (data instanceof ee.ComputedObject) {
 			console.log("Calling slow function getInfo(); Try to avoid this.");
-			// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
+			// ToDo: Make async, see Utils.promisify
 			var info = data.getInfo();
 			// Only works for Image and ImageCollection and maybe some other types, but not for Array for example.
 			// Arrays, numbers and all other scalars should be handled with the native JS code below.
@@ -217,8 +217,11 @@ module.exports = class DataCube {
 	}
 
 	setSpatialExtent(extent) {
-		var crs = extent.crs > 0 ? 'EPSG:' + extent.crs : 'EPSG:4326';
-		var proj = proj4(crs, this.getCrs());
+		extent.crs = extent.crs > 0 ? extent.crs : 4326;
+		var proj = proj4(
+			Utils.crsToString(extent.crs),
+			Utils.crsToString(this.getCrs())
+		);
 		var p1 = proj.forward([extent.west, extent.south]);
 		var p2 = proj.forward([extent.east, extent.north]);
 		this.dimX().setExtent(p1[0], p2[0]);
@@ -231,7 +234,10 @@ module.exports = class DataCube {
 	setSpatialExtentFromGeometry(geometry) { // GeoJSON geometry
 		var bbox = Utils.geoJsonBbox(geometry);
 		var hasZ = bbox.length > 4;
-		var proj = proj4('WGS84', this.getCrs());
+		var proj = proj4(
+			'WGS84',
+			Utils.crsToString(this.getCrs())
+		);
 		var p1 = proj.forward([bbox[0], bbox[1]]);
 		var p2 = proj.forward([bbox[hasZ ? 3 : 2], bbox[hasZ ? 4 : 3]]);
 		this.dimX().setExtent(p1[0], p2[0]);
@@ -291,8 +297,10 @@ module.exports = class DataCube {
 	}
 
 	setCrs(refSys) {
+		var extent = this.getSpatialExtent();
 		this.dimX().setReferenceSystem(refSys);
 		this.dimY().setReferenceSystem(refSys);
+		this.setSpatialExtent(extent); // Update the extent based on the new CRS
 	}
 
 	setReferenceSystem(dimName, refSys) {

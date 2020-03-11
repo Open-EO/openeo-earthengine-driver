@@ -87,6 +87,34 @@ module.exports = class Config {
 				gis_data_types: ['raster'],
 				parameters: visOptions
 			},
+			GTIFF: {
+				title: 'GeoTiff',
+				gis_data_types: ['raster'],
+				parameters: {
+					scale: {
+						type: 'integer',
+						description: 'Target resolution for the exported file, in meters. Scale and Size are mutually exclusive.',
+						default: 1000
+					},
+					size: {
+						type: 'integer',
+						description: 'The size for the longest side the image, in pixels. Scale and Size are mutually exclusive.',
+						default: null,
+						minimum: 1
+					},
+					cloudOptimized: {
+						type: 'boolean',
+						description: 'Store files as cloud-optimized GeoTiff (`true`) or not (`false`).',
+						default: true
+					},
+					epsgCode: {
+						type: 'integer',
+						subtype: 'epsg-code', // The formats are not specification compliant, but are allowed to be added.
+						description: 'EPSG Code to reproject the images to. Defaults to native CRS.',
+						default: null
+					}
+				}
+			},
 			JSON: {
 				gis_data_types: ['raster', 'vector', 'table', 'other']
 			}

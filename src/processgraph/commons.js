@@ -151,7 +151,7 @@ module.exports = class Commons {
 
 	static restrictToSpatialExtent(dc) {
 		var bbox = dc.getSpatialExtent();
-		var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], bbox.crs || 'EPSG:4326');
+		var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs) || 'EPSG:4326');
 		dc.imageCollection(ic => ic.filterBounds(geom));
 		return dc;
 	}

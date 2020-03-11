@@ -26,6 +26,25 @@ var Utils = {
 		return this.serverUrl;
 	},
 
+	async promisify(obj, method = null) {
+		return new Promise((resolve, reject) => {
+			var callback = (result, err) => {
+				if (err) {
+					reject(err)
+				}
+				else {
+					resolve(result);
+				}
+			};
+			if (method) {
+				obj[method](callback);
+			}
+			else {
+				obj(callback);
+			}
+		});
+	},
+
 	toISODate(timestamp) {
 		return (new Date(timestamp)).toISOString();
 	},
@@ -77,9 +96,16 @@ var Utils = {
 		return datetime.replace(/\.\d{3}/, ''); // Remove milliseconds
 	},
 
+	crsToString(crs) {
+		if (typeof crs === 'number') {
+			return 'EPSG:' + crs;
+		}
+		return crs;
+	},
+
 	bboxToGeoJson(bbox) {
-		return {
-			geodesic: false,
+		var geom = {
+//			geodesic: false,
 			type: 'Polygon',
 			coordinates:
 				[ [ [ bbox.west, bbox.south ],
@@ -88,6 +114,15 @@ var Utils = {
 					[ bbox.west, bbox.north ],
 					[ bbox.west, bbox.south ] ] ]
 		};
+		if (bbox.crs) {
+			geom.crs = {
+				type: "name",
+				properties: {
+					name: Utils.crsToString(bbox.crs)
+				}
+			};
+		}
+		return geom;
 	},
 
 	geoJsonBbox(geojson) {

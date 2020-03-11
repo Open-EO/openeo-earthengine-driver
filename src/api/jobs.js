@@ -133,29 +133,26 @@ module.exports = class JobsAPI {
 			user_id: req.user._id
 		};
 
-		var filePath, jobId, process;
+		var filePath, jobId;
 		this.storage.findJob(query)
 		.then(job => {
 			if (job.status === 'queued' || job.status === 'running') {
 				throw new Errors.JobNotFinished();
 			}
-
 			jobId = job._id;
-			process = job.process;
 
 			this.sendDebugNotifiction(req, res, "Queueing batch job");
 			this.storage.updateJobStatus(query, 'queued').catch(() => {});
+			this.storage.removeResults(job._id);
 		
 			res.send(202);
-			return next();
-		})
-		.then(() => this.storage.removeResults(jobId))
-		.then(() => {
+			next();
+
 			this.sendDebugNotifiction(req, res, "Starting batch job");
 			this.storage.updateJobStatus(query, 'running').catch(() => {});
 
 			var context = this.context.processingContext(req);
-			var pg = new ProcessGraph(process, context);
+			var pg = new ProcessGraph(job.process, context);
 			return pg.execute();
 		})
 		.then(resultNode => {
@@ -163,37 +160,44 @@ module.exports = class JobsAPI {
 			var cube = resultNode.getResult();
 			var jobFormat = context.translateOutputFormat(cube.getOutputFormat());
 			filePath = this.storage.getJobFile(jobId, Utils.generateHash() +  "." + jobFormat);
-			return context.retrieveResults(cube);
+			return context.retrieveResults(cube, null, jobId);
 		})
-		.then(url => {
-			this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
-			return Utils.stream({
-				method: 'get',
-				url: url,
-				responseType: 'stream'
-			});
-		})
-		.then(stream => {
-			this.sendDebugNotifiction(req, res, "Storing result to: " + filePath);
-			return fse.ensureDir(path.dirname(filePath))
-				.then(() => new Promise((resolve, reject) => {
-					var writer = fse.createWriteStream(filePath);
-					stream.data.pipe(writer);
-					writer.on('error', (e) => {
-						reject(Errors.wrap(e));
-					});
-					writer.on('close', () => {
-						resolve();
-					});
-				}));
+		.then(urls => {
+			var promises = [];
+			for(var url of urls) {
+				this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
+				p = Utils.stream({
+					method: 'get',
+					url: url,
+					responseType: 'stream'
+				}).then(stream => {
+					this.sendDebugNotifiction(req, res, "Storing result for " + url + " to: " + filePath);
+					return fse.ensureDir(path.dirname(filePath))
+						.then(() => new Promise((resolve, reject) => {
+							var writer = fse.createWriteStream(filePath);
+							stream.data.pipe(writer);
+							writer.on('error', (e) => {
+								reject(Errors.wrap(e));
+							});
+							writer.on('close', () => {
+								resolve();
+							});
+						}));
+				});
+				promises.push(p);
+			}
+			return Promise.all(promises);
 		})
 		.then(() => {
 			this.sendDebugNotifiction(req, res, "Finished");
 			this.storage.updateJobStatus(query, 'finished')
 		})
 		.catch(e => {
-			this.storage.updateJobStatus(query, 'error', e);
-			this.sendDebugNotifiction(req, res, e);
+			if (!(e instanceof Errors.JobNotFinished)) {
+				this.storage.updateJobStatus(query, 'error', e);
+				this.sendDebugNotifiction(req, res, e);
+			}
+			next(Errors.wrap(e));
 		});
 	}
 
@@ -404,11 +408,11 @@ module.exports = class JobsAPI {
 				return pg.execute();
 			})
 			.then(resultNode => context.retrieveResults(resultNode.getResult()))
-			.then(url => {
-				this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
+			.then(urls => {
+				this.sendDebugNotifiction(req, res, "Downloading data from Google: " + urls[0]);
 				return Utils.stream({
 					method: 'get',
-					url: url,
+					url: urls[0],
 					responseType: 'stream'
 				});
 			})

@@ -43,16 +43,34 @@ class Server {
 
 		const privateKey = fse.readJsonSync(this.serverContext.serviceAccountCredentialsFile);
 		ee.data.authenticateViaPrivateKey(privateKey,
-			() => { 
-				console.info("GEE Authentication succeeded.");
+			async () => {
+				console.info("Google Earth Engine Authentication succeeded.");
 				ee.initialize();
+				await this.serverContext.drive().connect(privateKey);
+				this.cleanEeTasks();
 				this.startServer();
 			},
 			(error) => {
-				console.error("ERROR: GEE Authentication failed: " + error);
+				console.error("ERROR: Google Earth Engine Authentication failed: " + error);
 				process.exit(1);
 			}
 		);
+	}
+
+	cleanEeTasks() {
+		var taskList = ee.data.getTaskList();
+		console.log("Google Earth Engine Tasks: " + taskList.tasks.length);
+		if (this.serverContext.debug) {
+			for(var task of taskList.tasks) {
+				switch (task.state) {
+					case 'RUNNING':
+					case 'READY':
+						console.log("Cancelling Task: " + task.id);
+						ee.data.cancelTask(task.id);
+						break;
+				}
+			}
+		}
 	}
 
 	addEndpoint(method, path, callback, root = false) {

@@ -9,6 +9,7 @@ const FileWorkspace = require('./models/workspace');
 const JobStore = require('./models/jobstore');
 const UserStore = require('./models/userstore');
 const ServiceStore = require('./models/servicestore');
+const Drive = require('./models/drive');
 
 module.exports = class ServerContext extends Config {
 
@@ -21,7 +22,12 @@ module.exports = class ServerContext extends Config {
 		this.jobStore = new JobStore();
 		this.userStore = new UserStore();
 		this.serviceStore = new ServiceStore();
+		this.driveApi = new Drive();
 		this.tempFolder = './storage/temp_files';
+	}
+
+	drive() {
+		return this.driveApi;
 	}
 
 	jobs() {

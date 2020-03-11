@@ -48,11 +48,11 @@ module.exports = class ServicesAPI {
 						dataCube.setOutputFormatParameter('size', '256x256');
 						return context.retrieveResults(dataCube, rect);
 					})
-					.then(url => {
+					.then(urls => {
 						if (this.context.debug) {
-							console.log("Serving " + url);
+							console.log("Serving " + urls[0]);
 						}
-						res.redirect(url, next);
+						res.redirect(urls[0], next);
 					})
 					.catch(e => next(Errors.wrap(e)));
 			} catch(e) {
