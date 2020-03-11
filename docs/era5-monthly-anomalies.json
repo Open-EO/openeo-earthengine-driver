@@ -5,7 +5,7 @@
 		"arguments": {
 			"id": "ECMWF/ERA5/MONTHLY",
 			"spatial_extent": null,
-			"temporal_extent": ["1979-01-01","2019-08-01"],
+			"temporal_extent": ["1979-01-01","2020-01-01"],
 			"bands": ["mean_2m_air_temperature"]
 		}
 	},
@@ -28,11 +28,20 @@
 			}
 		}
 	},
+	"normals": {
+		"process_id": "climatological_normal",
+		"description": "Create the climatological period normals.",
+		"arguments": {
+			"data": {"from_node": "convert"},
+			"frequency": "monthly"
+		}
+	},
 	"anomaly": {
 		"process_id": "anomaly",
 		"description": "For each month in the time-series, calculate the anomaly",
 		"arguments": {
 			"data": {"from_node": "convert"},
+			"normals": {"from_node": "normals"},
 			"frequency": "monthly"
 		}
 	},

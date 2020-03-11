@@ -1,7 +1,7 @@
 {
     "id": "anomaly",
-    "summary": "Computes climatology anomalies",
-    "description": "...",
+    "summary": "Computes anomalies",
+    "description": "Computes anomalies based on normals for a specific temporal frequency.",
     "categories": [
         "cube",
         "math"
@@ -9,7 +9,15 @@
     "parameters": [
         {
             "name": "data",
-            "description": "A data cube. The datacube must span at least the temporal interval specified in the parameter `climatology_period`.",
+            "description": "A data cube. The datacube must contain exactly one temporal dimension.",
+            "schema": {
+                "type": "object",
+                "subtype": "raster-cube"
+            }
+        },
+        {
+            "name": "normals",
+            "description": "A data cube with normals, e.g. daily, monthly or yearly values from ``climatological_normal()``. Must contain exactly one temporal dimension with the labels set to numerical days of year, month of year week of year or years respectively.",
             "schema": {
                 "type": "object",
                 "subtype": "raster-cube"
@@ -17,35 +25,19 @@
         },
         {
             "name": "frequency",
-            "description": "...",
+            "description": "The time intervals to aggregate. The following pre-defined frequencies are supported:\r\n\r\n* `hourly`: Hour of the day. Dimension labels: `0` - `23`\r\n* `daily`: Day of the year. Dimension labels: `0` - `365`\r\n* `weekly`: Week of the year. Dimension labels: `1` - `52`\r\n* `monthly`: Month of the year. Dimension labels: `1` - `12`\r\n* `yearly`: Number of the year. Dimension labels are the four-digit year numbers.\r\n* `seasons`: Refers to three month periods of the calendar seasons (winter, spring, summer, autumn). Dimension labels: `djf` (December - February), `mam` (March - May), `jja` (June - August), `son` (September - November).\r\n* `tropical_seasons`: Refers to the 6 month periods of the tropical seasons (dry, wet). Dimension labels: `ndjfma` (November - April), `mjjaso` (May - October).",
             "schema": {
                 "type": "string",
                 "enum": [
-                    "weekly",
-                    "monthly",
-                    "yearly"
+                      "hourly",
+                      "daily",
+                      "weekly",
+                      "monthly",
+                      "yearly",
+                      "seasons",
+                      "tropical_seasons"
                 ]
             }
-        },
-        {
-            "name": "climatology_period",
-            "description": "...",
-            "schema": {
-              "type": "array",
-              "subtype": "temporal-interval",
-              "minItems": 2,
-              "maxItems": 2,
-              "items": {
-                "type": "string",
-                "subtype": "date",
-                "format": "date"
-              }
-            },
-            "default": [
-                "1981-01-01",
-                "2011-01-01"
-            ],
-            "optional": true
         }
     ],
     "returns": {
@@ -54,12 +46,5 @@
             "type": "object",
             "subtype": "raster-cube"
         }
-    },
-    "links": [
-        {
-            "rel": "about",
-            "href": "https://github.com/radiantearth/stac-spec/tree/master/extensions/eo#common-band-names",
-            "title": "List of common band names as specified by the STAC specification"
-        }
-    ]
+    }
 }

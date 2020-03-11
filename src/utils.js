@@ -12,6 +12,14 @@ var Utils = {
 	serverUrl: null,
 	apiPath: null,
 
+	sequence(min, max) {
+		var list = [];
+		for(var i = min; i <= max; i++) {
+			list.push(i);
+		}
+		return list;
+	},
+
 	getApiUrl(path = '') {
 		if (this.serverUrl === null || this.apiPath === null) {
 			console.warn('Server has not started yet, Utils.getApiUrl() is not available yet.');
