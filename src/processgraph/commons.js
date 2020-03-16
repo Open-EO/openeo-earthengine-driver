@@ -1,10 +1,114 @@
 const Errors = require('../errors');
 const Utils = require('../utils');
 const DataCube = require('./datacube');
+const ProcessGraph = require('./processgraph');
+
 
 module.exports = class Commons {
 
 	// ToDo: Also implement ee.Array.* instead only ee.Image.*
+
+	static async reduce(node, dc, process_id, allowedDimensionTypes = ["temporal", "bands"], reducerArgName = "reducer", dimensionArgName = "dimension", contextArgName = "context") {
+		var dimensionName = node.getArgument(dimensionArgName);
+		var dimension = dc.getDimension(dimensionName);
+		if (!allowedDimensionTypes.includes(dimension.type)) {
+			throw new Errors.ProcessArgumentInvalid({
+				process: process_id,
+				argument: dimensionArgName,
+				reason: 'Reducing dimension types other than ' + allowedDimensionTypes.join(' or ') + ' is currently not supported.'
+			});
+		}
+
+		var callback = node.getArgument(reducerArgName);
+		if (!(callback instanceof ProcessGraph)) {
+			throw new Errors.ProcessArgumentInvalid({
+				process: process_id,
+				argument: reducerArgName,
+				reason: 'No ' + reducerArgName + ' specified.'
+			});
+		}
+		else if (callback.getNodeCount() === 1) {
+			// This is a simple reducer with just one node
+			var childNode = callback.getResultNode();
+			var process = callback.getProcess(childNode);
+			if (typeof process.geeReducer !== 'function') {
+				throw new Errors.ProcessArgumentInvalid({
+					process: process_id,
+					argument: reducerArgName,
+					reason: 'The specified ' + reducerArgName + ' is invalid.'
+				});
+			}
+			console.log("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
+			dc = Commons.reduceSimple(dc, process.geeReducer(node));
+		}
+		else {
+			// This is a complex reducer
+			var values;
+			var ic = dc.imageCollection();
+			if (dimension.type === 'temporal') {
+				values = ic.toList(ic.size());
+			}
+			else if (dimension.type === 'bands') {
+				values = dimension.getValues().map(band => ic.select(band));
+			}
+			var resultNode = await callback.execute({
+				data: values,
+				context: node.getArgument(contextArgName)
+			});
+			dc.setData(resultNode.getResult());
+
+			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "#"
+			if (dimension.type === 'bands') {
+				dc.imageCollection(data => data.map(
+					img => img.select(dc.imageCollection().first().bandNames()).rename(["#"])
+				));
+			}
+		}
+		return dc;
+	}
+
+	static reduceSimple(dc, reducerFunc, reducerName = null) {
+		if (reducerName === null) {
+			if (typeof reducerFunc === 'string') {
+				reducerName = reducerFunc;
+			}
+			else {
+				throw new Error("The parameter 'reducerName' must be specified.");
+			}
+		}
+
+		if (!dc.isImageCollection() && !dc.isImage()) {
+			throw new Error("Calculating " + reducerName + " not supported for given data type: " + dc.objectType());
+		}
+	
+		dc.imageCollection(data => data.reduce(reducerFunc));
+
+		// revert renaming of the bands following to the GEE convention
+		var bandNames = dc.getEarthEngineBands();
+		if (bandNames.length > 0) {
+			// Map GEE band names to openEO band names
+			var rename = {};
+			for(let bandName of bandNames) {
+				let geeBandName = bandName + "_" + reducerName;
+				rename[geeBandName] = bandName;
+			}
+			
+			dc.imageCollection(data => data.map(
+				img => {
+					// Create a GEE list with expected band names
+					var geeBands = img.bandNames();
+					for(var geeBandName in rename) {
+						geeBands = geeBands.replace(geeBandName, rename[geeBandName]);
+					}
+			
+					// Rename bands
+					return img.rename(geeBands);
+				}
+			));
+		}
+
+		return dc;
+	}
 
 	static reduceBinaryInCallback(node, imgReducer, jsReducer, arg1Name = "x", arg2Name = "y") {
 		var arg1 = node.getArgument(arg1Name);
@@ -215,6 +319,84 @@ module.exports = class Commons {
 			});
 		}
 		return dc;
+	}
+
+	static setAggregationLabels(images, frequency) {
+		var aggregationFormat = null;
+		var temporalFormat = null;
+		var seasons = {};
+		switch (frequency) {
+			case 'hourly':
+				aggregationFormat = "yyyy-MM-DD-HH";
+				temporalFormat = "HH";
+				break;
+			case 'daily':
+				aggregationFormat = "yyyy-DDD";
+				temporalFormat = "DDD";
+				break;
+			case 'weekly':
+				aggregationFormat = "yyyy-ww";
+				temporalFormat = "ww";
+				break;
+			case 'monthly':
+				aggregationFormat = "yyyy-MM";
+				temporalFormat = "MM";
+				break;
+			case 'yearly':
+				aggregationFormat = "yyyy";
+				temporalFormat = "yyyy";
+				break;
+			case 'seasons':
+				seasons = Utils.seasons();
+				break;
+			case 'tropical_seasons':
+				seasons = Utils.tropicalSeasons();
+				break;
+		}
+
+		// prepare image collection with aggregation labels
+		var images = images.sort('system:time_start');
+		switch (frequency) {
+			case 'hourly':
+			case 'daily':
+			case 'weekly':
+			case 'monthly':
+			case 'yearly':
+				return images.map(img => {
+					var date = img.date();
+					return img.set('aggregationLabel', date.format(aggregationFormat)).set("label", date.format(temporalFormat));
+				});
+			case 'seasons':
+			case 'tropical_seasons':
+				// This is are lists with relative months, e.g. 0 is december of the prev. year, -1 is november etc.
+				seasons = ee.Dictionary(seasons);
+				// Convert the relative months like -1 to their absolute values like 11.
+				var realSeasons = seasons.map(label, months => {
+					return ee.List(months).map(m => {
+						var num = ee.Number(m);
+						return ee.Algorithms.If(num.lt(1), num.add(12), num);
+					});
+				});
+
+				// Prepare image collection to contain aggregation label
+				return images.map(img => {
+					var date = img.date();
+					var month = date.get('month');
+					// Compute the corresponding season for the date
+					var remainingSeason = seasons.map((label, months) => {
+						var monthsInSeason = ee.List(realSeasons.get(label));
+						return ee.Algorithms.If(monthsInSeason.contains(month), months, null); // null removes the element from the list
+					});
+					// Get the season - there should only be one entry left
+					var season = remainingSeason.keys().get(0);
+					var months = ee.List(remainingSeason.values().get(0));
+					// Construct the "season label"
+					var year = date.get('year');
+					year = ee.Algorithms.If(months.contains(month), year, ee.Number(year).add(1));
+					var index = ee.String(year).cat('-').cat(season); // e.g. 1979-son
+					return img.set('aggregationLabel', index).set("label", season);
+				});
+		}
 	}
 
 };
