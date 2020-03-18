@@ -2,6 +2,27 @@ const Utils = require('../utils');
 const fse = require('fs-extra');
 const {Storage} = require('@google-cloud/storage');
 
+// Rough auto mapping for common band names until GEE lists them.
+// Optimized for Copernicus S2 data
+const commonNames = {
+	coastal: [0.40, 0.45],
+	blue: [0.45, 0.50],
+	yellow: [0.58, 0.62],
+	green: [0.50, 0.60],
+	red: [0.60, 0.70],
+	pan: [0.50, 0.60], // 0.50, 0.70
+	rededge: [0.70, 0.80], // 0.70, 0.75
+	nir: [0.80, 0.85], // 0.75, 1.00
+	nir08: [0.85, 0.94], //0.75, 0.90
+	nir09: [0.94, 1.05], // 0.85, 1.05
+	cirrus: [1.35, 1.40],
+	swir16: [1.55, 1.75],
+	swir22: [2.10, 2.30],
+//  lwir: [10.5, 12.5],
+	lwir11: [10.5, 11.5],
+	lwir12: [11.5, 12.5]
+};
+
 module.exports = class DataCatalog {
 
 	constructor() {
@@ -103,6 +124,25 @@ module.exports = class DataCatalog {
 				};
 			}
 			delete c.properties['gee:asset_schema'];
+
+			// Add common band names
+			if (Array.isArray(c.properties['eo:bands'])) {
+				for(var i in c.properties['eo:bands']) {
+					var band = c.properties['eo:bands'][i];
+					if (band.common_name || !band.center_wavelength) {
+						continue;
+					}
+
+					for(var name in commonNames) {
+						var wavelengths = commonNames[name];
+						if (band.center_wavelength >= wavelengths[0] && band.center_wavelength < wavelengths[1]) {
+							band.common_name = name;
+							break;
+						}
+					}
+					c.properties['eo:bands'][i] = band;
+				}
+			}
 
 			// Add default dimensions
 			var y2 = c.extent.spatial.length > 4 ? 4 : 3;
