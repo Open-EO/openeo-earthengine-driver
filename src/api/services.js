@@ -43,7 +43,11 @@ module.exports = class ServicesAPI {
 				var pg = new ProcessGraph(service.process, context);
 				pg.optimizeLoadCollectionRect(rect);
 				pg.execute()
-					.then(resultNode => context.retrieveResults(resultNode.getResult(), '256x256', rect))
+					.then(resultNode => {
+						var dataCube = resultNode.getResult();
+						dataCube.setOutputFormatParameter('size', '256x256');
+						return context.retrieveResults(dataCube, rect);
+					})
 					.then(url => {
 						if (this.context.debug) {
 							console.log("Serving " + url);
