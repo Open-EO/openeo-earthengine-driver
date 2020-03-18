@@ -118,7 +118,7 @@ module.exports = class ProcessingContext {
 						}
 					});
 				});
-			case 'gtiff':
+			case 'gtiff-thumb':
 				return new Promise((resolve, reject) => {
 					dataCube.image().getThumbURL({
 						format: 'geotiff',
@@ -172,7 +172,7 @@ module.exports = class ProcessingContext {
 		switch(format) {
 			case 'jpeg':
 				return 'jpg';
-			case 'gtiff':
+			case 'gtiff-thumb':
 				return 'tif';
 			case 'gtiff-zip':
 				return 'zip';
