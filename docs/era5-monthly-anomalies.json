@@ -1,0 +1,105 @@
+{
+	"load": {
+		"process_id": "load_collection",
+		"description": "Load ERA5 monthly 2m air temperature from 1979 to 2019",
+		"arguments": {
+			"id": "ECMWF/ERA5/MONTHLY",
+			"spatial_extent": null,
+			"temporal_extent": ["1979-01-01","2020-01-01"],
+			"bands": ["mean_2m_air_temperature"]
+		}
+	},
+	"convert": {
+		"process_id": "apply",
+		"description": "Convert temperature from K to degree celsius",
+		"arguments": {
+			"data": {"from_node": "load"},
+			"process": {
+				"process_graph": {
+					"k_to_degC": {
+						"process_id": "subtract",
+						"arguments": {
+							"x": {"from_parameter": "x"},
+							"y": 273.15
+						},
+						"result": true
+					}
+				}
+			}
+		}
+	},
+	"normals": {
+		"process_id": "climatological_normal",
+		"description": "Create the climatological period normals.",
+		"arguments": {
+			"data": {"from_node": "convert"},
+			"frequency": "monthly"
+		}
+	},
+	"anomaly": {
+		"process_id": "anomaly",
+		"description": "For each month in the time-series, calculate the anomaly",
+		"arguments": {
+			"data": {"from_node": "convert"},
+			"normals": {"from_node": "normals"},
+			"frequency": "monthly"
+		}
+	},
+	"reduce": {
+		"process_id": "reduce_dimension",
+		"description": "Reduce to first month - for visualization purposes only",
+		"arguments": {
+			"data": {"from_node": "anomaly"},
+			"reducer": {
+				"process_graph": {
+					"first": {
+						"process_id": "first",
+						"arguments": {
+							"data": {
+								"from_parameter": "data"
+							}
+						},
+						"result": true
+					}
+				}
+			},
+			"dimension": "t"
+		}
+	},
+	"stretch": {
+		"process_id": "apply",
+		"description": "Stretch range from -1 / 1 to 0 / 255 for PNG visualization.",
+		"arguments": {
+			"data": {"from_node": "reduce"},
+			"process": {
+				"process_graph": {
+					"linear_scale_range": {
+						"process_id": "linear_scale_range",
+						"arguments": {
+							"x": {
+								"from_parameter": "x"
+							},
+							"inputMin": -10,
+							"inputMax": 10,
+							"outputMax": 255
+						},
+						"result": true
+					}
+				}
+			}
+		}
+	},
+	"save": {
+		"process_id": "save_result",
+		"arguments": {
+			"data": {
+				"from_node": "stretch"
+			},
+			"format": "PNG",
+			"options": {
+				"palette": ["#2166AC","#4393C3","#92C5DE","#D1E5F0","#F7F7F7","#FDDBC7","#F4A582","#D6604D","#B2182B"]
+			}
+		},
+		"result": true
+	}
+}

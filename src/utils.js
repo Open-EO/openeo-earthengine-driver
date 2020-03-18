@@ -12,6 +12,30 @@ var Utils = {
 	serverUrl: null,
 	apiPath: null,
 
+	tropicalSeasons() {
+		return {
+			ndjfma: ee.List([-1, 0, 1, 2, 3, 4]),
+			mjjaso: ee.List([5, 6, 7, 8, 9, 10])
+		};
+	},
+
+	seasons() {
+		return {
+			djf: ee.List([0, 1, 2]),
+			mam: ee.List([3, 4, 5]),
+			jja: ee.List([6, 7, 8]),
+			son: ee.List([9, 10, 11])
+		};
+	},
+
+	sequence(min, max) {
+		var list = [];
+		for(var i = min; i <= max; i++) {
+			list.push(i);
+		}
+		return list;
+	},
+
 	getApiUrl(path = '') {
 		if (this.serverUrl === null || this.apiPath === null) {
 			console.warn('Server has not started yet, Utils.getApiUrl() is not available yet.');
