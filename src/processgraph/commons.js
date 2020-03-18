@@ -148,10 +148,11 @@ module.exports = class Commons {
 		return result;
 	}
 
-	static _reduceBinary(node, imgReducer, jsReducer, valA, valB) {
+	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB) {
 		let result;
 		var dataCubeA = new DataCube(null, valA);
 		var dataCubeB = new DataCube(null, valB);
+		var imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
 		if (typeof valA === 'undefined' && typeof valB === 'undefined') {
 			// Should be caught by reduce(Binary)InCallback already...
 			throw new Errors.UndefinedElements({
@@ -233,9 +234,10 @@ module.exports = class Commons {
 		return result;
 	}
 
-	static applyInCallback(node, imageProcess, jsProcess = null, dataArg = "x") {
+	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
 		var data = node.getArgument(dataArg);
 		var dc = new DataCube(null, data);
+		var imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {
 			return null;
 		}
@@ -243,10 +245,10 @@ module.exports = class Commons {
 			return jsProcess(data);
 		}
 		else if (dc.isImage()) {
-			return dc.image(imageProcess);
+			return dc.image(imgProcess);
 		}
 		else if (dc.isImageCollection()) {
-			return dc.imageCollection(data => data.map(imageProcess));
+			return dc.imageCollection(data => data.map(imgProcess));
 		}
 		else {
 			throw new Error("Applying " + node.process_id + " not supported for given data type: " + dc.objectType());
