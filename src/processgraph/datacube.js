@@ -370,6 +370,10 @@ module.exports = class DataCube {
 		};
 	}
 
+	setOutputFormatParameter(key, value) {
+		this.output.parameters[key] = value;
+	}
+
 	getOutputFormat() {
 		return this.output.format;
 	}

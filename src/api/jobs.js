@@ -403,7 +403,7 @@ module.exports = class JobsAPI {
 				this.sendDebugNotifiction(req, res, "Executing processes");
 				return pg.execute();
 			})
-			.then(resultNode => context.retrieveResults(resultNode.getResult(), 1000)) // 1000 = pixel size
+			.then(resultNode => context.retrieveResults(resultNode.getResult()))
 			.then(url => {
 				this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
 				return Utils.stream({
