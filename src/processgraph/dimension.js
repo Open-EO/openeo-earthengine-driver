@@ -13,6 +13,9 @@ module.exports = class Dimension {
 		this.resolution = source.step ? source.step : null;
 		this.unit = source.unit ? source.unit : '';
 		this.referenceSystem = source.reference_system;
+		if (!this.referenceSystem && this.type === 'spatial') {
+			this.referenceSystem = 4326;
+		}
 	}
 
 	toSTAC() {
@@ -60,8 +63,8 @@ module.exports = class Dimension {
 		return this.getReferenceSystem();
 	}
 
-	setReferenceSystem(refSys) {
-		this.referenceSystem = refSys;
+	setReferenceSystem(newRefSys) {
+		this.referenceSystem = newRefSys;
 	}
 
 	setExtent(e, e2 = null) {

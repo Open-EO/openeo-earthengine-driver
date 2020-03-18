@@ -52,13 +52,23 @@ module.exports = class ProcessingContext {
 
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube, bbox = null) {
+		var parameters = dataCube.getOutputFormatParameters();
+		var format = dataCube.getOutputFormat() || "png";
+		// Handle CRS setting
+		switch(format.toLowerCase()) {
+			case 'jpeg':
+			case 'png':
+				if (!parameters.epsgCode) {
+					parameters.epsgCode = 3857;
+				}
+		}
+		if (parameters.epsgCode > 0) {
+			dataCube.setCrs(parameters.epsgCode);
+		}
+		// Get bounding box after changing the CRS
 		if (!bbox) {
 			bbox = dataCube.getSpatialExtent();
 		}
-		var region = Utils.bboxToGeoJson(bbox);
-		var format = dataCube.getOutputFormat() || "png";
-		var parameters = dataCube.getOutputFormatParameters();
-		var crs = 'EPSG:' + (parameters.epsgCode > 0 ? parameters.epsgCode  : 3857);
 		switch(format.toLowerCase()) {
 			case 'jpeg':
 			case 'png':
@@ -92,7 +102,7 @@ module.exports = class ProcessingContext {
 						format: this.translateOutputFormat(format),
 						dimensions: parameters.size || 2000,
 						region: region,
-						crs: crs
+						crs: Utils.crsToString(bbox.crs)
 					}, (url, err) => {
 						if (typeof err === 'string') {
 							reject(new Errors.Internal({message: err}));

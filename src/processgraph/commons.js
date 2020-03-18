@@ -257,7 +257,7 @@ module.exports = class Commons {
 
 	static restrictToSpatialExtent(dc) {
 		var bbox = dc.getSpatialExtent();
-		var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], bbox.crs || 'EPSG:4326');
+		var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs, 4326));
 		dc.imageCollection(ic => ic.filterBounds(geom));
 		return dc;
 	}
@@ -267,6 +267,7 @@ module.exports = class Commons {
 			dc.setSpatialExtent(bbox);
 			return Commons.restrictToSpatialExtent(dc);
 		} catch (e) {
+			console.log(e);
 			throw new Errors.ProcessArgumentInvalid({
 				process: process_id,
 				argument: paramName,
