@@ -161,8 +161,8 @@ module.exports = class JobsAPI {
 		.then(resultNode => {
 			var context = resultNode.getProcessGraph().getContext();
 			var cube = resultNode.getResult();
-			var jobFormat = context.translateOutputFormat(cube.getOutputFormat());
-			filePath = this.storage.getJobFile(jobId, Utils.generateHash() +  "." + jobFormat);
+			var extension = context.getExtension(cube.getOutputFormat());
+			filePath = this.storage.getJobFile(jobId, Utils.generateHash() +  "." + extension);
 			return context.retrieveResults(cube);
 		})
 		.then(url => {

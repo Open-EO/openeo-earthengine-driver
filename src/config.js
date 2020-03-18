@@ -30,6 +30,13 @@ module.exports = class Config {
 			options: []
 		};
 
+		let sizeOption = {
+			type: 'integer',
+			description: 'The size for the longest side the image, in pixels.',
+			default: 1000,
+			minimum: 1,
+			maximum: 2000
+		};
 		let visOptions = {
 			red: {
 				type: 'string',
@@ -60,13 +67,7 @@ module.exports = class Config {
 				description: 'List of hex RGB colors used as palette for visualization, e.g. `#ffffff` for white.',
 				default: null
 			},
-			size: {
-				type: 'integer',
-				description: 'The size for the longest side the image, in pixels.',
-				default: 1000,
-				minimum: 1,
-				maximum: 2000
-			},
+			size: sizeOption,
 			epsgCode: {
 				type: 'integer',
 				subtype: 'epsg-code', // The formats are not specification compliant, but are allowed to be added.
@@ -86,6 +87,19 @@ module.exports = class Config {
 				title: 'JPG / JPEG',
 				gis_data_types: ['raster'],
 				parameters: visOptions
+			},
+			GTIFF: {
+				title: 'GeoTiff',
+				gis_data_types: ['raster'],
+				parameters: {
+					size: sizeOption,
+					epsgCode: {
+						type: 'integer',
+						subtype: 'epsg-code', // The subtype is not specification compliant, but is allowed to be added.
+						description: 'EPSG Code to reproject the images to. Defaults to native CRS.',
+						default: null
+					}
+				}
 			},
 			JSON: {
 				gis_data_types: ['raster', 'vector', 'table', 'other']

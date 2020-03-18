@@ -69,38 +69,57 @@ module.exports = class ProcessingContext {
 		if (!bbox) {
 			bbox = dataCube.getSpatialExtent();
 		}
+		var region = Utils.bboxToGeoJson(bbox);
 		switch(format.toLowerCase()) {
 			case 'jpeg':
 			case 'png':
+				var visBands = null;
+				var visPalette = null;
+				if (Array.isArray(parameters.palette)) {
+					visPalette = parameters.palette;
+				}
+				else if (parameters.red && parameters.green && parameters.blue){
+					visBands = [parameters.red, parameters.green, parameters.blue];
+				}
+				else if(parameters.gray){
+					visBands = [parameters.gray];
+				}
+				else if (parameters.red || parameters.green || parameters.blue) {
+					throw new Errors.ProcessArgumentInvalid({
+						argument: "options",
+						process: "save_result",
+						reason: "The output band definitions are not properly given."
+					});
+				}
+				else {
+					visBands = dataCube.getEarthEngineBands().slice(0, 1);
+					if (visBands[0] !== '#') {
+						console.log("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
+					}
+				}
 				return new Promise((resolve, reject) => {
-					var visBands = null;
-					var visPalette = null;
-					if (Array.isArray(parameters.palette)) {
-						visPalette = parameters.palette;
-					}
-					else if (parameters.red && parameters.green && parameters.blue){
-						visBands = [parameters.red, parameters.green, parameters.blue];
-					}
-					else if(parameters.gray){
-						visBands = [parameters.gray];
-					}
-					else if (parameters.red || parameters.green || parameters.blue) {
-						throw new Errors.ProcessArgumentInvalid({
-							argument: "options",
-							process: "save_result",
-							reason: "The output band definitions are not properly given."
-						});
-					}
-					else {
-						visBands = dataCube.getEarthEngineBands().slice(0, 1);
-						if (visBands[0] !== '#') {
-							console.log("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
-						}
-					}
-
 					dataCube.image().visualize({min: 0, max: 255, bands: visBands, palette: visPalette}).getThumbURL({
-						format: this.translateOutputFormat(format),
-						dimensions: parameters.size || 2000,
+						format: this.getEarthEngineFormat(format),
+						dimensions: parameters.size || 1000,
+						region: region,
+						crs: Utils.crsToString(bbox.crs)
+					}, (url, err) => {
+						if (typeof err === 'string') {
+							reject(new Errors.Internal({message: err}));
+						}
+						else if (typeof url !== 'string' || url.length === 0) {
+							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+						}
+						else {
+							resolve(url);
+						}
+					});
+				});
+			case 'gtiff':
+				return new Promise((resolve, reject) => {
+					dataCube.image().getThumbURL({
+						format: this.getEarthEngineFormat(format),
+						dimensions: parameters.size || 1000,
 						region: region,
 						crs: Utils.crsToString(bbox.crs)
 					}, (url, err) => {
@@ -116,7 +135,7 @@ module.exports = class ProcessingContext {
 					});
 				});
 			case 'json':
-				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.translateOutputFormat(format);
+				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.getExtension(format);
 				var p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
 				var parent = path.dirname(p);
 				await fse.ensureDir(parent);
@@ -127,11 +146,28 @@ module.exports = class ProcessingContext {
 		}
 	}
 
-	translateOutputFormat(format) {
+	getDataUrl(image, format, parameters, bbox) {
+	}
+
+	getEarthEngineFormat(format) {
 		format = format.toLowerCase();
 		switch(format) {
 			case 'jpeg':
 				return 'jpg';
+			case 'gtiff':
+				return 'geotiff';
+			default:
+				return format;
+		}
+	}
+
+	getExtension(format) {
+		format = format.toLowerCase();
+		switch(format) {
+			case 'jpeg':
+				return 'jpg';
+			case 'gtiff':
+				return 'tif';
 			default:
 				return format;
 		}
