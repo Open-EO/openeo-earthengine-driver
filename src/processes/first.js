@@ -15,6 +15,9 @@ module.exports = class first extends BaseProcess {
 		else if (data instanceof ee.Array) {
 			return data.toList().get(0);
 		}
+		else if (data instanceof ee.ImageCollection) {
+			return data.first();
+		}
 		else {
 			throw new Errors.ProcessArgumentInvalid();
 		}

@@ -17,6 +17,9 @@ module.exports = class last extends BaseProcess {
 			data_list = data_list.reverse();
 			return data_list.get(0);
 		}
+		else if (data instanceof ee.ImageCollection) {
+			return data.toList(data.size()).get(-1);
+		}
 		else {
 			throw new Errors.ProcessArgumentInvalid();
 		}

@@ -135,5 +135,13 @@
 		"tags": [
 			"Process Graph Management"
 		]
-	}
+	},
+	"OverlapResolverMissing": {
+	"description": null,
+	"message": "Overlapping data cubes, but no overlap resolver has been specified.",
+	"http": 400,
+	"tags": [
+		"Processes"
+	]
+}
 }
