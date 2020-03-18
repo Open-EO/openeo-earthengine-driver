@@ -101,6 +101,19 @@ module.exports = class Config {
 					}
 				}
 			},
+			"GTIFF-ZIP": {
+				title: 'GeoTiff (zipped)',
+				gis_data_types: ['raster'],
+				parameters: {
+					size: sizeOption,
+					epsgCode: {
+						type: 'integer',
+						subtype: 'epsg-code', // The subtype is not specification compliant, but is allowed to be added.
+						description: 'EPSG Code to reproject the images to. Defaults to native CRS.',
+						default: null
+					}
+				}
+			},
 			JSON: {
 				gis_data_types: ['raster', 'vector', 'table', 'other']
 			}

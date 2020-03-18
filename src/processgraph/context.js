@@ -53,14 +53,16 @@ module.exports = class ProcessingContext {
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube, bbox = null) {
 		var parameters = dataCube.getOutputFormatParameters();
-		var format = dataCube.getOutputFormat() || "png";
+		var format = dataCube.getOutputFormat();
+		if (typeof format === 'string') {
+			format = format.toLowerCase();
+		}
+		else {
+			format = 'png';
+		}
 		// Handle CRS setting
-		switch(format.toLowerCase()) {
-			case 'jpeg':
-			case 'png':
-				if (!parameters.epsgCode) {
-					parameters.epsgCode = 3857;
-				}
+		if (!parameters.epsgCode && (format === 'jpeg' || format === 'png')) {
+			parameters.epsgCode = 3857;
 		}
 		if (parameters.epsgCode > 0) {
 			dataCube.setCrs(parameters.epsgCode);
@@ -70,7 +72,8 @@ module.exports = class ProcessingContext {
 			bbox = dataCube.getSpatialExtent();
 		}
 		var region = Utils.bboxToGeoJson(bbox);
-		switch(format.toLowerCase()) {
+
+		switch(format) {
 			case 'jpeg':
 			case 'png':
 				var visBands = null;
@@ -99,7 +102,7 @@ module.exports = class ProcessingContext {
 				}
 				return new Promise((resolve, reject) => {
 					dataCube.image().visualize({min: 0, max: 255, bands: visBands, palette: visPalette}).getThumbURL({
-						format: this.getEarthEngineFormat(format),
+						format: format === 'jpeg' ? 'jpg' : format,
 						dimensions: parameters.size || 1000,
 						region: region,
 						crs: Utils.crsToString(bbox.crs)
@@ -118,7 +121,25 @@ module.exports = class ProcessingContext {
 			case 'gtiff':
 				return new Promise((resolve, reject) => {
 					dataCube.image().getThumbURL({
-						format: this.getEarthEngineFormat(format),
+						format: 'geotiff',
+						dimensions: parameters.size || 1000,
+						region: region,
+						crs: Utils.crsToString(bbox.crs)
+					}, (url, err) => {
+						if (typeof err === 'string') {
+							reject(new Errors.Internal({message: err}));
+						}
+						else if (typeof url !== 'string' || url.length === 0) {
+							reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+						}
+						else {
+							resolve(url);
+						}
+					});
+				});
+			case 'gtiff-zip':
+				return new Promise((resolve, reject) => {
+					dataCube.image().getDownloadURL({
 						dimensions: parameters.size || 1000,
 						region: region,
 						crs: Utils.crsToString(bbox.crs)
@@ -146,21 +167,6 @@ module.exports = class ProcessingContext {
 		}
 	}
 
-	getDataUrl(image, format, parameters, bbox) {
-	}
-
-	getEarthEngineFormat(format) {
-		format = format.toLowerCase();
-		switch(format) {
-			case 'jpeg':
-				return 'jpg';
-			case 'gtiff':
-				return 'geotiff';
-			default:
-				return format;
-		}
-	}
-
 	getExtension(format) {
 		format = format.toLowerCase();
 		switch(format) {
@@ -168,6 +174,8 @@ module.exports = class ProcessingContext {
 				return 'jpg';
 			case 'gtiff':
 				return 'tif';
+			case 'gtiff-zip':
+				return 'zip';
 			default:
 				return format;
 		}
