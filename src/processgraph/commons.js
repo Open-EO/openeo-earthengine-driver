@@ -275,9 +275,26 @@ module.exports = class Commons {
 		}
 	}
 
-	static filterBands(dc, bands) {
-		dc.imageCollection(ic => ic.select(bands));
-		dc.dimBands().setValues(bands);
+	static filterBands(dc, bands, node) {
+		var dc_bands = dc.getBands();
+		var col_id = dc.getCollectionId();
+		var col_meta = node.getContext().getCollection(col_id);
+		var band_list = [];
+		for(let b of bands) {
+			if (dc_bands.indexOf(b) > -1) {
+				band_list.push(b)
+			}
+			else {
+				for (let eob of col_meta.properties["eo:bands"]){
+					if (b === eob["common_name"]) {
+						band_list.push(eob["name"]);
+						break;
+					}
+				}
+			}
+		}
+		dc.imageCollection(ic => ic.select(band_list));
+		dc.dimBands().setValues(band_list);
 		return dc;
 	}
 

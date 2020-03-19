@@ -15,6 +15,7 @@ module.exports = class DataCube {
 			format: null,
 			parameters: {}
 		};
+		this.col_id = null;
 
 		if (sourceDataCube instanceof DataCube) {
 			if (data === undefined) {
@@ -274,6 +275,14 @@ module.exports = class DataCube {
 		} catch(e) {
 			return [];
 		}
+	}
+
+	getCollectionId() {
+		return this.col_id
+	}
+
+	setCollectionId(id) {
+		this.col_id = id;
 	}
 
 	setBands(bands) {
