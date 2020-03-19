@@ -88,12 +88,11 @@ module.exports = class StoredProcessGraphs {
 				query,
 				data,
 				{ upsert: true },
-				(err, numReplaced, upsert) => {
+				err => {
 					if (err) {
 						return next(Errors.wrap(err));
 					}
 					else {
-						console.log(numReplaced, upsert);
 						res.send(200);
 						return next();
 					}

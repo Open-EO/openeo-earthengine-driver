@@ -101,8 +101,18 @@ var Utils = {
 		return datetime.replace(/\.\d{3}/, ''); // Remove milliseconds
 	},
 
+	crsToString(crs, defaultCrs = null) {
+		if (!crs) {
+			crs = defaultCrs;
+		}
+		if (typeof crs === 'number') {
+			return 'EPSG:' + crs;
+		}
+		return crs;
+	},
+
 	bboxToGeoJson(bbox) {
-		return {
+		var geom = {
 			geodesic: false,
 			type: 'Polygon',
 			coordinates:
@@ -112,6 +122,15 @@ var Utils = {
 					[ bbox.west, bbox.north ],
 					[ bbox.west, bbox.south ] ] ]
 		};
+		if (bbox.crs) {
+			geom.crs = {
+				type: "name",
+				properties: {
+					name: Utils.crsToString(bbox.crs)
+				}
+			};
+		}
+		return geom;
 	},
 
 	geoJsonBbox(geojson) {
