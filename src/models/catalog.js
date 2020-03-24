@@ -82,6 +82,16 @@ module.exports = class DataCatalog {
 		for(var i in this.collections) {
 			let c = this.collections[i];
 
+			// Fix invalid headers in markdown
+			if (typeof c.description === 'string') {
+				c.description = c.description.replace(/^(#){2,6}([^#\s].+)$/img, '$1 $2');
+			}
+
+			// Remove empty version field
+			if (typeof c.version !== 'number' && !c.version) {
+				delete c.version;
+			}
+
 			// The spatial extent is sometimes invalid, trying to fix them
 			var x2 = c.extent.spatial.length > 4 ? 3 : 2;
 			var minX = Math.min(c.extent.spatial[0], c.extent.spatial[x2]);
