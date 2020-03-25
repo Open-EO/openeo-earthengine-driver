@@ -51,7 +51,7 @@ module.exports = class ProcessingContext {
 	}
 
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
-	async retrieveResults(dataCube, bbox = null) {
+	async retrieveResults(dataCube) {
 		var parameters = dataCube.getOutputFormatParameters();
 		var format = dataCube.getOutputFormat();
 		if (typeof format === 'string') {
@@ -60,18 +60,15 @@ module.exports = class ProcessingContext {
 		else {
 			format = 'png';
 		}
-		// Handle CRS setting
+		// Handle CRS + bbox settings
 		if (!parameters.epsgCode && (format === 'jpeg' || format === 'png')) {
-			parameters.epsgCode = 3857;
+			dataCube.setCrs(3857);
 		}
-		if (parameters.epsgCode > 0) {
+		else if (parameters.epsgCode > 0) {
 			dataCube.setCrs(parameters.epsgCode);
 		}
-		// Get bounding box after changing the CRS
-		if (!bbox) {
-			bbox = dataCube.getSpatialExtent();
-		}
-		var region = Utils.bboxToGeoJson(bbox);
+		var region = Utils.bboxToGeoJson(dataCube.getSpatialExtent());
+		var crs = Utils.crsToString(dataCube.getCrs());
 
 		switch(format) {
 			case 'jpeg':
@@ -105,7 +102,7 @@ module.exports = class ProcessingContext {
 						format: format === 'jpeg' ? 'jpg' : format,
 						dimensions: parameters.size || 1000,
 						region: region,
-						crs: Utils.crsToString(bbox.crs)
+						crs: crs
 					}, (url, err) => {
 						if (typeof err === 'string') {
 							reject(new Errors.Internal({message: err}));
@@ -124,7 +121,7 @@ module.exports = class ProcessingContext {
 						format: 'geotiff',
 						dimensions: parameters.size || 1000,
 						region: region,
-						crs: Utils.crsToString(bbox.crs)
+						crs: crs
 					}, (url, err) => {
 						if (typeof err === 'string') {
 							reject(new Errors.Internal({message: err}));
@@ -142,7 +139,7 @@ module.exports = class ProcessingContext {
 					dataCube.image().getDownloadURL({
 						dimensions: parameters.size || 1000,
 						region: region,
-						crs: Utils.crsToString(bbox.crs)
+						crs: crs
 					}, (url, err) => {
 						if (typeof err === 'string') {
 							reject(new Errors.Internal({message: err}));

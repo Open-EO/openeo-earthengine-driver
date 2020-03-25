@@ -45,7 +45,7 @@ module.exports = class ServiceStore {
 			east: xMax,
 			south: yMin,
 			north: yMax,
-//			crs: 'EPSG:3857'
+			crs: 'EPSG:4326'
 		};
 	}
 

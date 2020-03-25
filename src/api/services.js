@@ -46,7 +46,9 @@ module.exports = class ServicesAPI {
 					.then(resultNode => {
 						var dataCube = resultNode.getResult();
 						dataCube.setOutputFormatParameter('size', '256x256');
-						return context.retrieveResults(dataCube, rect);
+						dataCube.setSpatialExtent(rect);
+						dataCube.setCrs(3857);
+						return context.retrieveResults(dataCube);
 					})
 					.then(url => {
 						if (this.context.debug) {
