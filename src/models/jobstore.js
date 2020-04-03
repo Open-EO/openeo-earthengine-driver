@@ -7,7 +7,7 @@ module.exports = class JobStore {
 
 	constructor() {
 		this.db = Utils.loadDB('jobs');
-		this.editableFields = ['title', 'description', 'process_graph', 'plan', 'budget'];
+		this.editableFields = ['title', 'description', 'process', 'plan', 'budget'];
 		this.jobFolder = './storage/job_files';
 	}
 
