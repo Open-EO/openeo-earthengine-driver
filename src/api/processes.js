@@ -12,7 +12,7 @@ module.exports = class Processes {
 
 	getProcesses(req, res, next) {
 		res.json({
-			processes: this.registry.getProcessSpecifications(),
+			processes: this.registry.toJSON(),
 			links: []
 		});
 		return next();

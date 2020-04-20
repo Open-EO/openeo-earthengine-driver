@@ -223,6 +223,14 @@ module.exports = class DataCube {
 			return coords;
 		}
 
+		/* Inspiration from: https://github.com/geotiffjs/cog-explorer/blob/master/src/components/mapview.jsx
+		const epsg = `EPSG:${code}`;
+		if (!proj4.defs(epsg)) {
+			const response = await fetch(`//epsg.io/${code}.proj4`);
+			proj4.defs(epsg, await response.text());
+		}
+		*/
+
 		// ToDo: Check this is correct; maybe find better way to convert 180/90 to Web Mercator
 		if (fromCrs === 'EPSG:4326' && toCrs === 'EPSG:3857' && Math.abs(coords[1]) > 85.051129) {
 			return [

@@ -25,7 +25,7 @@ module.exports = class GeeProcessGraphNode extends ProcessGraphNode {
 	}
 
 	getParameter(name) {
-		return this.processGraph.getParameter(name);
+		return this.processGraph.getArgument(name);
 	}
 
 	getDataCube(name) {
