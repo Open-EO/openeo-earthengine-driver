@@ -23,15 +23,15 @@
   },
   "devDependencies": {
     "forever": "^2.0.0",
-    "jest": "^25.1.0",
+    "jest": "^25.4.0",
     "jest-html-reporter": "^2.5.0",
     "nodemon": "^2.0.2"
   },
   "dependencies": {
     "@google-cloud/storage": "^3.0.2",
-    "@google/earthengine": "^0.1.213",
+    "@google/earthengine": "^0.1.218",
     "@openeo/js-commons": "^1.0.0-rc.2",
-    "@openeo/js-processgraphs": "Open-EO/openeo-js-processgraphs#dev",
+    "@openeo/js-processgraphs": "1.0.0-alpha.5",
     "ajv": "^6.10.0",
     "axios": "^0.19.0",
     "check-disk-space": "^2.1.0",
