@@ -1,12 +1,4 @@
 {
-	"PermissionsInsufficient": {
-		"description": "The client did provided correct authentication details, but the privileges/permissions of the provided credentials do not allow to request the resource.",
-		"message": "Forbidden.",
-		"http": 403,
-		"tags": [
-			"Account Management"
-		]
-	},
 	"PasswordInsecure": {
 		"description": "The specified password is not considered secure by the policy of the back-end provider or no password was given at all. The user needs to specify a different password to proceed.",
 		"message": "Password does not meet the requirements.",
@@ -118,22 +110,6 @@
 		"http": 400,
 		"tags": [
 			"Processes"
-		]
-	},
-	"ProcessGraphIdDoesntMatch": {
-		"description": null,
-		"message": "The id in the parameter and the id in the document don't match.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management"
-		]
-	},
-	"PredefinedProcessExists": {
-		"description": null,
-		"message": "A pre-defined process with the given id exists.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management"
 		]
 	}
 }
