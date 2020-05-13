@@ -24,6 +24,7 @@ module.exports = class GeeProcessRegistry extends ProcessRegistry {
 
 	addFromFile(id) {
 		var spec = require('../processes/' + id + '.json');
+		delete spec.process_graph;
 		var impl = require('../processes/' + id + '.js');
 		this.processes[id.toLowerCase()] = new impl(spec);
 	}
