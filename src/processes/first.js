@@ -7,7 +7,20 @@ module.exports = class first extends BaseProcess {
 	}
 
 	async execute(node) {
-		throw "Not implemented yet.";
+		var data = node.getArgument('data');
+
+		if (Array.isArray(data)) {
+			return data[0];
+		}
+		else if (data instanceof ee.Array) {
+			return data.toList().get(0);
+		}
+		else if (data instanceof ee.ImageCollection) {
+			return data.first();
+		}
+		else {
+			throw new Errors.ProcessArgumentInvalid();
+		}
 	}
 
 };

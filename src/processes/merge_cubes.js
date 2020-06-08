@@ -6,8 +6,11 @@ module.exports = class merge_cubes extends BaseProcess {
     async execute(node) {
         var dc1 = node.getArgument("cube1");
         var dc2 = node.getArgument("cube2");
+        var overlap_res = node.getArgument("overlap_resolver");
 
-        return dc1.merge(dc2);
+        var context = node.getArgument("context");
+
+        return dc1.merge(dc2, overlap_res, true, context);
     }
 
 };

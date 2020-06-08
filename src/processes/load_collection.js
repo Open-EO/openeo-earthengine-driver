@@ -10,12 +10,14 @@ module.exports = class load_collection extends BaseProcess {
 		var collection = node.getContext().getCollection(id);
 		var dc = new DataCube();
 		dc.setData(ee.ImageCollection(id));
+		dc.setCollectionId(id);
 		dc.setDimensionsFromSTAC(collection.properties['cube:dimensions']);
 
 		// Filter temporal
 		var temporal_extent = node.getArgument("temporal_extent");
 		if (temporal_extent !== null) {
 			dc = Commons.filterTemporal(dc, temporal_extent);
+
 		}
 
 		// Filter spatial / bbox
@@ -32,7 +34,7 @@ module.exports = class load_collection extends BaseProcess {
 		// Filter bands
 		var bands = node.getArgument('bands');
 		if (Array.isArray(bands)) {
-			dc = Commons.filterBands(dc, bands);
+			dc = Commons.filterBands(dc, bands, node);
 		}
 
 		return dc;

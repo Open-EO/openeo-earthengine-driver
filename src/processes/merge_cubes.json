@@ -22,6 +22,50 @@
         "type": "object",
         "subtype": "raster-cube"
       }
+    },
+    {
+      "name": "overlap_resolver",
+      "description": "A reduction operator that resolves the conflict if the data overlaps. The reducer must return a value of the same data type as the input values are. The reduction operator may be a single process such as ``multiply()`` or consist of multiple sub-processes. `null` (the default) can be specified if no overlap resolver is required.",
+      "schema": {
+        "type": "object",
+        "subtype": "process-graph",
+        "parameters": [
+          {
+            "name": "x",
+            "description": "The first value.",
+            "schema": {
+              "description": "Any data type."
+            }
+          },
+          {
+            "name": "y",
+            "description": "The second value.",
+            "schema": {
+              "description": "Any data type."
+            }
+          },
+          {
+            "name": "context",
+            "description": "Additional data passed by the user.",
+            "schema": {
+              "description": "Any data type."
+            },
+            "optional": true,
+            "default": null
+          }
+        ]
+      },
+      "default": null,
+      "optional": true
+    },
+    {
+      "name": "context",
+      "description": "Additional data to be passed to the overlap resolver.",
+      "schema": {
+        "description": "Any data type."
+      },
+      "optional": true,
+      "default": null
     }
   ],
   "returns": {
@@ -29,6 +73,11 @@
     "schema": {
       "type": "object",
       "subtype": "raster-cube"
+    }
+  },
+  "exceptions": {
+    "OverlapResolverMissing": {
+      "message": "Overlapping data cubes, but no overlap resolver has been specified."
     }
   },
   "links": [

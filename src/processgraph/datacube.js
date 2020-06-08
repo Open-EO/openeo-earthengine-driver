@@ -1,6 +1,7 @@
 const Dimension = require('./dimension');
 const Utils = require('../utils');
 const proj4 = require('proj4');
+const Errors = require('../errors');
 
 module.exports = class DataCube {
 
@@ -14,6 +15,7 @@ module.exports = class DataCube {
 			format: null,
 			parameters: {}
 		};
+		this.col_id = null;
 
 		if (sourceDataCube instanceof DataCube) {
 			if (data === undefined) {
@@ -301,6 +303,14 @@ module.exports = class DataCube {
 		}
 	}
 
+	getCollectionId() {
+		return this.col_id
+	}
+
+	setCollectionId(id) {
+		this.col_id = id;
+	}
+
 	setBands(bands) {
 		this.dimBands().setValues(bands);
 	}
@@ -424,7 +434,7 @@ module.exports = class DataCube {
 	}
 
 	// ToDO: add code for overlap resolver and inplace
-	merge(otherDataCube, overlapResolver=null, inplace=true){
+	merge(otherDataCube, overlapResolver=null, inplace=true, context=null){
 		if (otherDataCube instanceof DataCube) {
 			if (this.isImageCollection() && otherDataCube.isImageCollection()) {
 				this.setData(this.stackCollection(this.data.merge(otherDataCube.data)));
@@ -450,7 +460,13 @@ module.exports = class DataCube {
 					// check if there are duplicate values
 					this_dim_vals.forEach(function (element) {
 						if (other_dim_vals.includes(element)){
-							throw new Error("Label '" + element + "' exists already. Overlap cannot be resolved");
+							if (overlapResolver == null){
+								throw new Errors.OverlapResolverMissing();
+							}
+							if (!(overlapResolver instanceof ProcessGraph)) {
+								throw new Errors.OverlapResolverMissing();
+							}
+							//TODO: implement overlap resolver
 						}
 					});
 
