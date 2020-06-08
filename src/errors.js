@@ -3,6 +3,7 @@ const custom_errors = require('../storage/errors/custom.json');
 const restify_errors = require('restify-errors');
 const { Utils: CommonUtils } = require('@openeo/js-commons');
 const { ErrorList } = require('@openeo/js-processgraphs');
+const util = require('util');
 
 const errors = Object.assign(openeo_errors, custom_errors);
 
@@ -18,7 +19,7 @@ for(var name in errors) {
 				id: (new Date()).getTime().toString(),
 				code: this.code,
 				message: this.message,
-				url: "https://open-eo.github.io/openeo-api/errors/#openeo-error-codes"
+				url: "https://openeo.org/documentation/1.0/developers/api/errors.html"
 			};
 		}
 	});
@@ -41,6 +42,10 @@ for(var name in errors) {
 		}
 		else if (typeof obj === 'string') {
 			this.message = obj;
+			// Fix for https://github.com/Open-EO/openeo-earthengine-driver/issues/42
+			if (!CommonUtils.isObject(args)) {
+				this.message = util.format(this.message, args);
+			}
 		}
 		this.info = args;
 		this.message = CommonUtils.replacePlaceholders(this.message, this.info);
