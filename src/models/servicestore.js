@@ -4,7 +4,7 @@ module.exports = class ServiceStore {
 
 	constructor() {
 		this.db = Utils.loadDB('services');
-		this.editableFields = ['title', 'description', 'process_graph', 'enabled', 'configuration', 'plan', 'budget'];
+		this.editableFields = ['title', 'description', 'process', 'enabled', 'configuration', 'plan', 'budget'];
 	}
 
 	isFieldEditable(name) {
@@ -45,7 +45,7 @@ module.exports = class ServiceStore {
 			east: xMax,
 			south: yMin,
 			north: yMax,
-//			crs: 'EPSG:3857'
+			crs: 'EPSG:4326'
 		};
 	}
 

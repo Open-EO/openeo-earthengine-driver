@@ -77,7 +77,7 @@ module.exports = class StoredProcessGraphs {
 		// Set the id in the JSON body if not set by the user
 		req.body.id = req.params.process_graph_id;
 
-		pg = new ProcessGraph(req.body, this.context.processingContext(req));
+		var pg = new ProcessGraph(req.body, this.context.processingContext(req));
 		pg.validate().then(() => {
 			let query = {
 				id: req.body.id,

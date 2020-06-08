@@ -218,14 +218,37 @@ module.exports = class DataCube {
 		}
 	}
 
+	proj(from, to, coords) {
+		var fromCrs = Utils.crsToString(from);
+		var toCrs = Utils.crsToString(to);
+		if (fromCrs === toCrs) {
+			return coords;
+		}
+
+		/* Inspiration from: https://github.com/geotiffjs/cog-explorer/blob/master/src/components/mapview.jsx
+		const epsg = `EPSG:${code}`;
+		if (!proj4.defs(epsg)) {
+			const response = await fetch(`//epsg.io/${code}.proj4`);
+			proj4.defs(epsg, await response.text());
+		}
+		*/
+
+		// ToDo: Check this is correct; maybe find better way to convert 180/90 to Web Mercator
+		if (fromCrs === 'EPSG:4326' && toCrs === 'EPSG:3857' && Math.abs(coords[1]) > 85.051129) {
+			return [
+				coords[0],
+				Math.sign(coords[1]) * 85.051129
+			];
+		}
+		
+		return proj4(fromCrs, toCrs, coords);
+	}
+
 	setSpatialExtent(extent) {
 		extent.crs = extent.crs > 0 ? extent.crs : 4326;
-		var proj = proj4(
-			Utils.crsToString(extent.crs),
-			Utils.crsToString(this.getCrs())
-		);
-		var p1 = proj.forward([extent.west, extent.south]);
-		var p2 = proj.forward([extent.east, extent.north]);
+		var toCrs = this.getCrs();
+		var p1 = this.proj(extent.crs, toCrs, [extent.west, extent.south]);
+		var p2 = this.proj(extent.crs, toCrs, [extent.east, extent.north]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
 		if (extent.base && extent.height) {
@@ -236,12 +259,9 @@ module.exports = class DataCube {
 	setSpatialExtentFromGeometry(geometry) { // GeoJSON geometry
 		var bbox = Utils.geoJsonBbox(geometry);
 		var hasZ = bbox.length > 4;
-		var proj = proj4(
-			'WGS84',
-			Utils.crsToString(this.getCrs())
-		);
-		var p1 = proj.forward([bbox[0], bbox[1]]);
-		var p2 = proj.forward([bbox[hasZ ? 3 : 2], bbox[hasZ ? 4 : 3]]);
+		var toCrs = this.getCrs();
+		var p1 = this.proj(4326, toCrs, [bbox[0], bbox[1]]);
+		var p2 = this.proj(4326, toCrs, [bbox[hasZ ? 3 : 2], bbox[hasZ ? 4 : 3]]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
 		if (hasZ) {

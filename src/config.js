@@ -88,8 +88,8 @@ module.exports = class Config {
 				gis_data_types: ['raster'],
 				parameters: visOptions
 			},
-			GTIFF: {
-				title: 'GeoTiff',
+			"GTIFF-THUMB": {
+				title: 'GeoTiff (thumbnail)',
 				gis_data_types: ['raster'],
 				parameters: {
 					size: sizeOption,
