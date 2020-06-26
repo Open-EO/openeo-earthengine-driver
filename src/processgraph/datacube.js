@@ -225,23 +225,27 @@ module.exports = class DataCube {
 			return coords;
 		}
 
-		/* Inspiration from: https://github.com/geotiffjs/cog-explorer/blob/master/src/components/mapview.jsx
-		const epsg = `EPSG:${code}`;
-		if (!proj4.defs(epsg)) {
-			const response = await fetch(`//epsg.io/${code}.proj4`);
-			proj4.defs(epsg, await response.text());
-		}
-		*/
-
-		// ToDo: Check this is correct; maybe find better way to convert 180/90 to Web Mercator
-		if (fromCrs === 'EPSG:4326' && toCrs === 'EPSG:3857' && Math.abs(coords[1]) > 85.051129) {
-			return [
-				coords[0],
-				Math.sign(coords[1]) * 85.051129
-			];
-		}
+		this.loadCrsDef(fromCrs);
+		this.loadCrsDef(toCrs);
 		
 		return proj4(fromCrs, toCrs, coords);
+	}
+
+	loadCrsDef(crs) {
+		if (proj4.defs(crs)) {
+			return; // CRS already available
+		}
+		if (!crs.startsWith('EPSG:')) {
+			throw new Error("CRS " + crs + " not supported");
+		}
+
+		try {
+			let code = crs.substring(5);
+			const def = require('epsg-index/s/' + code + '.json');
+			proj4.defs(crs, def.proj4);
+		} catch (error) {
+			throw new Error("CRS " + crs + " not available for reprojection");
+		}
 	}
 
 	setSpatialExtent(extent) {

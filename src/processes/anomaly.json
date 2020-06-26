@@ -4,7 +4,7 @@
     "description": "Computes anomalies based on normals for a specific temporal frequency.",
     "categories": [
         "climatology",
-        "cube",
+        "cubes",
         "math"
     ],
     "parameters": [
