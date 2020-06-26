@@ -5,36 +5,35 @@ const GeeProcessGraph = require('../src/processgraph/processgraph');
 const json = require('./data/sample-processgraph.json');
 
 describe('Process Graph Registry', () => {
-	var registry, p, context;
+	var p;
 
-	beforeAll(() => {
-		registry = new GeeProcessRegistry();
-		context = new ProcessingContext(new ServerContext());
-		p = new GeeProcessGraph(json, context);
-		return Promise.resolve();
+	beforeAll(async () => {
+		let serverContext = new ServerContext();
+		await serverContext.collections().loadCatalog();
+		serverContext.processes().addFromFolder('./src/processes/');
+		p = new GeeProcessGraph(json, new ProcessingContext(serverContext));
 	});
 
-	test('Load Processes', () => {
-		registry.addFromFolder('./src/processes/');
-		expect(registry.count()).toBe(18);
+	test('Processes', () => {
+		let registry = p.getContext().server().processes();
+		expect(registry.count()).toBe(66);
+		expect(registry.get('load_collection')).not.toBe(null);
+	});
+
+	test('Collections', () => {
+		let catalog = p.getContext().server().collections();
+		expect(catalog.getData('COPERNICUS/S2')).not.toBe(null);
 	});
 
 	test('Validate', async () => {
 		var errors = await p.validate(false);
-
-		expect(p.getNode("load_collection").getNextNodes().map(n => n.id)).toEqual(["b1", "b2"]);
-		expect(p.getStartNodeIds()).toEqual(["load_collection"]);
-		expect(p.getResultNode().id).toBe("save_result");
-
 		if (errors.count() > 0) {
 			console.log(errors.getMessage());
 		}
 		expect(errors.count()).toBe(0);
+		expect(p.getStartNodeIds()).toEqual(["load_collection"]);
+		expect(p.getNode("load_collection").getNextNodes().map(n => n.id)).toEqual(["reduce_bands"]);
+		expect(p.getResultNode().id).toBe("save");
 	});
-
-/*	test('Execute', async () => {
-		var resultNode = await p.execute();
-		expect(resultNode).not.toBeNull(); // TODO: Futher checks...
-	}); */
 
 });

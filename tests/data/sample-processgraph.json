@@ -1,56 +1,97 @@
 {
-  "load_collection": {
-    "arguments": {
-      "id": "COPERNICUS/S2",
-      "temporal_extent": ["2018-04-30","2018-06-26"]
+  "process_graph": {
+    "load_collection": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": "COPERNICUS/S2",
+        "spatial_extent": null,
+        "temporal_extent": [
+          "2018-01-01",
+          "2018-01-31"
+        ],
+        "bands": [
+          "B4",
+          "B8"
+        ]
+      },
+      "description": "Loading the data; The order of the specified bands is important for the following reduce operation."
     },
-    "process_id": "load_collection"
-  },
-  "b1": {
-    "arguments": {
-      "data": {"from_node": "load_collection"},
-      "bands": ["B4"]
-    },
-    "process_id": "filter_bands"
-  },
-  "b2": {
-    "arguments": {
-      "data": {"from_node": "load_collection"},
-      "bands": ["B8"]
-    },
-    "process_id": "filter_bands"
-  },
-  "normalized_difference": {
-    "arguments": {
-      "band1": {"from_node": "b1"},
-      "band2": {"from_node": "b2"}
-    },
-    "process_id": "normalized_difference"
-  },
-  "reduce": {
-    "arguments": {
-      "data": {"from_node": "normalized_difference"},
-      "dimension": "t",
-      "reducer": {
-        "callback": {
-          "min": {
-            "arguments": {
-              "data": {"from_argument": "data"}
+    "reduce_bands": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "load_collection"
+        },
+        "reducer": {
+          "process_graph": {
+            "red": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B4"
+              }
             },
-            "process_id": "min",
-            "result": true
+            "nir": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B8"
+              }
+            },
+            "ndvi": {
+              "process_id": "normalized_difference",
+              "arguments": {
+                "x": {
+                  "from_node": "nir"
+                },
+                "y": {
+                  "from_node": "red"
+                }
+              },
+              "result": true
+            }
           }
-        }
-      }
+        },
+        "dimension": "bands"
+      },
+      "description": "Compute the NDVI: (NIR - RED) / (NIR + RED)"
     },
-    "process_id": "reduce"
-  },
-  "save_result": {
-    "arguments": {
-      "data": {"from_node": "reduce"},
-      "format": "png"
+    "reduce_time": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "reduce_bands"
+        },
+        "reducer": {
+          "process_graph": {
+            "max": {
+              "process_id": "max",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                }
+              },
+              "result": true
+            }
+          }
+        },
+        "dimension": "t"
+      },
+      "description": "Compute a minimum time composite by reducing the temporal dimension"
     },
-    "process_id": "save_result",
-    "result": true
+    "save": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "apply"
+        },
+        "format": "GTIFF-THUMB"
+      },
+      "result": true
+    }
   }
 }

@@ -9,10 +9,9 @@ If you are interested in using openEO together with Google Earth Engine, [expres
 
 ## Demo
 
-* The most recent version (openEO API v1.0.0) is running at https://earthengine.openeo.org/v1.0
-* The previous stable version (openEO API v0.4.2) is running at https://earthengine.openeo.org/v0.4
+The demo instance is running at https://earthengine.openeo.org (supporting openEO API versions 0.4 and 1.0)
 
-Multiple user accounts are available to be used (`group1`, `group2`, ... until `group15`), each with password `test123`.
+Several user accounts are available to be used (`group1`, `group2`, ...), each with password `test123`.
 
 ## Setting up an instance
 
@@ -38,134 +37,41 @@ The server needs to authenticate with a [service accounts](https://developers.go
 
 More information about authentication can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
 
-### Starting up the server
+#v## Starting up the server
 
-After configuration, the server can be started. Run  `npm run start` to start the server. 
+After configuration, the server can be started. Run `npm run start` to start the server. 
+
+After finishing work, you can stop the server by running `npm run stop`.
 
 ## Usage
 
 For both the demo servers or your own instance you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 
-An exemplary process graph to create an on-demand XYZ web-service looks like this: 
-
-```
-{
-  "load_collection": {
-    "arguments": {
-      "id": "COPERNICUS/S2",
-      "temporal_extent": ["2018-04-30", "2018-06-26"],
-      "spatial_extent": {
-        "west": -2.763447,
-        "south": 43.040791,
-        "east": -1.120991,
-        "north": 43.838489
-      },
-      "bands": ["B8", "B4"]
-    },
-    "process_id": "load_collection"
-  },
-  "b1": {
-    "arguments": {
-      "data": {"from_node": "load_collection"},
-      "bands": ["B8"]
-    },
-    "process_id": "filter_bands"
-  },
-  "b2": {
-    "arguments": {
-      "data": {"from_node": "load_collection"},
-      "bands": ["B4"]
-    },
-    "process_id": "filter_bands"
-  },
-  "normalized_difference": {
-    "arguments": {
-      "band1": {"from_node": "b1"},
-      "band2": {"from_node": "b2"}
-    },
-    "process_id": "normalized_difference"
-  },
-  "reduce": {
-    "arguments": {
-      "data": {"from_node": "normalized_difference"},
-      "dimension": "t",
-      "reducer": {
-        "process_graph": {
-          "max": {
-            "arguments": {
-              "data": {"from_parameter": "data"}
-            },
-            "process_id": "max",
-            "result": true
-          }
-        }
-      }
-    },
-    "process_id": "reduce"
-  },
-  "linear_scaling": {
-    "arguments": {
-      "data": {"from_node": "reduce"},
-      "process": {
-        "process_graph": {
-          "lsr": {
-            "arguments": {
-              "x": {"from_parameter": "x"},
-              "inputMin": -1,
-              "inputMax": 1,
-              "outputMin": 0,
-              "outputMax": 255
-            },
-            "process_id": "linear_scale_range",
-            "result": true
-          }
-        }
-      }
-    },
-    "process_id": "apply"
-  },
-  "save_result": {
-    "arguments": {
-      "data": {"from_node": "linear_scaling"},
-      "format": "png"
-    },
-    "process_id": "save_result",
-    "result": true
-  }
-}
-```
+An exemplary process to create an on-demand XYZ web-service looks like this: [sample-processgraph.json](tests/data/sample-processgraph.json)
 
 This translates into the following [Google Earth Engine Playground](https://code.earthengine.google.com/) script:
 
 ```
 // load_collection
-var img = ee.ImageCollection("COPERNICUS/S2");
-img = img.filterDate("2018-04-30", "2018-06-26");
-var geom = ee.Geometry.Rectangle([-2.763447,43.040791,-1.120991,43.838489], "EPSG:4326");
-img = img.filterBounds(geom);
+var col = ee.ImageCollection("COPERNICUS/S2");
+col = col.filterDate("2018-01-01", "2018-01-31");
 
 // filter_bands (2x)
-var band1 = img.select(["B8"]);
-var band2 = img.select(["B4"]);
+col = col.select(["B4", "B8"]);
 
-// normalized_difference
-var combined = band1.combine(band2);
-img = combined.map(function(image) {
-	var normalizedDifference = image.normalizedDifference().rename("normalized_difference");
-	return image.addBands(normalizedDifference).select("normalized_difference");
+// reduce over bands with callback normalized_difference
+col = col.map(function(image) {
+  var red = image.select("B4");
+  var nir = image.select("B8");
+	return nir.subtract(red).divide(nir.add(red));
 });
 
-// reduce with callback max
-img = img.reduce('max');
-
-// apply linear scaling
-var numerator = img.subtract(-1);
-var ratio = numerator.divide(1 - -1);
-img = ratio.multiply(255 - 0).add(0);
+// reduce over time with callback max
+var img = col.reduce('max');
 
 // save_result
 // Either download data with img.getDownloadURL() or show it in in the playground with:
 Map.addLayer(img);
 ```
 
-**[Further documentation](docs/README.md) can be found in the [docs/](docs/) directory, but is currently work in progress.**
+**[Further documentation](docs/README.md) and more examples can be found in the [docs/](docs/) directory, but it is work in progress.**

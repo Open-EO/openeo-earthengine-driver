@@ -1,48 +1,50 @@
 {
-  "1": {
-    "process_id": "load_collection",
-    "arguments": {
-      "id": "IDAHO_EPSCOR/TERRACLIMATE",
-      "spatial_extent": null,
-      "temporal_extent": [
-        "2017-07-01T00:00:00Z",
-        "2017-07-31T23:59:59Z"
-      ],
-      "bands": [
-        "tmmx"
-      ]
-    }
-  },
-  "2": {
-    "process_id": "save_result",
-    "arguments": {
-      "data": {
-        "from_node": "3"
-      },
-      "format": "PNG",
-      "options": {}
+	"process_graph": {
+    "1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": "IDAHO_EPSCOR/TERRACLIMATE",
+        "spatial_extent": null,
+        "temporal_extent": [
+          "2017-07-01T00:00:00Z",
+          "2017-07-31T23:59:59Z"
+        ],
+        "bands": [
+          "tmmx"
+        ]
+      }
     },
-    "result": true
-  },
-  "3": {
-    "process_id": "apply",
-    "arguments": {
-      "data": {
-        "from_node": "1"
+    "2": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "3"
+        },
+        "format": "PNG",
+        "options": {}
       },
-      "process": {
-        "process_graph": {
-          "2": {
-            "process_id": "linear_scale_range",
-            "arguments": {
-              "x": {
-                "from_parameter": "x"
+      "result": true
+    },
+    "3": {
+      "process_id": "apply",
+      "arguments": {
+        "data": {
+          "from_node": "1"
+        },
+        "process": {
+          "process_graph": {
+            "2": {
+              "process_id": "linear_scale_range",
+              "arguments": {
+                "x": {
+                  "from_parameter": "x"
+                },
+                "inputMin": -150,
+                "inputMax": 450,
+                "outputMax": 255
               },
-              "inputMin": -150,
-              "inputMax": 450,
-              "outputMax": 255
-            },
-            "result": true
+              "result": true
+            }
           }
         }
       }
