@@ -37,7 +37,7 @@ The server needs to authenticate with a [service accounts](https://developers.go
 
 More information about authentication can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
 
-#v## Starting up the server
+### Starting up the server
 
 After configuration, the server can be started. Run `npm run start` to start the server. 
 
