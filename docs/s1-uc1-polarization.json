@@ -1,5 +1,5 @@
 {
-	"process_graph": {
+  "process_graph": {
     "load_collection": {
       "arguments": {
         "id": "COPERNICUS/S1_GRD",
@@ -9,8 +9,14 @@
           "east": 16.65,
           "north": 48.35
         },
-        "bands" :  ["VV", "VH"],
-        "temporal_extent": ["2017-03-01", "2017-04-01"]
+        "bands": [
+          "VV",
+          "VH"
+        ],
+        "temporal_extent": [
+          "2017-03-01",
+          "2017-04-01"
+        ]
       },
       "process_id": "load_collection"
     },
@@ -64,8 +70,12 @@
             },
             "cr": {
               "arguments": {
-                "x": {"from_node": "VH"},
-                "y": {"from_node": "VV"}
+                "x": {
+                  "from_node": "VH"
+                },
+                "y": {
+                  "from_node": "VV"
+                }
               },
               "process_id": "subtract",
               "result": true
@@ -81,7 +91,8 @@
           "from_node": "cr"
         },
         "name": "bands",
-        "type": "bands"
+        "type": "bands",
+        "label": 0
       },
       "process_id": "add_dimension"
     },
@@ -91,7 +102,9 @@
           "from_node": "add_dim_cr"
         },
         "dimension": "bands",
-        "target": ["B"]
+        "target": [
+          "B"
+        ]
       },
       "process_id": "rename_labels"
     },
@@ -100,7 +113,9 @@
         "data": {
           "from_node": "mean"
         },
-        "bands": ["VV"]
+        "bands": [
+          "VV"
+        ]
       },
       "process_id": "filter_bands"
     },
@@ -110,7 +125,9 @@
           "from_node": "VV"
         },
         "dimension": "bands",
-        "target": ["R"]
+        "target": [
+          "R"
+        ]
       },
       "process_id": "rename_labels"
     },
@@ -119,7 +136,9 @@
         "data": {
           "from_node": "mean"
         },
-        "bands": ["VH"]
+        "bands": [
+          "VH"
+        ]
       },
       "process_id": "filter_bands"
     },
@@ -129,7 +148,9 @@
           "from_node": "VH"
         },
         "dimension": "bands",
-        "target": ["G"]
+        "target": [
+          "G"
+        ]
       },
       "process_id": "rename_labels"
     },
@@ -236,7 +257,11 @@
           "from_node": "RGB"
         },
         "format": "png",
-        "options": {"red":  "R", "green": "G", "blue": "B"}
+        "options": {
+          "red": "R",
+          "green": "G",
+          "blue": "B"
+        }
       },
       "process_id": "save_result",
       "result": true
