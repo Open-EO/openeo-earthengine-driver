@@ -128,7 +128,7 @@ module.exports = class Commons {
 			});
 		}
 
-		return this._reduceBinary(node, imgReducer, jsReducer, arg1, arg2);
+		return this._reduceBinary(node, imgReducer, jsReducer, arg1, arg2, arg1Name + "/" + arg2Name);
 	}
 
 	static reduceInCallback(node, imgReducer, jsReducer, dataArg = "data") {
@@ -143,12 +143,12 @@ module.exports = class Commons {
 
 		var result;
 		for(var i = 1; i < list.length; i++) {
-			result = this._reduceBinary(node, imgReducer, jsReducer, list[i-1], list[i]);
+			result = this._reduceBinary(node, imgReducer, jsReducer, list[i-1], list[i], dataArg);
 		}
 		return result;
 	}
 
-	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB) {
+	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB, dataArg = "data") {
 		let result;
 		var dataCubeA = new DataCube(null, valA);
 		var dataCubeB = new DataCube(null, valB);
@@ -180,7 +180,7 @@ module.exports = class Commons {
 				throw new Errors.ProcessArgumentInvalid({
 					process: node.process_id,
 					argument: dataArg,
-					reason: "Reducing number with unknown type not supported (index: "+i+")"
+					reason: "Reducing number with unknown type not supported"
 				});
 			}
 		}
@@ -204,7 +204,7 @@ module.exports = class Commons {
 				throw new Errors.ProcessArgumentInvalid({
 					process: node.process_id,
 					argument: dataArg,
-					reason: "Reducing image collection with unknown type not supported (index: "+i+")"
+					reason: "Reducing image collection with unknown type not supported"
 				});
 			}
 		}
@@ -220,7 +220,7 @@ module.exports = class Commons {
 				throw new Errors.ProcessArgumentInvalid({
 					process: node.process_id,
 					argument: dataArg,
-					reason: "Reducing image with unknown type not supported (index: "+i+")"
+					reason: "Reducing image with unknown type not supported"
 				});
 			}
 		}
@@ -228,7 +228,7 @@ module.exports = class Commons {
 			throw new Errors.ProcessArgumentInvalid({
 				process: node.process_id,
 				argument: dataArg,
-				reason: "Reducing an unknown type is not supported (index: "+i+")"
+				reason: "Reducing an unknown type is not supported"
 			});
 		}
 		return result;
