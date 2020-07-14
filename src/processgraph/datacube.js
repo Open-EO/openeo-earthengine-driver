@@ -390,6 +390,54 @@ module.exports = class DataCube {
 		delete this.dimensions[oldName];
 	}
 
+	renameLablesInner(oldLabels, newLabels){
+		return function renameBandsInner(image) {
+			return image.select(oldLabels).rename(newLabels);
+		};
+	}
+
+	renameLabels(dimension, target, source) {
+
+		var oldLabels;  // array for storing the old label names given by the user
+		var allOldLabels;  // array for storing the old existing label names
+		if (source !== undefined) {
+			oldLabels = source;
+			allOldLabels = Array.from(dimension.values); // copy is important
+		}
+		else {
+			oldLabels = Array.from(dimension.values); // copy is important
+			allOldLabels = Array.from(oldLabels); // copy is important
+		}
+
+		if (target.length !== oldLabels.length) {
+			throw new Errors.LabelMismatch();
+		}
+
+		for (var i = 0; i < oldLabels.length; i++){
+			var oldLabel = oldLabels[i];
+			var newLabel = target[i];
+			if (typeof oldLabel === 'undefined') {  // dimension was previously removed, so the GEE band is named "#"
+				oldLabels[i] = "#";
+				allOldLabels = Array.from(newLabel);
+			}
+			else{
+				if (oldLabels.includes(newLabel)){
+					throw Errors.LabelExists();
+				}
+				var labelIdx = allOldLabels.indexOf(oldLabel);
+				if (labelIdx === null) {
+					throw new Errors.LabelNotAvailable();
+				}
+				else {
+					allOldLabels[labelIdx] = newLabel
+				}
+			}
+		}
+
+		this.imageCollection(ic => ic.map(this.renameLablesInner(oldLabels, target)));
+		this.dimBands().setValues(allOldLabels);
+	}
+
 	dropDimension(name) {
 		if (name instanceof Dimension) {
 			for(var key in this.dimensions) {

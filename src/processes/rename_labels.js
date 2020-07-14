@@ -33,48 +33,10 @@ module.exports = class rename_labels extends BaseProcess {
                 reason: 'Only dimension "bands" is currently supported.'
             });
         }
+        // TODO Number values for the labels arguments causes problems
+        dc.renameLabels(dimension, target, source);
 
-        var oldLabels;  // array for storing the old label names given by the user
-        var allOldLabels;  // array for storing the old existing label names
-        if (source !== undefined) {
-            oldLabels = source;
-            allOldLabels = Array.from(dimension.values); // copy is important
-        }
-        else {
-            oldLabels = Array.from(dimension.values); // copy is important
-            allOldLabels = Array.from(oldLabels); // copy is important
-        }
-
-        if (target.length !== oldLabels.length) {
-            throw new Errors.LabelMismatch();
-        }
-
-
-        for (var i = 0; i < oldLabels.length; i++){
-            var oldLabel = oldLabels[i];
-            var newLabel = target[i];
-            if (typeof oldLabel === 'undefined') {  // dimension was previously removed, so the GEE band is named "#"
-                oldLabels[i] = "#";
-                allOldLabels = Array.from(newLabel);
-            }
-            else{
-                if (oldLabels.includes(newLabel)){
-                    throw Errors.LabelExists();
-                }
-                var labelIdx = allOldLabels.indexOf(oldLabel);
-                if (labelIdx === null) {
-                    throw new Errors.LabelNotAvailable();
-                }
-                else {
-                    allOldLabels[labelIdx] = newLabel
-                }
-            }
-        }
-
-        dc.imageCollection(ic => ic.map(this.process(oldLabels, target)));
-        dc.dimBands().setValues(allOldLabels);
-
-        return dc
+        return dc;
     }
 
 };
