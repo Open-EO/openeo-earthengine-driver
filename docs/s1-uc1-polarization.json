@@ -1,245 +1,258 @@
 {
-	"process_graph": {
-    "load_collection": {
-      "arguments": {
-        "id": "COPERNICUS/S1_GRD",
-        "spatial_extent": {
-          "west": 16.06,
-          "south": 48.06,
-          "east": 16.65,
-          "north": 48.35
+    "process_graph": {
+      "load_collection": {
+        "arguments": {
+          "id": "COPERNICUS/S1_GRD",
+          "spatial_extent": {
+            "west": 16.06,
+            "south": 48.06,
+            "east": 16.65,
+            "north": 48.35
+          },
+          "bands": [
+            "VV",
+            "VH"
+          ],
+          "temporal_extent": [
+            "2017-03-01",
+            "2017-04-01"
+          ]
         },
-        "bands" :  ["VV", "VH"],
-        "temporal_extent": ["2017-03-01", "2017-04-01"]
+        "process_id": "load_collection"
       },
-      "process_id": "load_collection"
-    },
-    "mean": {
-      "arguments": {
-        "data": {
-          "from_node": "load_collection"
-        },
-        "dimension": "t",
-        "reducer": {
-          "process_graph": {
-            "mean": {
-              "arguments": {
-                "data": {
-                  "from_parameter": "data"
-                }
-              },
-              "process_id": "mean",
-              "result": true
+      "mean": {
+        "arguments": {
+          "data": {
+            "from_node": "load_collection"
+          },
+          "dimension": "t",
+          "reducer": {
+            "process_graph": {
+              "mean": {
+                "arguments": {
+                  "data": {
+                    "from_parameter": "data"
+                  }
+                },
+                "process_id": "mean",
+                "result": true
+              }
             }
           }
-        }
-      },
-      "process_id": "reduce_dimension"
-    },
-    "cr": {
-      "arguments": {
-        "data": {
-          "from_node": "mean"
         },
-        "dimension": "bands",
-        "reducer": {
-          "process_graph": {
-            "VV": {
-              "arguments": {
-                "data": {
-                  "from_parameter": "data"
+        "process_id": "reduce_dimension"
+      },
+      "cr": {
+        "arguments": {
+          "data": {
+            "from_node": "mean"
+          },
+          "dimension": "bands",
+          "reducer": {
+            "process_graph": {
+              "VV": {
+                "arguments": {
+                  "data": {
+                    "from_parameter": "data"
+                  },
+                  "label": "VV"
                 },
-                "label": "VV"
+                "process_id": "array_element"
               },
-              "process_id": "array_element"
-            },
-            "VH": {
-              "arguments": {
-                "data": {
-                  "from_parameter": "data"
+              "VH": {
+                "arguments": {
+                  "data": {
+                    "from_parameter": "data"
+                  },
+                  "label": "VH"
                 },
-                "label": "VH"
+                "process_id": "array_element"
               },
-              "process_id": "array_element"
-            },
-            "cr": {
-              "arguments": {
-                "x": {"from_node": "VH"},
-                "y": {"from_node": "VV"}
-              },
-              "process_id": "subtract",
-              "result": true
+              "cr": {
+                "arguments": {
+                  "x": {
+                    "from_node": "VH"
+                  },
+                  "y": {
+                    "from_node": "VV"
+                  }
+                },
+                "process_id": "subtract",
+                "result": true
+              }
             }
           }
-        }
-      },
-      "process_id": "reduce_dimension"
-    },
-    "add_dim_cr": {
-      "arguments": {
-        "data": {
-          "from_node": "cr"
         },
-        "name": "bands",
-        "type": "bands"
+        "process_id": "reduce_dimension"
       },
-      "process_id": "add_dimension"
-    },
-    "rename_label_cr": {
-      "arguments": {
-        "data": {
-          "from_node": "add_dim_cr"
+      "add_dim_cr": {
+        "arguments": {
+          "data": {
+            "from_node": "cr"
+          },
+          "name": "bands",
+          "type": "bands",
+          "label": "B"
         },
-        "dimension": "bands",
-        "target": ["B"]
+        "process_id": "add_dimension"
       },
-      "process_id": "rename_labels"
-    },
-    "VV": {
-      "arguments": {
-        "data": {
-          "from_node": "mean"
+      "VV": {
+        "arguments": {
+          "data": {
+            "from_node": "mean"
+          },
+          "bands": [
+            "VV"
+          ]
         },
-        "bands": ["VV"]
+        "process_id": "filter_bands"
       },
-      "process_id": "filter_bands"
-    },
-    "rename_label_VV": {
-      "arguments": {
-        "data": {
-          "from_node": "VV"
+      "rename_label_VV": {
+        "arguments": {
+          "data": {
+            "from_node": "VV"
+          },
+          "dimension": "bands",
+          "target": [
+            "R"
+          ]
         },
-        "dimension": "bands",
-        "target": ["R"]
+        "process_id": "rename_labels"
       },
-      "process_id": "rename_labels"
-    },
-    "VH": {
-      "arguments": {
-        "data": {
-          "from_node": "mean"
+      "VH": {
+        "arguments": {
+          "data": {
+            "from_node": "mean"
+          },
+          "bands": [
+            "VH"
+          ]
         },
-        "bands": ["VH"]
+        "process_id": "filter_bands"
       },
-      "process_id": "filter_bands"
-    },
-    "rename_label_VH": {
-      "arguments": {
-        "data": {
-          "from_node": "VH"
+      "rename_label_VH": {
+        "arguments": {
+          "data": {
+            "from_node": "VH"
+          },
+          "dimension": "bands",
+          "target": [
+            "G"
+          ]
         },
-        "dimension": "bands",
-        "target": ["G"]
+        "process_id": "rename_labels"
       },
-      "process_id": "rename_labels"
-    },
-    "R_band": {
-      "arguments": {
-        "data": {
-          "from_node": "rename_label_VV"
-        },
-        "process": {
-          "process_graph": {
-            "linear_scale_range": {
-              "arguments": {
-                "x": {
-                  "from_parameter": "x"
+      "R_band": {
+        "arguments": {
+          "data": {
+            "from_node": "rename_label_VV"
+          },
+          "process": {
+            "process_graph": {
+              "linear_scale_range": {
+                "arguments": {
+                  "x": {
+                    "from_parameter": "x"
+                  },
+                  "inputMin": -20,
+                  "inputMax": -5,
+                  "outputMin": 0,
+                  "outputMax": 255
                 },
-                "inputMin": -20,
-                "inputMax": -5,
-                "outputMin": 0,
-                "outputMax": 255
-              },
-              "process_id": "linear_scale_range",
-              "result": true
+                "process_id": "linear_scale_range",
+                "result": true
+              }
             }
           }
-        }
-      },
-      "process_id": "apply"
-    },
-    "G_band": {
-      "arguments": {
-        "data": {
-          "from_node": "rename_label_VH"
         },
-        "process": {
-          "process_graph": {
-            "linear_scale_range": {
-              "arguments": {
-                "x": {
-                  "from_parameter": "x"
+        "process_id": "apply"
+      },
+      "G_band": {
+        "arguments": {
+          "data": {
+            "from_node": "rename_label_VH"
+          },
+          "process": {
+            "process_graph": {
+              "linear_scale_range": {
+                "arguments": {
+                  "x": {
+                    "from_parameter": "x"
+                  },
+                  "inputMin": -26,
+                  "inputMax": -11,
+                  "outputMin": 0,
+                  "outputMax": 255
                 },
-                "inputMin": -26,
-                "inputMax": -11,
-                "outputMin": 0,
-                "outputMax": 255
-              },
-              "process_id": "linear_scale_range",
-              "result": true
+                "process_id": "linear_scale_range",
+                "result": true
+              }
             }
           }
-        }
-      },
-      "process_id": "apply"
-    },
-    "B_band": {
-      "arguments": {
-        "data": {
-          "from_node": "rename_label_cr"
         },
-        "process": {
-          "process_graph": {
-            "linear_scale_range": {
-              "arguments": {
-                "x": {
-                  "from_parameter": "x"
+        "process_id": "apply"
+      },
+      "B_band": {
+        "arguments": {
+          "data": {
+            "from_node": "add_dim_cr"
+          },
+          "process": {
+            "process_graph": {
+              "linear_scale_range": {
+                "arguments": {
+                  "x": {
+                    "from_parameter": "x"
+                  },
+                  "inputMin": -5,
+                  "inputMax": 0,
+                  "outputMin": 0,
+                  "outputMax": 255
                 },
-                "inputMin": -5,
-                "inputMax": 0,
-                "outputMin": 0,
-                "outputMax": 255
-              },
-              "process_id": "linear_scale_range",
-              "result": true
+                "process_id": "linear_scale_range",
+                "result": true
+              }
             }
           }
-        }
-      },
-      "process_id": "apply"
-    },
-    "RG": {
-      "arguments": {
-        "cube1": {
-          "from_node": "R_band"
         },
-        "cube2": {
-          "from_node": "G_band"
-        }
+        "process_id": "apply"
       },
-      "process_id": "merge_cubes"
-    },
-    "RGB": {
-      "arguments": {
-        "cube1": {
-          "from_node": "RG"
+      "RG": {
+        "arguments": {
+          "cube1": {
+            "from_node": "R_band"
+          },
+          "cube2": {
+            "from_node": "G_band"
+          }
         },
-        "cube2": {
-          "from_node": "B_band"
-        }
+        "process_id": "merge_cubes"
       },
-      "process_id": "merge_cubes"
-    },
-    "save_result": {
-      "arguments": {
-        "data": {
-          "from_node": "RGB"
+      "RGB": {
+        "arguments": {
+          "cube1": {
+            "from_node": "RG"
+          },
+          "cube2": {
+            "from_node": "B_band"
+          }
         },
-        "format": "png",
-        "options": {"red":  "R", "green": "G", "blue": "B"}
+        "process_id": "merge_cubes"
       },
-      "process_id": "save_result",
-      "result": true
+      "save_result": {
+        "arguments": {
+          "data": {
+            "from_node": "RGB"
+          },
+          "format": "png",
+          "options": {
+            "red": "R",
+            "green": "G",
+            "blue": "B"
+          }
+        },
+        "process_id": "save_result",
+        "result": true
+      }
     }
-  }
 }

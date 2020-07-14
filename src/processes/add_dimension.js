@@ -17,9 +17,13 @@ module.exports = class add_dimension extends BaseProcess {
 		}
 
 		var dimension = dc.addDimension(name, type);
-		dimension.addValue(label);
-		// ToDo: Depending on the data in the datacube, we need to also apply changes at Googles side...
 
+		dimension.addValue(label);
+
+		// TODO A Number value for label causes problems
+		if (!Number.isInteger(label)) {
+			dc.renameLabels(dimension, [label], ["#"]);
+		}
 		return dc;
 	}
 
