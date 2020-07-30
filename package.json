@@ -30,8 +30,8 @@
   "dependencies": {
     "@google-cloud/storage": "^3.0.2",
     "@google/earthengine": "^0.1.226",
-    "@openeo/js-commons": "^1.0.0-rc.4",
-    "@openeo/js-processgraphs": "^1.0.0-beta.2",
+    "@openeo/js-commons": "^1.0.0",
+    "@openeo/js-processgraphs": "^1.0.0-beta.3",
     "ajv": "^6.12.2",
     "axios": "^0.19.2",
     "check-disk-space": "^2.1.0",
