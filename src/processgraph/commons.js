@@ -286,7 +286,7 @@ module.exports = class Commons {
 				band_list.push(b)
 			}
 			else {
-				for (let eob of col_meta.properties["eo:bands"]){
+				for (let eob of col_meta.summaries["eo:bands"]){
 					if (b === eob["common_name"]) {
 						band_list.push(eob["name"]);
 						break;

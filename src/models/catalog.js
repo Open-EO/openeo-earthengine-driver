@@ -1,6 +1,7 @@
 const Utils = require('../utils');
 const fse = require('fs-extra');
 const {Storage} = require('@google-cloud/storage');
+const { MigrateCollections } = require('@openeo/js-commons');
 
 // Rough auto mapping for common band names until GEE lists them.
 // Optimized for Copernicus S2 data
@@ -37,8 +38,9 @@ module.exports = class DataCatalog {
 			let file = files[i];
 			if (file.isFile() && file.name !== 'catalog.json') {
 				let collection = fse.readJsonSync(this.dataFolder + file.name);
+				// ToDo 1.0: This property is located somewhere else in new STAC versions
 				if (collection.properties['gee:type'] === 'image_collection') {
-					// We don't support ee.Image yet (see get_collection process), therefore ignore all non image collections.
+					// We don't support ee.Image yet (see load_collection process), therefore ignore all non image collections.
 					this.collections[collection.id] = collection;
 				}
 			}
@@ -100,8 +102,8 @@ module.exports = class DataCatalog {
 	}
 
 	fixData() {
-		for(var i in this.collections) {
-			let c = this.collections[i];
+		for(var cid in this.collections) {
+			let c = this.collections[cid];
 
 			// Fix invalid headers in markdown
 			if (typeof c.description === 'string') {
@@ -204,7 +206,11 @@ module.exports = class DataCatalog {
 				}
 				return l;
 			});
-			this.collections[i] = c;
+
+			// ToDo 1.0: Remove temporary workaround to convert old collections to current spec
+			c = MigrateCollections.convertCollectionToLatestSpec(c, "0.4.2");
+
+			this.collections[cid] = c;
 		}
 	}
 

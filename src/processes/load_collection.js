@@ -11,7 +11,7 @@ module.exports = class load_collection extends BaseProcess {
 		var dc = new DataCube();
 		dc.setData(ee.ImageCollection(id));
 		dc.setCollectionId(id);
-		dc.setDimensionsFromSTAC(collection.properties['cube:dimensions']);
+		dc.setDimensionsFromSTAC(collection['cube:dimensions']);
 
 		// Filter temporal
 		var temporal_extent = node.getArgument("temporal_extent");

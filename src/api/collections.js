@@ -1,6 +1,5 @@
 const Utils = require('../utils');
 const Errors = require('../errors');
-const { MigrateCollections } = require('@openeo/js-commons');
 
 module.exports = class Data {
 
@@ -33,8 +32,6 @@ module.exports = class Data {
 
 	getCollections(req, res, next) {
 		var data = this.catalog.getData().map(c => {
-			// ToDo 1.0: Remove temporary workaround to convert old collections to current spec
-			c = MigrateCollections.convertCollectionToLatestSpec(c, "0.4.2");
 			return {
 				stac_version: c.stac_version,
 				stac_extensions: [],
@@ -77,7 +74,7 @@ module.exports = class Data {
 
 		var collection = this.catalog.getData(id);
 		if (collection !== null) {
-			res.json(MigrateCollections.convertCollectionToLatestSpec(collection, "0.4.2"));
+			res.json(collection);
 			return next();
 		}
 		else {
