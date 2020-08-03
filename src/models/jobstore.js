@@ -2,6 +2,7 @@ const Utils = require('../utils');
 const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
+const Logs = require('./logs');
 
 module.exports = class JobStore {
 
@@ -54,12 +55,18 @@ module.exports = class JobStore {
 		});
 	}
 
-	updateJobStatus(query, status, error = null) {
+	async getLogsById(job_id) {
+		let logs = new Logs(
+			this.getJobFile(job_id, 'logs.db'),
+			Utils.getApiUrl('/jobs/' + job_id + '/logs')
+		);
+		await logs.init();
+		return logs;
+	}
+
+	updateJobStatus(query, status) {
 		return new Promise((resolve, reject) => {
-			if (error !== null) {
-				error = Errors.wrap(error).toJSON();
-			}
-			this.db.update(query, { $set: { status: status, error: error } }, {}, function (err, numChanged) {
+			this.db.update(query, { $set: { status: status } }, {}, function (err, numChanged) {
 				if (err) {
 					reject(Errors.wrap(err));
 				}

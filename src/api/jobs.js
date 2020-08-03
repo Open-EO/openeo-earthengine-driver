@@ -21,6 +21,7 @@ module.exports = class JobsAPI {
 		server.addEndpoint('patch', '/jobs/{job_id}', this.patchJob.bind(this));
 		server.addEndpoint('delete', '/jobs/{job_id}', this.deleteJob.bind(this));
 
+		server.addEndpoint('get', '/jobs/{job_id}/logs', this.getJobLogs.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
 		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
 		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
@@ -97,6 +98,19 @@ module.exports = class JobsAPI {
 		.catch(e => next(Errors.wrap(e)));
 	}
 
+	getJobLogs(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
+		this.storage.getLogsById(req.params.job_id)
+		.then(logs => logs.get(req.query.offset, req.query.limit))
+		.then(logs => {
+			res.json(logs);
+			return next();
+		})
+		.catch(e => next(Errors.wrap(e)));
+	}
+
 	deleteJob(req, res, next) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
@@ -133,7 +147,7 @@ module.exports = class JobsAPI {
 			user_id: req.user._id
 		};
 
-		var filePath, jobId, process;
+		var filePath, jobId, process, logger;
 		this.storage.findJob(query)
 		.then(job => {
 			if (job.status === 'queued' || job.status === 'running') {
@@ -143,7 +157,12 @@ module.exports = class JobsAPI {
 			jobId = job._id;
 			process = job.process;
 
-			this.sendDebugNotifiction(req, res, "Queueing batch job");
+			return this.storage.getLogsById(jobId);
+		})
+		.then(logs => {
+			logger = logs;
+			logger.clear();
+			logger.add("Queueing batch job", "info");
 			this.storage.updateJobStatus(query, 'queued').catch(() => {});
 		
 			res.send(202);
@@ -151,7 +170,7 @@ module.exports = class JobsAPI {
 		})
 		.then(() => this.storage.removeResults(jobId))
 		.then(() => {
-			this.sendDebugNotifiction(req, res, "Starting batch job");
+			logger.add("Starting batch job", "info");
 			this.storage.updateJobStatus(query, 'running').catch(() => {});
 
 			var context = this.context.processingContext(req);
@@ -166,7 +185,7 @@ module.exports = class JobsAPI {
 			return context.retrieveResults(cube);
 		})
 		.then(url => {
-			this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
+			logger.add("Downloading data from Google: " + url, "info");
 			return Utils.stream({
 				method: 'get',
 				url: url,
@@ -174,7 +193,7 @@ module.exports = class JobsAPI {
 			});
 		})
 		.then(stream => {
-			this.sendDebugNotifiction(req, res, "Storing result to: " + filePath);
+			logger.add("Storing result to: " + filePath, "info");
 			return fse.ensureDir(path.dirname(filePath))
 				.then(() => new Promise((resolve, reject) => {
 					var writer = fse.createWriteStream(filePath);
@@ -188,12 +207,17 @@ module.exports = class JobsAPI {
 				}));
 		})
 		.then(() => {
-			this.sendDebugNotifiction(req, res, "Finished");
+			logger.add("Finished", "info");
 			this.storage.updateJobStatus(query, 'finished')
 		})
 		.catch(e => {
-			this.storage.updateJobStatus(query, 'error', e);
-			this.sendDebugNotifiction(req, res, e);
+			if(logger) {
+				logger.add(e, "error");
+			}
+			else {
+				console.error(e);
+			}
+			this.storage.updateJobStatus(query, 'error');
 		});
 	}
 

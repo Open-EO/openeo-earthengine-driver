@@ -70,8 +70,8 @@ var Utils = {
 		return CommonUtils.size(obj);
 	},
 
-	loadDB(name) {
-		var db = new Datastore({ filename: './storage/database/' + name + '.db', autoload: true });
+	loadDB(name, folder = './storage/database/') {
+		var db = new Datastore({ filename: folder + name + '.db', autoload: true });
 		db.persistence.setAutocompactionInterval(60 * 60 * 1000); // Once every hour
 		return db;
 	},
