@@ -21,7 +21,9 @@
           "from_node": "3"
         },
         "format": "PNG",
-        "options": {}
+        "options": {
+          "epsgCode": 4326 
+        }
       },
       "result": true
     },

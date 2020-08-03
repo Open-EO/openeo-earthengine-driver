@@ -6,6 +6,7 @@ const path = require('path');
 const axios = require('axios');
 const Errors = require('./errors');
 const { Utils: CommonUtils } = require('@openeo/js-commons');
+const proj4 = require('proj4');
 
 var Utils = {
 
@@ -300,6 +301,40 @@ var Utils = {
 			throw error;
 		});
 
+	},
+
+	proj(from, to, coords) {
+		var fromCrs = Utils.crsToString(from);
+		var toCrs = Utils.crsToString(to);
+		if (fromCrs === toCrs) {
+			return coords;
+		}
+
+		Utils.loadCrsDef(fromCrs);
+		Utils.loadCrsDef(toCrs);
+
+		let newCoords = proj4(fromCrs, toCrs, coords);
+		if (newCoords.filter(c => Number.isNaN(c) || !Number.isFinite(c)).length > 0) {
+			throw new Error("CRS conversion from " + fromCrs + " to " + toCrs + " failed.");
+		}
+		return newCoords;
+	},
+
+	loadCrsDef(crs) {
+		if (proj4.defs(crs)) {
+			return; // CRS already available
+		}
+		if (!crs.startsWith('EPSG:')) {
+			throw new Error("CRS " + crs + " not supported");
+		}
+
+		try {
+			let code = crs.substring(5);
+			const def = require('epsg-index/s/' + code + '.json');
+			proj4.defs(crs, def.proj4);
+		} catch (error) {
+			throw new Error("CRS " + crs + " not available for reprojection");
+		}
 	}
 
 };

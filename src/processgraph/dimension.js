@@ -1,3 +1,5 @@
+const Utils = require('../utils');
+
 module.exports = class Dimension {
 
 	constructor(datacube, options) {
@@ -64,6 +66,9 @@ module.exports = class Dimension {
 	}
 
 	setReferenceSystem(newRefSys) {
+		if (Array.isArray(this.extent) && this.extent.length >= 2) {
+			this.setExtent(Utils.proj(this.referenceSystem, newRefSys, [this.extent[0], this.extent[1]]));
+		}
 		this.referenceSystem = newRefSys;
 	}
 

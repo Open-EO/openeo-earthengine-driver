@@ -1,6 +1,5 @@
 const Dimension = require('./dimension');
 const Utils = require('../utils');
-const proj4 = require('proj4');
 const Errors = require('../errors');
 
 module.exports = class DataCube {
@@ -218,41 +217,11 @@ module.exports = class DataCube {
 		}
 	}
 
-	proj(from, to, coords) {
-		var fromCrs = Utils.crsToString(from);
-		var toCrs = Utils.crsToString(to);
-		if (fromCrs === toCrs) {
-			return coords;
-		}
-
-		this.loadCrsDef(fromCrs);
-		this.loadCrsDef(toCrs);
-		
-		return proj4(fromCrs, toCrs, coords);
-	}
-
-	loadCrsDef(crs) {
-		if (proj4.defs(crs)) {
-			return; // CRS already available
-		}
-		if (!crs.startsWith('EPSG:')) {
-			throw new Error("CRS " + crs + " not supported");
-		}
-
-		try {
-			let code = crs.substring(5);
-			const def = require('epsg-index/s/' + code + '.json');
-			proj4.defs(crs, def.proj4);
-		} catch (error) {
-			throw new Error("CRS " + crs + " not available for reprojection");
-		}
-	}
-
 	setSpatialExtent(extent) {
 		extent.crs = extent.crs > 0 ? extent.crs : 4326;
 		var toCrs = this.getCrs();
-		var p1 = this.proj(extent.crs, toCrs, [extent.west, extent.south]);
-		var p2 = this.proj(extent.crs, toCrs, [extent.east, extent.north]);
+		var p1 = Utils.proj(extent.crs, toCrs, [extent.west, extent.south]);
+		var p2 = Utils.proj(extent.crs, toCrs, [extent.east, extent.north]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
 		if (extent.base && extent.height) {
@@ -264,8 +233,8 @@ module.exports = class DataCube {
 		var bbox = Utils.geoJsonBbox(geometry);
 		var hasZ = bbox.length > 4;
 		var toCrs = this.getCrs();
-		var p1 = this.proj(4326, toCrs, [bbox[0], bbox[1]]);
-		var p2 = this.proj(4326, toCrs, [bbox[hasZ ? 3 : 2], bbox[hasZ ? 4 : 3]]);
+		var p1 = Utils.proj(4326, toCrs, [bbox[0], bbox[1]]);
+		var p2 = Utils.proj(4326, toCrs, [bbox[hasZ ? 3 : 2], bbox[hasZ ? 4 : 3]]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
 		if (hasZ) {
@@ -331,10 +300,8 @@ module.exports = class DataCube {
 	}
 
 	setCrs(refSys) {
-		var extent = this.getSpatialExtent();
 		this.dimX().setReferenceSystem(refSys);
 		this.dimY().setReferenceSystem(refSys);
-		this.setSpatialExtent(extent); // Update the extent based on the new CRS
 	}
 
 	setReferenceSystem(dimName, refSys) {
@@ -397,7 +364,6 @@ module.exports = class DataCube {
 	}
 
 	renameLabels(dimension, target, source) {
-
 		var oldLabels;  // array for storing the old label names given by the user
 		var allOldLabels;  // array for storing the old existing label names
 		if (source !== undefined) {
