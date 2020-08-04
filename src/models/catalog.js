@@ -71,9 +71,11 @@ module.exports = class DataCatalog {
 			let promises = [];
 			for(var i in data[0]) {
 				let file = data[0][i];
-				promises.push(file.download({
-					destination: this.dataFolder + file.name.replace(prefix, '')
-				}));
+				if (file.name.endsWith('.json')) {
+					promises.push(file.download({
+						destination: this.dataFolder + file.name.replace(prefix, '')
+					}));
+				}
 			};
 			return Promise.all(promises);
 		});
