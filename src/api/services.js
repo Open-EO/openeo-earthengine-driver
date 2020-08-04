@@ -16,6 +16,7 @@ module.exports = class ServicesAPI {
 		server.addEndpoint('get', '/services/{service_id}', this.getService.bind(this));
 		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
 		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
+		server.addEndpoint('get', '/services/{service_id}/logs', this.getServiceLogs.bind(this));
 		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
 
 		return Promise.resolve();
@@ -40,9 +41,15 @@ module.exports = class ServicesAPI {
 				var context = this.context.processingContext(req);
 				// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
 				context.setUserId(service.user_id);
-				var pg = new ProcessGraph(service.process, context);
-				pg.optimizeLoadCollectionRect(rect);
-				pg.execute()
+				let logger;
+				this.storage.getLogsById(req.params.service_id, Utils.timeId())
+					.then(logs => {
+						var pg = new ProcessGraph(service.process, context);
+						pg.setLogger(logs);
+						logger = logs;
+						pg.optimizeLoadCollectionRect(rect);
+						return pg.execute();
+					})
 					.then(resultNode => {
 						var dataCube = resultNode.getResult();
 						dataCube.setOutputFormatParameter('size', '256x256');
@@ -51,12 +58,13 @@ module.exports = class ServicesAPI {
 						return context.retrieveResults(dataCube);
 					})
 					.then(url => {
-						if (this.context.debug) {
-							console.log("Serving " + url);
-						}
+						logger.debug(`Serving ${url} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
 						res.redirect(url, next);
 					})
-					.catch(e => next(Errors.wrap(e)));
+					.catch(e => {
+						logger.error(e);
+						return next(Errors.wrap(e));
+					});
 			} catch(e) {
 				return next(Errors.wrap(e));
 			}
@@ -171,7 +179,9 @@ module.exports = class ServicesAPI {
 						return next();
 					}
 				});
+				return this.storage.getLogsById(req.params.service_id);
 			})
+			.then(logs => logs.info('Service updated', data))
 			.catch(e => next(Errors.wrap(e)));
 		});
 	}
@@ -235,6 +245,19 @@ module.exports = class ServicesAPI {
 				}
 			});
 		}).catch(e => next(e));
+	}
+
+	getServiceLogs(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
+		this.storage.getLogsById(req.params.service_id)
+		.then(logs => logs.get(req.query.offset, req.query.limit))
+		.then(json => {
+			res.json(json);
+			return next();
+		})
+		.catch(e => next(Errors.wrap(e)));
 	}
 
 	makeServiceResponse(service, full = true) {

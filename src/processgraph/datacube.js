@@ -15,17 +15,27 @@ module.exports = class DataCube {
 			parameters: {}
 		};
 		this.col_id = null;
+		this.logger = null;
 
 		if (sourceDataCube instanceof DataCube) {
 			if (data === undefined) {
 				this.data = sourceDataCube.data;
 				this.type = sourceDataCube.type;
 			}
+			this.logger = sourceDataCube.logger;
 			this.output = Object.assign({}, sourceDataCube.output);
 			for(var i in sourceDataCube.dimensions) {
 				this.dimensions[i] = new Dimension(this, sourceDataCube.dimensions[i]);
 			}
 		}
+	}
+
+	getLogger() {
+		return this.logger;
+	}
+
+	setLogger(logger) {
+		this.logger = logger;
 	}
 
 	getData() {
@@ -38,7 +48,7 @@ module.exports = class DataCube {
 		this.type = null;
 	}
 
-	static getDataType(data) {
+	static getDataType(data, logger = null) {
 		if (data instanceof ee.Image) {
 			return "eeImage";
 		}
@@ -50,7 +60,9 @@ module.exports = class DataCube {
 		}
 		// Check for ComputedObject only after checking all the other EE types above
 		else if (data instanceof ee.ComputedObject) {
-			console.log("Calling slow function getInfo(); Try to avoid this.");
+			if (logger) {
+				logger.warn("Calling slow function getInfo(); Try to avoid this.");
+			}
 			// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
 			var info = data.getInfo();
 			// Only works for Image and ImageCollection and maybe some other types, but not for Array for example.
@@ -77,7 +89,7 @@ module.exports = class DataCube {
 
 	objectType() {
 		if (this.type === null) {
-			this.type = DataCube.getDataType(this.data);
+			this.type = DataCube.getDataType(this.data, this.logger);
 		}
 		return this.type;
 	}
@@ -107,9 +119,8 @@ module.exports = class DataCube {
 			// no operation
 		}
 		else if (this.isImageCollection()) {
-			// ToDo: Write warning to user log
-			if (global.server.serverContext.debug) {
-				console.log("Compositing the image collection to a single image.");
+			if (this.logger) {
+				this.logger.warn("Compositing the image collection to a single image.");
 			}
 			this.setData(this.data.mosaic());
 		}

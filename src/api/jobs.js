@@ -1,9 +1,11 @@
 const Utils = require('../utils');
+const HttpUtils = require('../httpUtils');
 const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
 const ProcessGraph = require('../processgraph/processgraph');
 const packageInfo = require('../../package.json');
+const Logs = require('../models/logs');
 
 module.exports = class JobsAPI {
 
@@ -14,6 +16,7 @@ module.exports = class JobsAPI {
 
 	beforeServerStart(server) {
 		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
+		server.addEndpoint('get', '/result/logs/{id}', this.getSyncLogFile.bind(this));
 
 		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
 		server.addEndpoint('get', '/jobs', this.getJobs.bind(this));
@@ -50,7 +53,7 @@ module.exports = class JobsAPI {
 	}
 
 	deliverFile(req, res, next, path) {
-		Utils.isFile(path).then(() => {
+		HttpUtils.isFile(path).then(() => {
 			res.header('Content-Type', Utils.extensionToMediaType(path));
 			var stream = fse.createReadStream(path);
 			stream.pipe(res);
@@ -104,11 +107,31 @@ module.exports = class JobsAPI {
 		}
 		this.storage.getLogsById(req.params.job_id)
 		.then(logs => logs.get(req.query.offset, req.query.limit))
-		.then(logs => {
-			res.json(logs);
+		.then(json => {
+			res.json(json);
 			return next();
 		})
 		.catch(e => next(Errors.wrap(e)));
+	}
+
+	async getResultLogs(user_id, id) {
+		let file = path.normalize(path.join('./storage/user_files/', user_id, 'sync_logs' , id + '.logs.db'));
+		let logs = new Logs(file, Utils.getApiUrl('/result/logs/' + id));
+		await logs.init();
+		return logs;
+	}
+
+	getSyncLogFile(req, res, next) {
+		if (!req.user._id) {
+			return next(new Errors.AuthenticationRequired());
+		}
+		this.getResultLogs(req.user._id, req.params.id)
+			.then(logs => logs.get())
+			.then(json => {
+				res.json(json);
+				return next();
+			})
+			.catch(() => next(new Errors.NotFound()));
 	}
 
 	deleteJob(req, res, next) {
@@ -156,25 +179,27 @@ module.exports = class JobsAPI {
 
 			jobId = job._id;
 			process = job.process;
-
-			return this.storage.getLogsById(jobId);
 		})
+		.then(() => this.storage.removeResults(jobId))
+		.then(() =>  this.storage.getLogsById(jobId))
 		.then(logs => {
 			logger = logs;
-			logger.clear();
-			logger.add("Queueing batch job", "info");
+			return logs.clear();
+		})
+		.then(() => {
+			logger.info("Queueing batch job");
 			this.storage.updateJobStatus(query, 'queued').catch(() => {});
 		
 			res.send(202);
 			return next();
 		})
-		.then(() => this.storage.removeResults(jobId))
 		.then(() => {
-			logger.add("Starting batch job", "info");
+			logger.info("Starting batch job");
 			this.storage.updateJobStatus(query, 'running').catch(() => {});
 
 			var context = this.context.processingContext(req);
 			var pg = new ProcessGraph(process, context);
+			pg.setLogger(logger);
 			return pg.execute();
 		})
 		.then(resultNode => {
@@ -185,15 +210,15 @@ module.exports = class JobsAPI {
 			return context.retrieveResults(cube);
 		})
 		.then(url => {
-			logger.add("Downloading data from Google: " + url, "info");
-			return Utils.stream({
+			logger.debug("Downloading data from Google: " + url);
+			return HttpUtils.stream({
 				method: 'get',
 				url: url,
 				responseType: 'stream'
 			});
 		})
 		.then(stream => {
-			logger.add("Storing result to: " + filePath, "info");
+			logger.debug("Storing result to: " + filePath);
 			return fse.ensureDir(path.dirname(filePath))
 				.then(() => new Promise((resolve, reject) => {
 					var writer = fse.createWriteStream(filePath);
@@ -207,12 +232,12 @@ module.exports = class JobsAPI {
 				}));
 		})
 		.then(() => {
-			logger.add("Finished", "info");
-			this.storage.updateJobStatus(query, 'finished')
+			logger.info("Finished");
+			this.storage.updateJobStatus(query, 'finished');
 		})
 		.catch(e => {
 			if(logger) {
-				logger.add(e, "error");
+				logger.error(e);
 			}
 			else {
 				console.error(e);
@@ -282,29 +307,6 @@ module.exports = class JobsAPI {
 		.catch(e => next(Errors.wrap(e)));
 	}
 
-	// Redirect to log file instead of using notifications
-	sendDebugNotifiction(req, res, message, processName = null, processParams = {}) {
-		try {
-			var params = {
-				job_id: req.params.job_id || "synchronous-result"
-			};
-			var payload = {
-				message: message,
-			};
-			if (processName !== null) {
-				payload.process = {
-					name: processName,
-					parameters: processParams
-				};
-			}
-			if (this.context.debug) {
-				console.log(params.job_id + ": " + message);
-			}
-		} catch (e) {
-			console.error(e);
-		}
-	}
-
 	patchJob(req, res, next) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
@@ -361,7 +363,9 @@ module.exports = class JobsAPI {
 					return next();
 				}
 			});
+			return this.storage.getLogsById(req.params.job_id);
 		})
+		.then(logger => logger.info('Job updated', data))
 		.catch(e => next(Errors.wrap(e)));
 	}
 
@@ -412,25 +416,33 @@ module.exports = class JobsAPI {
 		let plan = req.body.plan || this.context.plans.default;
 		let budget = req.body.budget || null;
 		// ToDo: Validate data, handle budget and plan input
-	
-		this.sendDebugNotifiction(req, res, "Starting to process request");
 
-		var context = this.context.processingContext(req);
-		var pg = new ProcessGraph(req.body.process, context);
-		pg.validate(false)
+		let id = Utils.timeId();
+		let context, logger, pg;
+		this.getResultLogs(req.user._id, id)
+			.then(logs => {
+				logger = logs;
+				logger.debug("Starting to process request");
+				context = this.context.processingContext(req);
+				pg = new ProcessGraph(req.body.process, context);
+				pg.setLogger(logger);
+				return pg.validate(false);
+			})
 			.then(errorList => {
-				this.sendDebugNotifiction(req, res, "Validated with " + errorList.count() + " errors");
 				if (errorList.count() > 0) {
-					errorList.getAll().forEach(error => this.sendDebugNotifiction(req, res, error));
+					errorList.getAll().forEach(error => logger.error(error));
 					throw errorList.first();
 				}
-				this.sendDebugNotifiction(req, res, "Executing processes");
+				else {
+					logger.info("Validated without errors");
+				}
+				logger.debug("Executing processes");
 				return pg.execute();
 			})
 			.then(resultNode => context.retrieveResults(resultNode.getResult()))
 			.then(url => {
-				this.sendDebugNotifiction(req, res, "Downloading data from Google: " + url);
-				return Utils.stream({
+				logger.debug("Downloading data from Google: " + url);
+				return HttpUtils.stream({
 					method: 'get',
 					url: url,
 					responseType: 'stream'
@@ -440,6 +452,8 @@ module.exports = class JobsAPI {
 				var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
 				res.header('Content-Type', contentType);
 				res.header('OpenEO-Costs', 0);
+				var monitorUrl = Utils.getApiUrl('/result/logs/' + id);
+				res.header('Link', `<${monitorUrl}>; rel="monitor"`);
 				stream.data.pipe(res);
 				return next();
 			})

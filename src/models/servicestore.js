@@ -1,10 +1,20 @@
 const Utils = require('../utils');
+const path = require('path');
+const Logs = require('./logs');
 
 module.exports = class ServiceStore {
 
 	constructor() {
 		this.db = Utils.loadDB('services');
 		this.editableFields = ['title', 'description', 'process', 'enabled', 'configuration', 'plan', 'budget'];
+		this.serviceFolder = './storage/service_files';
+	}
+
+	async getLogsById(serviceId) {
+		let file = path.normalize(path.join(this.serviceFolder, serviceId + '.logs.db'));
+		let logs = new Logs(file, Utils.getApiUrl('/services/' + serviceId + '/logs'));
+		await logs.init();
+		return logs;
 	}
 
 	isFieldEditable(name) {

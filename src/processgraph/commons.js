@@ -38,7 +38,7 @@ module.exports = class Commons {
 					reason: 'The specified ' + reducerArgName + ' is invalid.'
 				});
 			}
-			console.log("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
+			node.debug("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
 			dc = Commons.reduceSimple(dc, process.geeReducer(node));
 		}
 		else {
@@ -151,7 +151,9 @@ module.exports = class Commons {
 	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB, dataArg = "data") {
 		let result;
 		var dataCubeA = new DataCube(null, valA);
+        dataCubeA.setLogger(node.getLogger());
 		var dataCubeB = new DataCube(null, valB);
+        dataCubeA.setLogger(node.getLogger());
 		var imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
 		if (typeof valA === 'undefined' && typeof valB === 'undefined') {
 			// Should be caught by reduce(Binary)InCallback already...
@@ -237,6 +239,7 @@ module.exports = class Commons {
 	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
 		var data = node.getArgument(dataArg);
 		var dc = new DataCube(null, data);
+        dc.setLogger(node.getLogger());
 		var imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {
 			return null;
@@ -267,7 +270,6 @@ module.exports = class Commons {
 			dc.setSpatialExtent(bbox);
 			return Commons.restrictToSpatialExtent(dc);
 		} catch (e) {
-			console.log(e);
 			throw new Errors.ProcessArgumentInvalid({
 				process: process_id,
 				argument: paramName,

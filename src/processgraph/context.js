@@ -1,4 +1,5 @@
 const Utils = require('../utils');
+const HttpUtils = require('../httpUtils');
 const Errors = require('../errors');
 const path = require('path');
 const fse = require('fs-extra');
@@ -31,7 +32,7 @@ module.exports = class ProcessingContext {
 		if (!p) {
 			throw new Errors.FilePathInvalid();
 		}
-		return Promise.resolve(Utils.isFile(p));
+		return Promise.resolve(HttpUtils.isFile(p));
 	}
 
 	readFileFromWorkspace(file) { // returns promise
@@ -52,6 +53,7 @@ module.exports = class ProcessingContext {
 
 	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube) {
+		var logger = dataCube.getLogger();
 		var parameters = dataCube.getOutputFormatParameters();
 		var format = dataCube.getOutputFormat();
 		if (typeof format === 'string') {
@@ -93,8 +95,8 @@ module.exports = class ProcessingContext {
 				}
 				else {
 					visBands = dataCube.getEarthEngineBands().slice(0, 1);
-					if (visBands[0] !== '#') {
-						console.log("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
+					if (logger && visBands[0] !== '#') {
+						logger.warn("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
 					}
 				}
 				return new Promise((resolve, reject) => {

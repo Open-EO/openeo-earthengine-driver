@@ -9,6 +9,7 @@ module.exports = class load_collection extends BaseProcess {
 		var id = node.getArgument('id');
 		var collection = node.getContext().getCollection(id);
 		var dc = new DataCube();
+        dc.setLogger(node.getLogger());
 		dc.setData(ee.ImageCollection(id));
 		dc.setCollectionId(id);
 		dc.setDimensionsFromSTAC(collection['cube:dimensions']);

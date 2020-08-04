@@ -2,14 +2,16 @@ const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
 const Datastore = require('nedb');
+const Utils = require('../utils');
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
 
 module.exports = class Logs {
 
-	constructor(file, baseUrl) {
+	constructor(file, baseUrl, requestId = null) {
 		this.file = file;
 		this.url = baseUrl;
+		this.requestId = requestId;
 	}
 
 	init() {
@@ -29,29 +31,76 @@ module.exports = class Logs {
 		});
 	}
 
-	add(message, level = "debug", data = null, path = undefined, code = undefined, links = undefined) {
-		let id = process.hrtime().map(s => String(s).padStart(17, '0')).join('');
+	debug(message, data = null, path = undefined) {
+		this.add(message, 'debug', data, path);
+	}
+
+	info(message, data = null, path = undefined) {
+		this.add(message, 'info', data, path);
+	}
+
+	warn(message, data = null, path = undefined) {
+		this.add(message, 'warning', data, path);
+	}
+
+	error(error, data = null, path = undefined, code = undefined, links = undefined) {
+		if (Utils.isObject(error)) {
+			if (error.url) {
+				let link = {
+					href: error.url,
+					rel: 'about'
+				};
+				if (Array.isArray(links)) {
+					links.push(link);
+				}
+				else {
+					links = [link];
+				}
+			}
+			code = code || error.code || error.constructor.name;
+			let message = error.message || String(error);
+			this.add(message, 'error', data, path, code, links, error.id);
+		}
+		else {
+			this.add(message, 'error', data, path, code, links);
+		}
+	}
+
+	add(message, level = "debug", data = null, path = undefined, code = undefined, links = undefined, id = undefined) {
+		id = id || Utils.timeId();
+		message = String(message);
+		if (this.requestId) {
+			message = this.requestId + ' | ' + message;
+		}
+		level = LOG_LEVELS.includes(level) ? level : 'debug';
 		let log = {
 			_id: id,
-			id: id,
-			message: String(message),
-			level: LOG_LEVELS.includes(level) ? level : 'debug',
+			id,
+			message,
+			level,
 			data,
 			path,
 			code,
 			links
 		};
-		console.log(log);
-		this.db.insert(log);
+		if (global.server.serverContext.debug) {
+			console.log(log);
+		}
+		this.db.insert(log, err => {
+			if (err) {
+				console.warn(err);
+			}
+		});
 	}
 
 	clear() {
 		return new Promise((resolve, reject) => {
-			this.db.remove({}, { multi: true }, function (err) {
+			this.db.remove({}, { multi: true }, err => {
 				if (err) {
 					reject(Errors.wrap(err));
 				}
 				else {
+					this.db.persistence.compactDatafile();
 					resolve();
 				}
 			});
@@ -67,19 +116,20 @@ module.exports = class Logs {
 			if (offset) {
 				query._id = { $gt: offset };
 			}
-			let cur = this.db.find(query);
+			let cur = this.db.find(query, {_id: 0});
 			if (limit >= 1) {
 				cur = cur.limit(limit + 1); // +1 to check for more elements
 			}
-			cur.exec(function (err, logs) {
+			cur.exec((err, logs) => {
 				if (err) {
 					reject(Errors.wrap(err));
 				}
 				else {
 					let links = [];
 					// Are there more elements?
-					if (logs.length === limit + 1) {
+					if (limit >= 1 && logs.length === limit + 1) {
 						logs.pop();
+						console.log(logs.length);
 						let last = logs[logs.length - 1];
 						let url = this.url + '?offset=' + last.id + (limit >= 1 ? '&limit=' + limit : '')
 						links.push({

@@ -1,4 +1,5 @@
 const Utils = require('../utils');
+const HttpUtils = require('../httpUtils');
 const path = require('path');
 
 module.exports = class FileWorkspace {
@@ -42,7 +43,7 @@ module.exports = class FileWorkspace {
 			return Promise.reject(new Errors.FilePathInvalid());
 		}
 		
-		return Utils.isFile(p).then(() => fse.readFile(p));
+		return HttpUtils.isFile(p).then(() => fse.readFile(p));
 	}
 
 }

@@ -27,7 +27,7 @@ class Server {
 			handleUpgrades: true,
 			ignoreTrailingSlash: true
 		};
-		this.corsExposeHeaders = 'Location, OpenEO-Identifier, OpenEO-Costs';
+		this.corsExposeHeaders = 'Location, OpenEO-Identifier, OpenEO-Costs, Link';
 
 		this.serverContext = new ServerContext();
 

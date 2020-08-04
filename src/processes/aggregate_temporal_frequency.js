@@ -35,7 +35,7 @@ module.exports = class aggregate_temporal_frequency extends BaseProcess {
 					reason: 'The specified reducer is invalid.'
 				});
 			}
-			console.log("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
+			node.debug("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
 			var reducerFunc = process.geeReducer(node);
 			return imageCollection.reduce(reducerFunc);
 		}

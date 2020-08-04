@@ -2,6 +2,7 @@ const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
 const Utils = require('../utils');
+const HttpUtils = require('../httpUtils');
 
 // ToDo: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
 // see https://github.com/Open-EO/openeo-earthengine-driver/issues/11
@@ -126,7 +127,7 @@ module.exports = class FilesAPI {
 			return next(new Errors.FilePathInvalid());
 		}
 
-		Utils.isFile(p)
+		HttpUtils.isFile(p)
 		.then(() => fse.unlink(p))
 		.then(() => {
 			res.send(204);
@@ -143,7 +144,7 @@ module.exports = class FilesAPI {
 		if (!p) {
 			return next(new Errors.FilePathInvalid());
 		}
-		Utils.isFile(p).then(() => {
+		HttpUtils.isFile(p).then(() => {
 			let stream = fse.createReadStream(p);
 			res.setHeader('Content-Type', 'application/octet-stream');
 			stream.pipe(res);

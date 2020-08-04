@@ -10,10 +10,19 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		super(process, context.server().processes(), jsonSchemaValidator);
 		this.context = context;
 		this.loadCollectionRect = null;
+		this.logger = null;
 	}
 
 	getContext() {
 		return this.context;
+	}
+
+	getLogger() {
+		return this.logger;
+	}
+
+	setLogger(logger) {
+		this.logger = logger;
 	}
 
 	createJsonSchemaValidatorInstance() {
@@ -33,7 +42,9 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 	}
 
 	createProcessGraphInstance(process) {
-		return new GeeProcessGraph(process, this.context);
+		let pg = new GeeProcessGraph(process, this.context);
+		pg.setLogger(this.getLogger());
+		return pg;
 	}
 
 	async validateNode(node) {
@@ -43,7 +54,7 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 
 	async executeNode(node) {
 		var process = this.getProcess(node);
-		console.log("Executing node " + node.id);
+		node.debug("Executing node " + node.id);
 		return await process.execute(node, this.context);
 	}
 

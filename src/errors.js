@@ -4,8 +4,11 @@ const restify_errors = require('restify-errors');
 const { Utils: CommonUtils } = require('@openeo/js-commons');
 const { ErrorList } = require('@openeo/js-processgraphs');
 const util = require('util');
+const Utils = require('./utils');
 
 const errors = Object.assign(openeo_errors, custom_errors);
+
+const ABOUT_URL = "https://openeo.org/documentation/1.0/developers/api/errors.html";
 
 for(var name in errors) {
 	restify_errors[name] = restify_errors.makeConstructor(name, {
@@ -16,10 +19,10 @@ for(var name in errors) {
 		native: true,
 		toJSON: function() {
 			return {
-				id: (new Date()).getTime().toString(),
+				id: Utils.timeId(),
 				code: this.code,
 				message: this.message,
-				url: "https://openeo.org/documentation/1.0/developers/api/errors.html"
+				url: ABOUT_URL
 			};
 		}
 	});

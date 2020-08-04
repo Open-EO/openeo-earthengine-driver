@@ -4,7 +4,9 @@ const DataCube = require('../processgraph/datacube');
 module.exports = class create_raster_cube extends BaseProcess {
 
     async execute(node) {
-        return new DataCube();
+        let dc = new DataCube();
+        dc.setLogger(node.getLogger());
+        return dc;
     }
 
 };
