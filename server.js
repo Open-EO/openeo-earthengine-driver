@@ -55,12 +55,12 @@ class Server {
 		);
 	}
 
-	addEndpoint(method, path, callback, root = false) {
+	addEndpoint(method, path, callback, expose = true, root = false) {
 		if (!Array.isArray(path)) {
 			path = [path, path.replace(/\{([\w]+)\}/g, ":$1")];
 		}
 
-		if (!root) {
+		if (expose && !root) {
 			this.api.capabilities.addEndpoint(method, path[0]);
 		}
 		var apiPath = root ? '' : this.serverContext.apiPath;

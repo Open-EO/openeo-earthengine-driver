@@ -9,8 +9,8 @@ module.exports = class CapabilitiesAPI {
 	}
 
 	beforeServerStart(server) {
-		server.addEndpoint('get', '/', this.getRoot.bind(this), true);
-		server.addEndpoint('get', '/.well-known/openeo', this.getVersions.bind(this), true);
+		server.addEndpoint('get', '/', this.getRoot.bind(this), false, true);
+		server.addEndpoint('get', '/.well-known/openeo', this.getVersions.bind(this), false, true);
 		server.addEndpoint('get', '/', this.getCapabilities.bind(this));
 		server.addEndpoint('get', '/conformance', this.getConformance.bind(this));
 		server.addEndpoint('get', '/service_types', this.getServices.bind(this));

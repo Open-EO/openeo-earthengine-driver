@@ -16,7 +16,7 @@ module.exports = class JobsAPI {
 
 	beforeServerStart(server) {
 		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
-		server.addEndpoint('get', '/result/logs/{id}', this.getSyncLogFile.bind(this));
+		server.addEndpoint('get', '/result/logs/{id}', this.getSyncLogFile.bind(this), false);
 
 		server.addEndpoint('post', '/jobs', this.postJob.bind(this));
 		server.addEndpoint('get', '/jobs', this.getJobs.bind(this));
@@ -30,8 +30,8 @@ module.exports = class JobsAPI {
 		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
 		// We could use https://github.com/axios/axios#cancellation in the future
 
-		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this));
-		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this));
+		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this), false);
+		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this), false);
 
 		return Promise.resolve();
 	}

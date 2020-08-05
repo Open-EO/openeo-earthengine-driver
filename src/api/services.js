@@ -17,7 +17,7 @@ module.exports = class ServicesAPI {
 		server.addEndpoint('patch', '/services/{service_id}', this.patchService.bind(this));
 		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
 		server.addEndpoint('get', '/services/{service_id}/logs', this.getServiceLogs.bind(this));
-		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this));
+		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this), false);
 
 		return Promise.resolve();
 	}
