@@ -41,7 +41,7 @@ module.exports = class ServicesAPI {
 				var context = this.context.processingContext(req);
 				// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
 				context.setUserId(service.user_id);
-				let logger;
+				let logger = console;
 				this.storage.getLogsById(req.params.service_id, Utils.timeId())
 					.then(logs => {
 						var pg = new ProcessGraph(service.process, context);

@@ -129,7 +129,6 @@ module.exports = class Logs {
 					// Are there more elements?
 					if (limit >= 1 && logs.length === limit + 1) {
 						logs.pop();
-						console.log(logs.length);
 						let last = logs[logs.length - 1];
 						let url = this.url + '?offset=' + last.id + (limit >= 1 ? '&limit=' + limit : '')
 						links.push({
