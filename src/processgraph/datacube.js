@@ -311,12 +311,18 @@ module.exports = class DataCube {
 	}
 
 	setCrs(refSys) {
+		var extent = this.getSpatialExtent();
 		this.dimX().setReferenceSystem(refSys);
 		this.dimY().setReferenceSystem(refSys);
+		this.setSpatialExtent(extent); // Update the extent based on the new CRS
 	}
 
 	setReferenceSystem(dimName, refSys) {
-		this.getDimension(dimName).setReferenceSystem(refSys);
+		let dimension = this.getDimension(dimName);
+		if (dimension.type === 'spatial' && ['x', 'y'].includes(dimension.axis)) {
+			throw new Error("You need to set spatial reference systems for axes x and y with setCrs().");
+		}
+		dimension.setReferenceSystem(refSys);
 	}
 
 	getResolution(dimName) {
