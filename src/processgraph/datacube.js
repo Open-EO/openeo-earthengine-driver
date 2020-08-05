@@ -489,12 +489,13 @@ module.exports = class DataCube {
 					// check if there are duplicate values
 					this_dim_vals.forEach(function (element) {
 						if (other_dim_vals.includes(element)){
-							if (overlapResolver == null){
-								throw new Errors.OverlapResolverMissing();
-							}
-							if (!(overlapResolver instanceof ProcessGraph)) {
-								throw new Errors.OverlapResolverMissing();
-							}
+							throw new Errors.OverlapResolverMissing();
+							// if (overlapResolver == null){
+							// 	throw new Errors.OverlapResolverMissing();
+							// }
+							// if (!(overlapResolver instanceof ProcessGraph)) {
+							// 	throw new Errors.OverlapResolverMissing();
+							// }
 							//TODO: implement overlap resolver
 						}
 					});
