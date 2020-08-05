@@ -64,7 +64,7 @@ module.exports = class ProcessingContext {
 		}
 		// Handle CRS + bbox settings
 		if (!parameters.epsgCode && (format === 'jpeg' || format === 'png')) {
-			dataCube.setCrs(3857);
+			dataCube.setCrs(4326);
 		}
 		else if (parameters.epsgCode > 0) {
 			dataCube.setCrs(parameters.epsgCode);

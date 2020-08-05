@@ -8,6 +8,7 @@ const proj4 = require('proj4');
 
 var Utils = {
 
+	crsBboxes: {},
 	serverUrl: null,
 	apiPath: null,
 
@@ -61,6 +62,10 @@ var Utils = {
 		return ret.join('&');
 	},
 
+	isNumeric(num) {
+		return CommonUtils.isNumeric(num);
+	},
+
 	isObject(obj) {
 		return CommonUtils.isObject(obj);
 	},
@@ -110,6 +115,16 @@ var Utils = {
 		return crs;
 	},
 
+	crsToNumber(crs) {
+		if (typeof crs === 'number') {
+			return crs;
+		}
+		if (typeof crs === 'string' && crs.startsWith('EPSG:')) {
+			return parseInt(crs.substring(5), 10);
+		}
+		return null;
+	},
+
 	bboxToGeoJson(bbox) {
 		var geom = {
 			geodesic: false,
@@ -125,7 +140,7 @@ var Utils = {
 			geom.crs = {
 				type: "name",
 				properties: {
-					name: Utils.crsToString(bbox.crs)
+					name: this.crsToString(bbox.crs)
 				}
 			};
 		}
@@ -166,15 +181,22 @@ var Utils = {
 			}
 		};
 		var coords = getCoordinatesDump(geojson);
-		var bbox = [Number.POSITIVE_INFINITY,Number.POSITIVE_INFINITY,Number.NEGATIVE_INFINITY,Number.NEGATIVE_INFINITY];
-		return coords.reduce(function(prev,coord) {
-			return [
-				Math.min(coord[0], prev[0]),
-				Math.min(coord[1], prev[1]),
-				Math.max(coord[0], prev[2]),
-				Math.max(coord[1], prev[3])
-			];
-		}, bbox);
+		var bbox = coords.reduce(function(prev,coord) {
+			return {
+				west: Math.min(coord[0], prev[0]),
+				south: Math.min(coord[1], prev[1]),
+				east: Math.max(coord[0], prev[2]),
+				north: Math.max(coord[1], prev[3]),
+				crs: 4326
+			};
+		}, [Number.POSITIVE_INFINITY,Number.POSITIVE_INFINITY,Number.NEGATIVE_INFINITY,Number.NEGATIVE_INFINITY]);
+		return {
+			west: bbox[0],
+			south: bbox[1],
+			east: bbox[2],
+			north: bbox[3],
+			crs: 4326
+		}
 	},
 
 	geoJsonToGeometry(geojson) {
@@ -273,34 +295,57 @@ var Utils = {
 	},
 
 	proj(from, to, coords) {
-		var fromCrs = Utils.crsToString(from);
-		var toCrs = Utils.crsToString(to);
+		var fromCrs = this.crsToString(from);
+		var toCrs = this.crsToString(to);
 		if (fromCrs === toCrs) {
 			return coords;
 		}
 
-		Utils.loadCrsDef(fromCrs);
-		Utils.loadCrsDef(toCrs);
+		this.loadCrsDef(fromCrs);
+		this.loadCrsDef(toCrs);
 
 		let newCoords = proj4(fromCrs, toCrs, coords);
-		if (newCoords.filter(c => Number.isNaN(c) || !Number.isFinite(c)).length > 0) {
+		if (newCoords.filter(n => !this.isNumeric(n)).length > 0) {
 			throw new Error("CRS conversion from " + fromCrs + " to " + toCrs + " failed.");
 		}
 		return newCoords;
 	},
 
+	projExtent(extent, targetCrs) {
+		extent.crs = extent.crs > 0 ? extent.crs : 4326;
+		var p1 = this.proj(extent.crs, targetCrs, [extent.west, extent.south]);
+		var p2 = this.proj(extent.crs, targetCrs, [extent.east, extent.north]);
+		return {
+			west: p1[0],
+			south: p1[1],
+			east: p2[0],
+			north: p2[1],
+			crs: this.crsToNumber(targetCrs)
+		};
+	},
+
+	getCrsBBox(crs) {
+		crs = this.crsToString(crs);
+		if (!this.crsBboxes[crs]) {
+			this.loadCrsDef(crs);
+		}
+		return this.crsBboxes[crs];
+	},
+
 	loadCrsDef(crs) {
-		if (proj4.defs(crs)) {
+		crs = this.crsToString(crs);
+		if (proj4.defs(crs) && this.crsBboxes[crs]) {
 			return; // CRS already available
 		}
-		if (!crs.startsWith('EPSG:')) {
+		if (typeof crs !== 'string' || !crs.startsWith('EPSG:')) {
 			throw new Error("CRS " + crs + " not supported");
 		}
 
 		try {
-			let code = crs.substring(5);
-			const def = require('epsg-index/s/' + code + '.json');
+			let epsgCode = this.crsToNumber(crs);
+			const def = require('epsg-index/s/' + epsgCode + '.json');
 			proj4.defs(crs, def.proj4);
+			this.crsBboxes[crs] = def.bbox;
 		} catch (error) {
 			throw new Error("CRS " + crs + " not available for reprojection");
 		}

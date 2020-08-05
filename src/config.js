@@ -71,8 +71,8 @@ module.exports = class Config {
 			epsgCode: {
 				type: 'integer',
 				subtype: 'epsg-code', // The formats are not specification compliant, but are allowed to be added.
-				description: 'EPSG Code to reproject the images to. Defaults to Web Mercator (EPSG Code 3857).',
-				default: 3857
+				description: 'EPSG Code to reproject the images to. Defaults to WGS 84 (EPSG Code 4326). This option is ignored for XYZ web services.',
+				default: 4326
 			}
 		};
 
@@ -120,7 +120,9 @@ module.exports = class Config {
 		};
 
 		this.services = {
-			xyz: {}
+			xyz: {
+				description: "XYZ tiles for web mapping libraries such as OpenLayers or LeafLet.\n\nAlways rendered in Web Mercator (EPSG code 3857), other reference systems specified are ignored."
+			}
 		};
 
 		this.otherVersions = [];

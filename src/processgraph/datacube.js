@@ -228,6 +228,34 @@ module.exports = class DataCube {
 		}
 	}
 
+	limitExtentToCrs(extent, newCrs) {
+		extent.crs = extent.crs > 0 ? extent.crs : 4326;
+		if (extent.crs === newCrs) {
+			// CRS doesn't change, skip
+			return extent;
+		}
+		if (extent.crs !== 4326) {
+			// Project to 4326 so that we can compare it to the CRS bbox
+			extent = Utils.projExtent(extent, 4326);
+		}
+		// Use only the overlapping part of the bbox specified by the data and the bbox specified by the CRS
+		let crsBbox = Utils.getCrsBBox(newCrs);
+		if (Array.isArray(crsBbox)) {
+			if(this.logger && (crsBbox[1] > extent.west || crsBbox[2] > extent.south || crsBbox[3] < extent.east || crsBbox[0] < extent.north)) {
+				this.logger.warn("Bounding Box has been reduced to the maximum bounding box supported by the target CRS.");
+			}
+			extent.west = Math.max(extent.west, crsBbox[1]);
+			extent.south = Math.max(extent.south, crsBbox[2]);
+			extent.east = Math.min(extent.east, crsBbox[3]);
+			extent.north = Math.min(extent.north, crsBbox[0]);
+		}
+		if (newCrs !== 4326) {
+			// Project to the new CRS
+			extent = Utils.projExtent(extent, newCrs);
+		}
+		return extent;
+	}
+
 	setSpatialExtent(extent) {
 		extent.crs = extent.crs > 0 ? extent.crs : 4326;
 		var toCrs = this.getCrs();
@@ -235,22 +263,13 @@ module.exports = class DataCube {
 		var p2 = Utils.proj(extent.crs, toCrs, [extent.east, extent.north]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
-		if (extent.base && extent.height) {
+		if (Utils.isNumeric(extent.base) && Utils.isNumeric(extent.height)) {
 			this.dimZ().setExtent(extent.base, extent.height);
 		}
 	}
 
 	setSpatialExtentFromGeometry(geometry) { // GeoJSON geometry
-		var bbox = Utils.geoJsonBbox(geometry);
-		var hasZ = bbox.length > 4;
-		var toCrs = this.getCrs();
-		var p1 = Utils.proj(4326, toCrs, [bbox[0], bbox[1]]);
-		var p2 = Utils.proj(4326, toCrs, [bbox[hasZ ? 3 : 2], bbox[hasZ ? 4 : 3]]);
-		this.dimX().setExtent(p1[0], p2[0]);
-		this.dimY().setExtent(p1[1], p2[1]);
-		if (hasZ) {
-			this.dimZ().setExtent(bbox[2], bbox[5]);
-		}
+		this.setSpatialExtent(Utils.geoJsonBbox(geometry));
 	}
 
 	getSpatialExtent() {
@@ -314,7 +333,7 @@ module.exports = class DataCube {
 		var extent = this.getSpatialExtent();
 		this.dimX().setReferenceSystem(refSys);
 		this.dimY().setReferenceSystem(refSys);
-		this.setSpatialExtent(extent); // Update the extent based on the new CRS
+		this.setSpatialExtent(this.limitExtentToCrs(extent, refSys)); // Update the extent based on the new CRS
 	}
 
 	setReferenceSystem(dimName, refSys) {
