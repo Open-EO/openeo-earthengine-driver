@@ -87,7 +87,7 @@
       "process_id": "save_result",
       "arguments": {
         "data": {
-          "from_node": "apply"
+          "from_node": "reduce_time"
         },
         "format": "GTIFF-THUMB"
       },
