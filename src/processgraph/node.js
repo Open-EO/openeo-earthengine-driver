@@ -21,7 +21,13 @@ module.exports = class GeeProcessGraphNode extends ProcessGraphNode {
 	}
 
 	getLoggerPath() {
-		return undefined; // ToDo
+		let path = [];
+		let node = this;
+		do {
+			path.push(node.id);
+			node = node.getParent();
+		} while(node);
+		return path.reverse();
 	}
 
 	debug(message, data = null) {

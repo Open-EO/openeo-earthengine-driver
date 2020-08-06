@@ -31,19 +31,19 @@ module.exports = class Logs {
 		});
 	}
 
-	debug(message, data = null, path = undefined) {
-		this.add(message, 'debug', data, path);
+	debug(message, data = null, trace = undefined) {
+		this.add(message, 'debug', data, trace);
 	}
 
-	info(message, data = null, path = undefined) {
-		this.add(message, 'info', data, path);
+	info(message, data = null, trace = undefined) {
+		this.add(message, 'info', data, trace);
 	}
 
-	warn(message, data = null, path = undefined) {
-		this.add(message, 'warning', data, path);
+	warn(message, data = null, trace = undefined) {
+		this.add(message, 'warning', data, trace);
 	}
 
-	error(error, data = null, path = undefined, code = undefined, links = undefined) {
+	error(error, data = null, trace = undefined, code = undefined, links = undefined) {
 		if (Utils.isObject(error)) {
 			if (error.url) {
 				let link = {
@@ -59,14 +59,14 @@ module.exports = class Logs {
 			}
 			code = code || error.code || error.constructor.name;
 			let message = error.message || String(error);
-			this.add(message, 'error', data, path, code, links, error.id);
+			this.add(message, 'error', data, trace, code, links, error.id);
 		}
 		else {
-			this.add(message, 'error', data, path, code, links);
+			this.add(message, 'error', data, trace, code, links);
 		}
 	}
 
-	add(message, level = "debug", data = null, path = undefined, code = undefined, links = undefined, id = undefined) {
+	add(message, level = "debug", data = null, trace = undefined, code = undefined, links = undefined, id = undefined) {
 		id = id || Utils.timeId();
 		message = String(message);
 		if (this.requestId) {
@@ -75,13 +75,13 @@ module.exports = class Logs {
 		level = LOG_LEVELS.includes(level) ? level : 'debug';
 		let log = {
 			_id: id,
-			id,
-			message,
-			level,
-			data,
-			path,
-			code,
-			links
+			id: id,
+			message: message,
+			level: level,
+			path: trace,
+			code: code,
+			links: links,
+			data: data
 		};
 		if (global.server.serverContext.debug) {
 			console.log(log);
