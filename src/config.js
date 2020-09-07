@@ -115,13 +115,18 @@ module.exports = class Config {
 				}
 			},
 			JSON: {
-				gis_data_types: ['raster', 'vector', 'table', 'other']
+				title: 'JSON',
+				gis_data_types: ['raster', 'vector', 'table', 'other'],
+				parameters: {}
 			}
 		};
 
 		this.services = {
 			xyz: {
-				description: "XYZ tiles for web mapping libraries such as OpenLayers or LeafLet.\n\nAlways rendered in Web Mercator (EPSG code 3857), other reference systems specified are ignored."
+				title: "XYZ (Slippy Map Tilenames)",
+				description: "XYZ tiles for web mapping libraries such as OpenLayers or LeafLet.\n\nAlways rendered in Web Mercator (EPSG code 3857), other reference systems specified are ignored.",
+				configuration: {},
+				process_parameters: []
 			}
 		};
 
