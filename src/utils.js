@@ -177,13 +177,12 @@ var Utils = {
 		};
 		var coords = getCoordinatesDump(geojson);
 		var bbox = coords.reduce(function(prev,coord) {
-			return {
-				west: Math.min(coord[0], prev[0]),
-				south: Math.min(coord[1], prev[1]),
-				east: Math.max(coord[0], prev[2]),
-				north: Math.max(coord[1], prev[3]),
-				crs: 4326
-			};
+			return [
+				Math.min(coord[0], prev[0]),
+				Math.min(coord[1], prev[1]),
+				Math.max(coord[0], prev[2]),
+				Math.max(coord[1], prev[3])
+			];
 		}, [Number.POSITIVE_INFINITY,Number.POSITIVE_INFINITY,Number.NEGATIVE_INFINITY,Number.NEGATIVE_INFINITY]);
 		return {
 			west: bbox[0],
