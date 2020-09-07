@@ -1,7 +1,7 @@
 {
   "name": "@openeo/earthengine-driver",
   "version": "1.0.0-beta.3",
-  "stac_version": "1.0.0-rc.2",
+  "stac_version": "1.0.0-beta.2",
   "description": "An openEO driver for Google Earth Engine.",
   "main": "server.js",
   "scripts": {
