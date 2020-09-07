@@ -181,7 +181,7 @@ module.exports = class JobsAPI {
 			process = job.process;
 		})
 		.then(() => this.storage.removeResults(jobId))
-		.then(() =>  this.storage.getLogsById(jobId))
+		.then(() => this.storage.getLogsById(jobId))
 		.then(logs => {
 			logger = logs;
 			return logs.clear();
@@ -397,8 +397,11 @@ module.exports = class JobsAPI {
 					next(Errors.wrap(err));
 				}
 				else {
-					res.header('OpenEO-Identifier', job._id);
-					res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), next);
+					// Create logs at creation time to avoid issues described in #51 
+					this.storage.getLogsById(job._id).then(() => {
+						res.header('OpenEO-Identifier', job._id);
+						res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), next);
+					}).catch(e => next(e));
 				}
 			});
 		})

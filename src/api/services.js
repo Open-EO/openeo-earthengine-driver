@@ -244,8 +244,11 @@ module.exports = class ServicesAPI {
 					return next(Errors.wrap(err));
 				}
 				else {
-					res.header('OpenEO-Identifier', service._id);
-					res.redirect(201, Utils.getApiUrl('/services/' + service._id), next);
+					// Create logs at creation time to avoid issues described in #51 
+					this.storage.getLogsById(service._id).then(() => {
+						res.header('OpenEO-Identifier', service._id);
+						res.redirect(201, Utils.getApiUrl('/services/' + service._id), next);
+					}).catch(e => next(e));
 				}
 			});
 		}).catch(e => next(e));
