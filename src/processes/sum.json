@@ -54,27 +54,10 @@
         {
             "arguments": {
                 "data": [
-                    1,
-                    null
-                ]
-            },
-            "returns": null
-        },
-        {
-            "arguments": {
-                "data": [
                     100
                 ]
             },
             "returns": 100
-        },
-        {
-            "arguments": {
-                "data": [
-                    null
-                ]
-            },
-            "returns": null
         },
         {
             "arguments": {
