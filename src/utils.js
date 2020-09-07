@@ -1,6 +1,5 @@
 const Datastore = require('nedb');
 const crypto = require("crypto");
-const objectHash = require('object-hash');
 const fse = require('fs-extra');
 const path = require('path');
 const { Utils: CommonUtils } = require('@openeo/js-commons');
@@ -82,10 +81,6 @@ var Utils = {
 
 	generateHash(length = 16) {
 		return crypto.randomBytes(Math.ceil(length/2)).toString('hex').slice(0,length);
-	},
-
-	hashJSON(json) {
-		return objectHash.sha1(json);
 	},
 
 	getTimestamp() {

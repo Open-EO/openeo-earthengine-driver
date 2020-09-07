@@ -31,7 +31,7 @@ describe('Process Graph Registry', () => {
 			console.log(errors.getMessage());
 		}
 		expect(errors.count()).toBe(0);
-		expect(p.getStartNodeIds()).toEqual(["load_collection"]);
+		expect(p.getStartNodes().map(node => node.id)).toEqual(["load_collection"]);
 		expect(p.getNode("load_collection").getNextNodes().map(n => n.id)).toEqual(["reduce_bands"]);
 		expect(p.getResultNode().id).toBe("save");
 	});
