@@ -329,6 +329,7 @@ module.exports = class JobsAPI {
 					switch(key) {
 						case 'process':
 							var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+							pg.allowUndefinedParameters(false);
 							promises.push(pg.validate());
 							break;
 						default:
@@ -376,6 +377,7 @@ module.exports = class JobsAPI {
 		}
 
 		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+		pg.allowUndefinedParameters(false);
 		pg.validate().then(() => {
 			// ToDo: Validate data
 			var data = {
@@ -424,6 +426,7 @@ module.exports = class JobsAPI {
 				context = this.context.processingContext(req);
 				pg = new ProcessGraph(req.body.process, context);
 				pg.setLogger(logger);
+				pg.allowUndefinedParameters(false);
 				return pg.validate(false);
 			})
 			.then(errorList => {

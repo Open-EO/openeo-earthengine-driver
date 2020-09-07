@@ -141,6 +141,8 @@ module.exports = class ServicesAPI {
 					switch(key) {
 						case 'process':
 							var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+							// ToDo 1.0: Correctly handle service paramaters
+							pg.allowUndefinedParameters(false);
 							promises.push(pg.validate());
 							break;
 						case 'type':
@@ -219,6 +221,8 @@ module.exports = class ServicesAPI {
 		}
 
 		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+		// ToDo 1.0: Correctly handle service paramaters
+		pg.allowUndefinedParameters(false);
 		pg.validate().then(() => {
 			// ToDo: Validate data
 			var data = {
