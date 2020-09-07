@@ -282,17 +282,14 @@ module.exports = class JobsAPI {
 							type: Utils.extensionToMediaType(fileName)
 						};
 					}
-					res.send({
+					let item = {
 						stac_version: packageInfo.stac_version,
 						stac_extensions: [],
 						id: job._id,
 						type: "Feature",
-						bbox: null, // ToDo 1.0: Set correct bbox
-						geometry: null, // ToDo 1.0: Set correct geometry
+						geometry: null, // ToDo 1.0: Set correct geometry, add bbox if geometry is set
 						properties: {
 							datetime: null, // ToDo 1.0: Set correct datetimes
-							start_datetime: null,
-							end_datetime: null,
 							title: job.title || null,
 							description: job.description || null,
 							created: job.created,
@@ -300,7 +297,8 @@ module.exports = class JobsAPI {
 						},
 						assets: assets,
 						links: []
-					});
+					};
+					res.send(item);
 					next();
 				});
 		})
