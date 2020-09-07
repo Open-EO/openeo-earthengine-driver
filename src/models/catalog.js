@@ -1,7 +1,6 @@
 const Utils = require('../utils');
 const fse = require('fs-extra');
 const {Storage} = require('@google-cloud/storage');
-const { MigrateCollections } = require('@openeo/js-commons');
 
 // Rough auto mapping for common band names until GEE lists them.
 // Optimized for Copernicus S2 data
@@ -29,6 +28,7 @@ module.exports = class DataCatalog {
 	constructor() {
 		this.dataFolder = 'storage/collections/';
 		this.collections = {};
+		this.supportedGeeTypes = ['image', 'image_collection'];
 	}
 
 	readLocalCatalog() {
@@ -37,11 +37,13 @@ module.exports = class DataCatalog {
 		for(var i in files) {
 			let file = files[i];
 			if (file.isFile() && file.name !== 'catalog.json') {
-				let collection = fse.readJsonSync(this.dataFolder + file.name);
-				// ToDo 1.0: This property is located somewhere else in new STAC versions
-				if (collection.properties['gee:type'] === 'image_collection') {
-					// We don't support ee.Image yet (see load_collection process), therefore ignore all non image collections.
-					this.collections[collection.id] = collection;
+				try {
+					let collection = this.fixData(fse.readJsonSync(this.dataFolder + file.name));
+					if (this.supportedGeeTypes.includes(collection['gee:type'])) {
+						this.collections[collection.id] = collection;
+					}
+				} catch (error) {
+					console.error(error);
 				}
 			}
 		}
@@ -63,7 +65,7 @@ module.exports = class DataCatalog {
 			keyFile: './privatekey.json'
 		});
 		const bucket = storage.bucket('earthengine-stac');
-		const prefix = 'catalog/';
+		const prefix = '1.0.0/catalog/';
 		return bucket.getFiles({
 			prefix: prefix
 		})
@@ -92,128 +94,146 @@ module.exports = class DataCatalog {
 	getData(id = null) {
 		if (id !== null) {
 			if (typeof this.collections[id] !== 'undefined') {
-				return this.collections[id];
+				return this.fixLinks(this.collections[id]);
 			}
 			else {
 				return null;
 			}
 		}
 		else {
-			return Object.values(this.collections);
+			return Object.values(this.collections).map(c => this.fixLinks(c));
 		}
 	}
 
-	fixData() {
-		for(var cid in this.collections) {
-			let c = this.collections[cid];
-
-			// Fix invalid headers in markdown
-			if (typeof c.description === 'string') {
-				c.description = c.description.replace(/^(#){2,6}([^#\s].+)$/img, '$1 $2');
+	fixLinks(c) {
+		c.links = c.links.map(l => {
+			switch(l.rel) {
+				case 'self':
+					l.href = Utils.getApiUrl("/collections/" + c.id);
+					break;
+				case 'parent':
+					l.href = Utils.getApiUrl("/collections");
+					break;
+				case 'root':
+					l.href = Utils.getApiUrl("/");
+					break;
 			}
+			return l;
+		});
+		return c;
+	}
 
-			// Remove empty version field
-			if (typeof c.version !== 'number' && !c.version) {
-				delete c.version;
-			}
-
-			// The spatial extent is sometimes invalid, trying to fix them
-			var x2 = c.extent.spatial.length > 4 ? 3 : 2;
-			var minX = Math.min(c.extent.spatial[0], c.extent.spatial[x2]);
-			c.extent.spatial[x2] = Math.max(c.extent.spatial[0], c.extent.spatial[x2]);
-			c.extent.spatial[0] = minX;
-
-			// Not a very useful information yet
-			delete c.properties['gee:revisit_interval'];
-
-			// Copy asset schema to other properties for now
-			if (!Utils.isObject(c.other_properties)) {
-				c.other_properties = {};
-			}
-			for(var j in c.properties['gee:asset_schema']) {
-				var schema = c.properties['gee:asset_schema'][j];
-				c.other_properties[schema.name] = {
-					description: schema.description,
-					type: schema.type
-				};
-			}
-			delete c.properties['gee:asset_schema'];
-
-			// Add common band names
-			if (Array.isArray(c.properties['eo:bands'])) {
-				for(var i in c.properties['eo:bands']) {
-					var band = c.properties['eo:bands'][i];
-					if (band.common_name || !band.center_wavelength) {
-						continue;
-					}
-
-					for(var name in commonNames) {
-						var wavelengths = commonNames[name];
-						if (band.center_wavelength >= wavelengths[0] && band.center_wavelength < wavelengths[1]) {
-							band.common_name = name;
-							break;
-						}
-					}
-					c.properties['eo:bands'][i] = band;
-				}
-			}
-
-			// Add default dimensions
-			var y2 = c.extent.spatial.length > 4 ? 4 : 3;
-			c.properties['cube:dimensions'] = {
-				x: {
-					type: "spatial",
-					axis: "x",
-					extent: [c.extent.spatial[0], c.extent.spatial[x2]]
-				},
-				y: {
-					type: "spatial",
-					axis: "y",
-					extent: [c.extent.spatial[1], c.extent.spatial[y2]]
-				},
-				t: {
-					type: "temporal",
-					extent: c.extent.temporal
-				}
-			};
-			var bandNames = [];
-			var bands = c.properties['eo:bands'] || c.properties['sar:bands'];
-			for(var j in bands) {
-				var b = bands[j];
-				if (typeof b.name === 'string') {
-					bandNames.push(b.name);
-				}
-			}
-			if (bandNames.length > 0) {
-				c.properties['cube:dimensions'].bands = {
-				  type: "bands",
-				  values: bandNames
-				};
-			}
-			if (typeof c.properties['eo:epsg'] === 'number') {
-				// Unfortunately, no other information available
-				c.properties['cube:dimensions'].x.reference_system = c.properties['eo:epsg'];
-				c.properties['cube:dimensions'].y.reference_system = c.properties['eo:epsg'];
-			}
-
-			c.links = c.links.map(l => {
-				switch(l.rel) {
-					case 'self':
-						l.href = Utils.getApiUrl("/collections/" + c.id);
-						break;
-					case 'parent':
-					case 'root':
-						l.href = Utils.getApiUrl("/collections");
-						break;
-				}
-				return l;
-			});
-
-			// ToDo 1.0: Remove temporary workaround to convert old collections to current spec
-			c = MigrateCollections.convertCollectionToLatestSpec(c, "0.4.2");
-
-			this.collections[cid] = c;
+	fixData(c) {
+		// Fix invalid headers in markdown
+		if (typeof c.description === 'string') {
+			c.description = c.description.replace(/^(#){2,6}([^#\s].+)$/img, '$1 $2');
 		}
+
+		// Remove empty version field
+		if (typeof c.version !== 'string' || c.version.length === 0) {
+			delete c.version;
+		}
+
+		if (!Utils.isObject(c.summaries)) {
+			c.summaries = {};
+		}
+
+		let keys = Object.keys(c.properties);
+		for(let key of keys) {
+			if (key.startsWith('sci:') || key === 'gee:type') {
+				// Move to top
+				c[key] = c.properties[key];
+				delete c.properties[key];
+			}
+			else {
+				// Move to summaries
+				c.summaries[key] = Array.isArray(c.properties[key]) ? c.properties[key] : [c.properties[key]];
+			}
+		}
+		delete c.properties;
+
+		// Not a very useful information yet
+		delete c.summaries['gee:revisit_interval'];
+		delete c.summaries['gee:visualizations'];
+
+		// Add common band names
+		if (Array.isArray(c.summaries['eo:bands'])) {
+			for(var i in c.summaries['eo:bands']) {
+				var band = c.summaries['eo:bands'][i];
+				if (band.common_name || !band.center_wavelength) {
+					continue;
+				}
+
+				for(var name in commonNames) {
+					var wavelengths = commonNames[name];
+					if (band.center_wavelength >= wavelengths[0] && band.center_wavelength < wavelengths[1]) {
+						band.common_name = name;
+						break;
+					}
+				}
+				c.summaries['eo:bands'][i] = band;
+			}
+		}
+
+		// ToDo: This assumes Google never exposes more than one extent per dimension
+		// Add default dimensions
+		var x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
+		var y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
+		c.stac_extensions = ["datacube"];
+		c['cube:dimensions'] = {
+			x: {
+				type: "spatial",
+				axis: "x",
+				extent: [c.extent.spatial.bbox[0][0], c.extent.spatial.bbox[0][x2]]
+			},
+			y: {
+				type: "spatial",
+				axis: "y",
+				extent: [c.extent.spatial.bbox[0][1], c.extent.spatial.bbox[0][y2]]
+			},
+			t: {
+				type: "temporal",
+				extent: c.extent.temporal.interval[0]
+			}
+		};
+		var bandNames = [];
+		var bands = c.summaries['eo:bands'] || c.summaries['sar:bands'];
+		for(var j in bands) {
+			var b = bands[j];
+			if (typeof b.name === 'string') {
+				bandNames.push(b.name);
+			}
+		}
+		if (bandNames.length > 0) {
+			c['cube:dimensions'].bands = {
+				type: "bands",
+				values: bandNames
+			};
+		}
+		if (Array.isArray(c.summaries['proj:epsg']) && typeof c.summaries['proj:epsg'][0] === 'number') {
+			// Unfortunately, no other information available
+			c['cube:dimensions'].x.reference_system = c.summaries['proj:epsg'][0];
+			c['cube:dimensions'].y.reference_system = c.summaries['proj:epsg'][0];
+		}
+
+		if (!Utils.isObject(c.assets)) {
+			c.stac_extensions = ["collection-assets"];
+			c.assets = {};
+		}
+
+		// Convert preview links to collection assets
+		c.links.forEach((l,i) => {
+			switch(l.rel) {
+				case 'preview':
+					c.assets['preview_' + i] = Object.assign({}, l, {
+						roles: ['thumbnail']
+					});
+					delete c.assets['preview_' + i].rel;
+					break;
+			}
+		});
+
+		return c;
 	}
 
 };

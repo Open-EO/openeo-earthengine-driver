@@ -21,7 +21,6 @@ class Server {
 
 		this.http_server = null;
 		this.https_server = null;
-		this.afterServerStartListener = [];
 
 		this.serverOptions = {
 			handleUpgrades: true,
@@ -72,16 +71,6 @@ class Server {
 		this.http_server[method](apiPath + path[1], callback);
 		if (this.isHttpsEnabled()) {
 			this.https_server[method](apiPath + path[1], callback);
-		}
-	}
-
-	addAfterServerStartListener(callback) {
-		this.afterServerStartListener.push(callback);
-	}
-
-	afterServerStart() {
-		for(var i in this.afterServerStartListener) {
-			this.afterServerStartListener[i](this);
 		}
 	}
 
@@ -152,7 +141,6 @@ class Server {
 		this.beforeServerStart()
 		.then(() => this.startServerHttp())
 		.then(() => this.startServerHttps())
-		.then(() => this.afterServerStart())
 		.catch(e => {
 			console.error('Server not started due to the following error: ');
 			console.error(e);

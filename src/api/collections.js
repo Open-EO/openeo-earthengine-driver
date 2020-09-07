@@ -25,8 +25,6 @@ module.exports = class Data {
 		server.addEndpoint('get', '/collections', this.getCollections.bind(this));
 		server.addEndpoint('get', ['/collections/{collection_id}', '/collections/*'], this.getCollectionById.bind(this));
 
-		server.addAfterServerStartListener(() => this.catalog.fixData());
-
 		return this.catalog.loadCatalog();
 	}
 
