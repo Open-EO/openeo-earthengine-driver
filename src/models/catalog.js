@@ -140,7 +140,7 @@ module.exports = class DataCatalog {
 
 		let keys = Object.keys(c.properties);
 		for(let key of keys) {
-			if (key.startsWith('sci:') || key === 'gee:type') {
+			if (key.startsWith('sci:')) {
 				// Move to top
 				c[key] = c.properties[key];
 				delete c.properties[key];
