@@ -5,7 +5,6 @@
   "categories": [
     "masks"
   ],
-  "gee:custom": true,
   "parameters": [
     {
       "name": "data",
@@ -22,10 +21,24 @@
         "type": "object",
         "subtype": "raster-cube"
       }
+    },
+    {
+      "name": "replacement",
+      "description": "The value used to replace masked values with.",
+      "schema": {
+        "type": [
+          "number",
+          "boolean",
+          "string",
+          "null"
+        ]
+      },
+      "default": null,
+      "optional": true
     }
   ],
   "returns": {
-        "description": "A masked raster data cube with the same dimensions. The dimension properties (name, type, labels, reference system and resolution) remain unchanged.",
+    "description": "A masked raster data cube with the same dimensions. The dimension properties (name, type, labels, reference system and resolution) remain unchanged.",
     "schema": {
       "type": "object",
       "subtype": "raster-cube"
