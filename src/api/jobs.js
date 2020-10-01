@@ -317,12 +317,12 @@ module.exports = class JobsAPI {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
+		var data = {};
 		this.storage.findJob(query).then(job => {
 			if (job.status === 'queued' || job.status === 'running') {
 				throw new Errors.JobLocked();
 			}
 
-			var data = {};
 			var promises = [];
 			for(let key in req.body) {
 				if (this.storage.isFieldEditable(key)) {
