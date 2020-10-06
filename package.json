@@ -23,16 +23,16 @@
   },
   "devDependencies": {
     "forever": "^3.0.2",
-    "jest": "^26.4.2",
+    "jest": "^26.5.0",
     "jest-html-reporter": "^3.2.0",
     "nodemon": "^2.0.4"
   },
   "dependencies": {
-    "@google-cloud/storage": "^3.0.2",
-    "@google/earthengine": "^0.1.233",
+    "@google-cloud/storage": "^5.3.0",
+    "@google/earthengine": "^0.1.237",
     "@openeo/js-commons": "^1.2.0",
     "@openeo/js-processgraphs": "^1.0.0-beta.6",
-    "ajv": "^6.12.4",
+    "ajv": "^6.12.5",
     "axios": "^0.19.2",
     "check-disk-space": "^2.1.0",
     "epsg-index": "^1.0.0",
