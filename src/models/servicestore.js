@@ -8,13 +8,13 @@ module.exports = class ServiceStore {
 		this.db = Utils.loadDB('services');
 		this.editableFields = ['title', 'description', 'process', 'enabled', 'configuration', 'plan', 'budget'];
 		this.serviceFolder = './storage/service_files';
+		this.logCache = {};
 	}
 
 	async getLogsById(serviceId) {
 		let file = path.normalize(path.join(this.serviceFolder, serviceId + '.logs.db'));
-		let logs = new Logs(file, Utils.getApiUrl('/services/' + serviceId + '/logs'));
-		await logs.init();
-		return logs;
+		let url = Utils.getApiUrl('/services/' + serviceId + '/logs');
+		return await Logs.loadLogsFromCache(file, url);
 	}
 
 	isFieldEditable(name) {

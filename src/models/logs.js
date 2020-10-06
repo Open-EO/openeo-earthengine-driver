@@ -5,8 +5,35 @@ const Datastore = require('nedb');
 const Utils = require('../utils');
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
+var LOG_CACHE = {};
 
 module.exports = class Logs {
+
+	static async loadLogsFromCache(file, url) {
+		let now = Date.now();
+		// Free up memory
+		for(let file in LOG_CACHE) {
+			if (LOG_CACHE[file].lastAccess < now - 6*60*60*1000) {
+				delete LOG_CACHE[file];
+			}
+		}
+		let exists = await fse.exists(file);
+		// Load db from cache
+		if (exists && LOG_CACHE[file]) {
+			LOG_CACHE[file].lastAccess = now;
+			return LOG_CACHE[file].db;
+		}
+		// Read db from fs
+		else {
+			let logs = new Logs(file, url);
+			await logs.init();
+			LOG_CACHE[file] = {
+				lastAccess: now,
+				db: logs
+			};
+			return logs;
+		}
+	}
 
 	constructor(file, baseUrl, requestId = null) {
 		this.file = file;

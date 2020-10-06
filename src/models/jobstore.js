@@ -56,12 +56,9 @@ module.exports = class JobStore {
 	}
 
 	async getLogsById(job_id) {
-		let logs = new Logs(
-			this.getJobFile(job_id, 'logs.db'),
-			Utils.getApiUrl('/jobs/' + job_id + '/logs')
-		);
-		await logs.init();
-		return logs;
+		let file = this.getJobFile(job_id, 'logs.db');
+		let url = Utils.getApiUrl('/jobs/' + job_id + '/logs');
+		return await Logs.loadLogsFromCache(file, url);
 	}
 
 	updateJobStatus(query, status) {
