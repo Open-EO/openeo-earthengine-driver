@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "forever": "^3.0.2",
-    "jest": "^26.5.0",
+    "jest": "^26.5.2",
     "jest-html-reporter": "^3.2.0",
     "nodemon": "^2.0.4"
   },

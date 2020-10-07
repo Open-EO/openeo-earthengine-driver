@@ -34,7 +34,7 @@
 			"description": "Create the climatological period normals.",
 			"arguments": {
 				"data": {"from_node": "convert"},
-				"period": "monthly"
+				"frequency": "monthly"
 			}
 		},
 		"anomaly": {
@@ -43,7 +43,7 @@
 			"arguments": {
 				"data": {"from_node": "convert"},
 				"normals": {"from_node": "normals"},
-				"period": "monthly"
+				"frequency": "monthly"
 			}
 		},
 		"reduce": {
