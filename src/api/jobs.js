@@ -272,15 +272,28 @@ module.exports = class JobsAPI {
 			var folder = this.storage.getJobFolder(job._id);
 			return Utils.walk(folder)
 				.then(files => {
+					var links = [];
 					var assets = {};
 					for(var i in files) {
 						var file = files[i].path;
 						var fileName = path.relative(folder, file);
-						assets[fileName] = {
-							href: Utils.getApiUrl("/storage/" + job._id + "/" + fileName),
-							rel: "data",
-							type: Utils.extensionToMediaType(fileName)
-						};
+						var href = Utils.getApiUrl("/storage/" + job._id + "/" + fileName);
+						var type = Utils.extensionToMediaType(fileName);
+						if (fileName === 'logs.db') {
+							links.push({
+								href: href,
+								rel: 'monitor',
+								type: type,
+								title: 'Batch Job Log File'
+							});
+						}
+						else {
+							assets[fileName] = {
+								href: href,
+								rel: "data",
+								type: type
+							};
+						}
 					}
 					let item = {
 						stac_version: packageInfo.stac_version,
@@ -296,7 +309,7 @@ module.exports = class JobsAPI {
 							updated: job.updated
 						},
 						assets: assets,
-						links: []
+						links: links
 					};
 					res.send(item);
 					next();
