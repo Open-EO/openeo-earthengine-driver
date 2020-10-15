@@ -71,7 +71,7 @@ module.exports = class Config {
 			epsgCode: {
 				type: 'integer',
 				subtype: 'epsg-code', // The formats are not specification compliant, but are allowed to be added.
-				description: 'EPSG Code to reproject the images to. Defaults to WGS 84 (EPSG Code 4326). This option is ignored for XYZ web services.',
+				description: 'EPSG Code to reproject the images to. Defaults to WGS 84 (EPSG Code 4326).',
 				default: 4326
 			}
 		};

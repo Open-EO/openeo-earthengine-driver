@@ -99,6 +99,7 @@ module.exports = class ProcessingContext {
 						logger.warn("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
 					}
 				}
+				logger.info("Output CRS is " + crs);
 				return new Promise((resolve, reject) => {
 					dataCube.image().visualize({min: 0, max: 255, bands: visBands, palette: visPalette}).getThumbURL({
 						format: format === 'jpeg' ? 'jpg' : format,

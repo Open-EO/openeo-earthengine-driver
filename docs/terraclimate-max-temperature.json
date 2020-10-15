@@ -22,7 +22,7 @@
         },
         "format": "PNG",
         "options": {
-          "epsgCode": 4326 
+          "epsgCode": 3857 
         }
       },
       "result": true
