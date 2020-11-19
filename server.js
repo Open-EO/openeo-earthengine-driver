@@ -191,8 +191,7 @@ class Server {
 			return next();
 		}
 
-		res.setHeader('access-control-allow-origin', req.headers['origin']);
-		res.setHeader('access-control-allow-credentials', 'true');
+		res.setHeader('access-control-allow-origin', '*');
 		res.setHeader('access-control-expose-headers', this.corsExposeHeaders);
 		return next();
 	}
@@ -203,8 +202,7 @@ class Server {
 		}
 
 		res.once('header', () => {
-			res.header('access-control-allow-origin', req.headers['origin'])
-			res.header('access-control-allow-credentials', 'true')
+			res.header('access-control-allow-origin', '*');
 			res.header('access-control-expose-headers', this.corsExposeHeaders);
 			res.header('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
 			res.header('access-control-allow-headers', 'Authorization, Content-Type');
