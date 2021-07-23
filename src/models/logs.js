@@ -1,7 +1,7 @@
 const fse = require('fs-extra');
 const path = require('path');
 const Errors = require('../errors');
-const Datastore = require('nedb');
+const Datastore = require('@seald-io/nedb');
 const Utils = require('../utils');
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
