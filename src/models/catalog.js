@@ -141,6 +141,14 @@ module.exports = class DataCatalog {
 		// Not a very useful information yet
 		delete c.summaries['gee:visualizations'];
 
+		// Fix invalid summaries
+		for(let key in c.summaries) {
+			let summary = c.summaries[key];
+			if (!Utils.isObject(summary) && !Array.isArray(summary)) {
+				c.summaries[key] = [summary];
+			}
+		}
+
 		// Add common band names
 		if (Array.isArray(c.summaries['eo:bands'])) {
 			for(var i in c.summaries['eo:bands']) {
