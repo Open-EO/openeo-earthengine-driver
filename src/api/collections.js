@@ -7,7 +7,7 @@ module.exports = class Data {
 		this.catalog = context.collections();
 
 		this.geeSourceCatalogLink = {
-			href: 'https://storage.cloud.google.com/earthengine-stac/catalog/catalog.json', 
+			href: 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json', 
 			rel: 'alternate',
 			type: 'application/json',
 			title: 'Machine-readable Earth Engine Data Catalog'
@@ -33,6 +33,7 @@ module.exports = class Data {
 			return {
 				stac_version: c.stac_version,
 				stac_extensions: [],
+				type: c.type,
 				id: c.id,
 				title: c.title,
 				description: c.description,

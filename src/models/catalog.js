@@ -130,7 +130,7 @@ module.exports = class DataCatalog {
 		}
 
 		// Remove empty version field
-		if (typeof c.version !== 'string' || c.version.length === 0) {
+		if (typeof c.version !== 'string' || c.version.length === 0 || c.version === "Unknown") {
 			delete c.version;
 		}
 
@@ -138,22 +138,7 @@ module.exports = class DataCatalog {
 			c.summaries = {};
 		}
 
-		let keys = Object.keys(c.properties);
-		for(let key of keys) {
-			if (key.startsWith('sci:')) {
-				// Move to top
-				c[key] = c.properties[key];
-				delete c.properties[key];
-			}
-			else {
-				// Move to summaries
-				c.summaries[key] = Array.isArray(c.properties[key]) ? c.properties[key] : [c.properties[key]];
-			}
-		}
-		delete c.properties;
-
 		// Not a very useful information yet
-		delete c.summaries['gee:revisit_interval'];
 		delete c.summaries['gee:visualizations'];
 
 		// Add common band names

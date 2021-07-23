@@ -55,6 +55,7 @@ module.exports = class CapabilitiesAPI {
 			api_version: this.context.apiVersion,
 			backend_version: packageInfo.version,
 			stac_version: packageInfo.stac_version,
+			type: "Catalog",
 			production: this.context.production,
 			id: this.context.id,
 			title: this.context.title,
