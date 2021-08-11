@@ -221,7 +221,7 @@
 	},
 	"ProcessGraphMissing": {
 		"description": null,
-		"message": "No valid process graph specified.",
+		"message": "No process graph specified",
 		"http": 400,
 		"tags": [
 			"Process Graph Management",
@@ -231,7 +231,7 @@
 	},
 	"ProcessUnsupported": {
 		"description": null,
-		"message": "Process '{process}' is not supported.",
+		"message": "Process '{process}' (namespace: {namespace}) is not supported.",
 		"http": 400,
 		"tags": [
 			"Processes"
@@ -239,7 +239,7 @@
 	},
 	"ProcessArgumentUnsupported": {
 		"description": null,
-		"message": "Process '{process}' does not support argument '{argument}'.",
+		"message": "Process '{process}' (namespace: {namespace}) does not support the following arguments: {arguments}",
 		"http": 400,
 		"tags": [
 			"Processes"
@@ -247,7 +247,7 @@
 	},
 	"ProcessArgumentInvalid": {
 		"description": null,
-		"message": "The argument '{argument}' in process '{process}' is invalid: {reason}",
+		"message": "The argument '{argument}' in process '{process}' (namespace: {namespace}) is invalid: {reason}",
 		"http": 400,
 		"tags": [
 			"Processes"
@@ -255,7 +255,7 @@
 	},
 	"ProcessArgumentRequired": {
 		"description": null,
-		"message": "Process '{process}' requires argument '{argument}'.",
+		"message": "Process '{process}' (namespace: {namespace}) requires argument '{argument}'.",
 		"http": 400,
 		"tags": [
 			"Processes"

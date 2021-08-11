@@ -17,7 +17,7 @@ module.exports = class GeeProcessRegistry extends ProcessRegistry {
 				this.addFromFile(id);
 			}
 		});
-		var num = Utils.size(this.processes);
+		var num = Utils.size(this.namespace('backend'));
 		console.info("Loaded " + num + " processes.");
 		return Promise.resolve(num);
 	}
@@ -25,8 +25,7 @@ module.exports = class GeeProcessRegistry extends ProcessRegistry {
 	addFromFile(id) {
 		var spec = require('../processes/' + id + '.json');
 		delete spec.process_graph;
-		var impl = require('../processes/' + id + '.js');
-		this.processes[id.toLowerCase()] = new impl(spec);
+		this.add(spec, 'backend');
 	}
 
 	getServerContext() {

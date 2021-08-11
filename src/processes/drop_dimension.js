@@ -10,7 +10,7 @@ module.exports = class drop_dimension extends BaseProcess {
 
         if (dc.hasDimension(dimensionName) === false) {
             throw new Errors.DimensionNotAvailable({
-                process: this.spec.id,
+                process: this.id,
                 argument: 'name'
             });
         }
@@ -19,7 +19,7 @@ module.exports = class drop_dimension extends BaseProcess {
 
         if (dimension.values.length > 1) {
             throw new Errors.DimensionLabelCountMismatch({
-                process: this.spec.id,
+                process: this.id,
                 argument: 'name'
             });
         }

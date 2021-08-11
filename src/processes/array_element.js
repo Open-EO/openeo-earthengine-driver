@@ -31,7 +31,7 @@ module.exports = class array_element extends BaseProcess {
                 // ToDo: only bands is currently supported
                 if (dimension.type !== "bands") {
                     throw new Errors.ProcessArgumentInvalid({
-                        process: this.spec.id,
+                        process: this.id,
                         argument: 'dimension',
                         reason: 'Only dimension "bands" is currently supported.'
                     });

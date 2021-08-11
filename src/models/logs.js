@@ -89,7 +89,7 @@ module.exports = class Logs {
 			this.add(message, 'error', data, trace, code, links, error.id);
 		}
 		else {
-			this.add(message, 'error', data, trace, code, links);
+			this.add(error, 'error', data, trace, code, links);
 		}
 	}
 

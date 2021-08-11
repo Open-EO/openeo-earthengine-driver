@@ -72,6 +72,14 @@ var Utils = {
 	size(obj) {
 		return CommonUtils.size(obj);
 	},
+	
+	omitFromObject(obj, omit) {
+		return CommonUtils.omitFromObject(obj, omit);
+	},
+	
+	pickFromObject(obj, pick) {
+		return CommonUtils.pickFromObject(obj, pick);
+	},
 
 	loadDB(name, folder = './storage/database/') {
 		var db = new Datastore({ filename: folder + name + '.db', autoload: true });

@@ -47,6 +47,11 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		return pg;
 	}
 
+	createProcessInstance(process) {
+		var impl = require('../processes/' + process.id + '.js');
+		return new impl(process);
+	}
+
 	async validateNode(node) {
 		var process = this.getProcess(node);
 		return await process.validate(node, this.context);

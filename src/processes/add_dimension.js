@@ -11,7 +11,7 @@ module.exports = class add_dimension extends BaseProcess {
 
 		if (dc.hasDimension(name)) {
 			throw new Errors.DimensionExists({
-				process: this.spec.id,
+				process: this.id,
 				argument: 'name'
 			});
 		}

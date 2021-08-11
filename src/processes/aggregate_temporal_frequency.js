@@ -12,14 +12,14 @@ module.exports = class aggregate_temporal_frequency extends BaseProcess {
 
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.spec.id,
+				process: this.id,
 				argument: 'reducer',
 				reason: 'No reducer specified.'
 			});
 		}
 		else if (callback.getNodeCount() !== 1) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.spec.id,
+				process: this.id,
 				argument: 'reducer',
 				reason: "No complex reducer supported at the moment"
 			});
@@ -30,7 +30,7 @@ module.exports = class aggregate_temporal_frequency extends BaseProcess {
 			var process = callback.getProcess(childNode);
 			if (typeof process.geeReducer !== 'function') {
 				throw new Errors.ProcessArgumentInvalid({
-					process: this.spec.id,
+					process: this.id,
 					argument: 'reducer',
 					reason: 'The specified reducer is invalid.'
 				});

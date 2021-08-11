@@ -32,10 +32,10 @@ module.exports = class load_collection extends BaseProcess {
 		var spatial_extent = node.getArgument("spatial_extent");
 		if (spatial_extent !== null) {
 			if (spatial_extent.type) { // GeoJSON - has been validated before so `type` should be a safe indicator for GeoJSON
-				dc = Commons.filterGeoJSON(dc, spatial_extent, this.spec.id, 'spatial_extent');
+				dc = Commons.filterGeoJSON(dc, spatial_extent, this.id, 'spatial_extent');
 			}
 			else { // Bounding box
-				dc = Commons.filterBbox(dc, spatial_extent, this.spec.id, 'spatial_extent');
+				dc = Commons.filterBbox(dc, spatial_extent, this.id, 'spatial_extent');
 			}
 		}
 

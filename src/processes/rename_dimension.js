@@ -9,13 +9,13 @@ module.exports = class rename_dimension extends BaseProcess {
 
 		if (dc.hasDimension(srcName)) {
 			throw new Errors.DimensionNotAvailable({
-				process: this.spec.id,
+				process: this.id,
 				argument: 'source'
 			});
 		}
 		else  if (dc.hasDimension(trgName)) {
 			throw new Errors.DimensionExists({
-				process: this.spec.id,
+				process: this.id,
 				argument: 'target'
 			});
 		}

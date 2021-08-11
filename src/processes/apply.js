@@ -10,7 +10,7 @@ module.exports = class apply extends BaseProcess {
 		var callback = node.getArgument("process");
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
-				process: this.spec.id,
+				process: this.id,
 				argument: 'process',
 				reason: 'No process specified.'
 			});

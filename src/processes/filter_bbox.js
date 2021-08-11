@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class filter_bbox extends BaseProcess {
 
 	async execute(node) {
-		return Commons.filterBbox(node.getDataCube("data"), node.getArgument("extent"), this.spec.id, 'extent');
+		return Commons.filterBbox(node.getDataCube("data"), node.getArgument("extent"), this.id, 'extent');
 	}
 
 };

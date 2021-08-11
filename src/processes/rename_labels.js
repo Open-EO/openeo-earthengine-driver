@@ -18,7 +18,7 @@ module.exports = class rename_labels extends BaseProcess {
 
         if (!dc.hasDimension(dimensionName)) {
             throw new Errors.ProcessArgumentInvalid({
-                process: this.spec.id,
+                process: this.id,
                 argument: 'dimension',
                 reason: 'Dimension "' + dimension + '" does not exist.'
             });
@@ -28,7 +28,7 @@ module.exports = class rename_labels extends BaseProcess {
         var dimension = dc.getDimension(dimensionName);
         if (dimension.type !== "bands") {
             throw new Errors.ProcessArgumentInvalid({
-                process: this.spec.id,
+                process: this.id,
                 argument: 'dimension',
                 reason: 'Only dimension "bands" is currently supported.'
             });
