@@ -205,7 +205,7 @@ class Server {
 			res.header('access-control-allow-origin', '*');
 			res.header('access-control-expose-headers', this.corsExposeHeaders);
 			res.header('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
-			res.header('access-control-allow-headers', 'Authorization, Content-Type');
+			res.header('access-control-allow-headers', 'Authorization, Content-Type, Range');
 		});
 
 		res.send(204);

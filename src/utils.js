@@ -264,6 +264,9 @@ var Utils = {
 				return 'image/jpeg';
 			case 'json':
 				return 'application/json';
+			case 'tif':
+			case 'tiff':
+				return 'image/tiff; application=geotiff';
 			default:
 				return 'application/octet-stream';
 		}
