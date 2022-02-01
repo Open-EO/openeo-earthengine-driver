@@ -65,7 +65,7 @@ module.exports = class DataCatalog {
 			keyFile: './privatekey.json'
 		});
 		const bucket = storage.bucket('earthengine-stac');
-		const prefix = '1.0.0/catalog/';
+		const prefix = 'catalog/';
 		return bucket.getFiles({
 			prefix: prefix
 		})
