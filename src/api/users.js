@@ -57,7 +57,7 @@ module.exports = class UsersAPI {
 			}).catch(e => next(e));
 	}
 
-	async getUserInfo(req, res, next) {
+	async getUserInfo(req, res) {
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}
@@ -94,7 +94,7 @@ module.exports = class UsersAPI {
 			}
 		}
 		res.json(data);
-		return next();
+		return;
 	}
 
 };

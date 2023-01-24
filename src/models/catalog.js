@@ -1,5 +1,6 @@
 const Utils = require('../utils');
 const fse = require('fs-extra');
+const path = require('path');
 const {Storage} = require('@google-cloud/storage');
 
 // Rough auto mapping for common band names until GEE lists them.
@@ -25,10 +26,11 @@ const commonNames = {
 
 module.exports = class DataCatalog {
 
-	constructor() {
+	constructor(context) {
 		this.dataFolder = 'storage/collections/';
 		this.collections = {};
 		this.supportedGeeTypes = ['image', 'image_collection'];
+		this.serverContext = context;
 	}
 
 	readLocalCatalog() {
@@ -62,7 +64,8 @@ module.exports = class DataCatalog {
 
 		console.info('Refreshing GEE catalog...');
 		const storage = new Storage({
-			keyFile: './privatekey.json'
+			keyFile: './privatekey.json',
+			projectId: this.serverContext.googleProjectId
 		});
 		const bucket = storage.bucket('earthengine-stac');
 		const prefix = 'catalog/';
@@ -73,9 +76,10 @@ module.exports = class DataCatalog {
 			let promises = [];
 			for(var i in data[0]) {
 				let file = data[0][i];
-				if (file.name.endsWith('.json')) {
+				let name = path.basename(file.name);
+				if (name.endsWith('.json')) {
 					promises.push(file.download({
-						destination: this.dataFolder + file.name.replace(prefix, '')
+						destination: this.dataFolder + name
 					}));
 				}
 			};

@@ -15,7 +15,7 @@ module.exports = class ServerContext extends Config {
 	constructor() {
 		super();
 		this.processRegistry = new GeeProcessRegistry(this);
-		this.dataCatalog = new DataCatalog();
+		this.dataCatalog = new DataCatalog(this);
 		this.processGraphStore = new ProcessGraphStore();
 		this.fileWorkspace = new FileWorkspace();
 		this.jobStore = new JobStore();
