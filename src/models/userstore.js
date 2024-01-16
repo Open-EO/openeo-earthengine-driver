@@ -1,12 +1,13 @@
-const Utils = require('../utils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const DB = require('../utils/db');
+const Errors = require('../utils/errors');
 const crypto = require("crypto");
 
 module.exports = class UserStore {
 	
 	constructor() {
-		this.db = Utils.loadDB('users');
-		this.tokenDb = Utils.loadDB('token');
+		this.db = DB.load('users');
+		this.tokenDb = DB.load('token');
 		this.tokenValidity = 24*60*60;
 	}
 
@@ -43,106 +44,84 @@ module.exports = class UserStore {
 		return user;
 	}
 
-	login(username, password) {
-		return new Promise((resolve, reject) => {
-			var query = {
-				_id: username
-			};
-			this.db.findOne(query, (err, user) => {
-				if (err) {
-					return reject(Errors.wrap(err));
-				}
-				else if (user === null) {
-					return reject(new Errors.AuthenticationRequired({
-						reason: 'User not found'
-					}));
-				}
-
-				var pw = this.hashPassword(password, user.passwordSalt);
-				if (pw.passwordHash !== user.password) {
-					return reject(new Errors.AuthenticationRequired({
-						reason: 'Password invalid'
-					}));
-				}
-
-				// Delete old token
-				var query = {
-					validity: { $lt: Utils.getTimestamp() }
-				};
-				this.tokenDb.remove(query, { multi: true }, err => {
-					if (err) {
-						console.error(err);
-					}
-				});
-
-				// Insert new token
-				var tokenData = {
-					user: user._id,
-					token: Utils.generateHash(),
-					validity: Utils.getTimestamp() + this.tokenValidity
-				};
-				this.tokenDb.insert(tokenData, (err) => {
-					if (err) {
-						return reject(Errors.wrap(err));
-					}
-		
-					resolve(Object.assign({
-						token: tokenData.token,
-						token_valid_until: tokenData.validity
-					}, user));
-				});
-
+	async login(username, password) {
+		const query = {
+			name: username
+		};
+		let user = await this.db.findOne(query);
+		if (user === null) {
+			throw new Errors.AuthenticationRequired({
+				reason: 'User not found'
 			});
-		});
+		}
+
+		const input = this.hashPassword(password, user.passwordSalt);
+		if (input.passwordHash !== user.password) {
+			throw new Errors.AuthenticationRequired({
+				reason: 'Password invalid'
+			});
+		}
+
+		const token = await this.updateToken(user);
+		return Object.assign({}, user, token);
 	}
 
-	register(name, password, callback) {
-		var userData = this.emptyUser(false);
-		var pw = this.storage.encryptPassword(password);
+	async updateToken(user) {
+		// Delete old token
+		const query = {
+			validity: { $lt: Utils.getTimestamp() }
+		};
+		await this.tokenDb.remove(query, { multi: true });
+
+		// Insert new token
+		var tokenData = {
+			user: user._id,
+			token: Utils.generateHash(),
+			validity: Utils.getTimestamp() + this.tokenValidity
+		};
+		await this.tokenDb.insert(tokenData);
+
+		return {
+			token: tokenData.token,
+			token_valid_until: tokenData.validity
+		};
+	}
+
+	async exists(name) {
+		const user = await this.db.findOneAsync({ name });
+		return user !== null;
+	}
+
+	async register(name, password) {
+		const userData = this.emptyUser(false);
+		const pw = this.encryptPassword(password);
 		userData.name = name;
 		userData.password = pw.passwordHash;
 		userData.passwordSalt = pw.salt;
-		this.db.insert(userData, (err, user) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-
-			callback(user);
-		});
+		return await this.db.insertAsync(userData);
 	}
 
-	checkAuthToken(token) {
-		return new Promise((resolve, reject) => {
-			var query = {
-				token: token.replace(/^basic\/\//, ''), // remove token prefix for basic
-				validity: { $gt: Utils.getTimestamp() }
-			};
-			this.tokenDb.findOne(query, {}, (err, tokenFromDb) => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else if (tokenFromDb === null) {
-					reject(new Errors.AuthenticationRequired({
-						reason: 'Token invalid or expired.'
-					}));
-				}
-				else {
-					this.db.findOne({_id: tokenFromDb.user}, {}, (err, user) => {
-						if (err) {
-							reject(Errors.wrap(err));
-						}
-						else if (user === null) {
-							reject(new Errors.AuthenticationRequired({
-								reason: 'User account got deleted.'
-							}));
-						}
-						else {
-							resolve(user);
-						}
-					});
-				}
+	async checkAuthToken(token) {
+		const query = {
+			token: token.replace(/^basic\/\//, ''), // remove token prefix for basic
+			validity: { $gt: Utils.getTimestamp() }
+		};
+
+		const tokenFromDB = await this.tokenDb.findOneAsync(query);
+		if (tokenFromDB === null) {
+			throw new Errors.AuthenticationRequired({
+				reason: 'Token invalid or expired.'
 			});
-		});
+		}
+
+		const user = await this.db.findOne({_id: tokenFromDB.user});
+		if (user === null) {
+			throw new Errors.AuthenticationRequired({
+				reason: 'User account has been removed.'
+			});
+		}
+
+		return user;
 	}
 
 };

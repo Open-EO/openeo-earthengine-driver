@@ -39,9 +39,11 @@ More information about authentication can be found in the [Earth Engine document
 
 ### Starting up the server
 
-After configuration, the server can be started. Run `npm run start` to start the server. 
+After configuration, the server can be started. Run `npm run up` to start the server. 
 
-After finishing work, you can stop the server by running `npm run stop`.
+After finishing work, you can stop the server by running `npm run down`.
+
+You can add a new user account by running `npm run adduser`.
 
 ## Usage
 

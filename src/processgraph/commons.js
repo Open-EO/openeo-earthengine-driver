@@ -1,12 +1,12 @@
-const Errors = require('../errors');
-const Utils = require('../utils');
+const Errors = require('../utils/errors');
+const Utils = require('../utils/utils');
 const DataCube = require('./datacube');
 const ProcessGraph = require('./processgraph');
 
 
 module.exports = class Commons {
 
-	// ToDo: Also implement ee.Array.* instead only ee.Image.*
+	// ToDo processes: Also implement ee.Array.* instead only ee.Image.*
 
 	static async reduce(node, dc, process_id, allowedDimensionTypes = ["temporal", "bands"], reducerArgName = "reducer", dimensionArgName = "dimension", contextArgName = "context") {
 		var dimensionName = node.getArgument(dimensionArgName);
@@ -318,7 +318,7 @@ module.exports = class Commons {
 	}
 
 	static filterTemporal(dc, extent, process_id, paramName, dimension = null) {
-		// ToDo: There's not really support for multiple temporal dimensions in GEE?!
+		// ToDo processes: There's not really support for multiple temporal dimensions in GEE?!
 		// Data for all dimensions is restricted on Googles side, but we set the extent in the virtual data cube accordingly.
 		dc.imageCollection(ic => ic.filterDate(
 			extent[0] === null ? '0000-01-01' : extent[0], // If Open date range: We just set the extent to the minimal start date here.

@@ -7,7 +7,7 @@ module.exports = class Config {
 
 		this.hostname = "127.0.0.1";
 		this.apiPath = "/";
-		this.apiVersion = "1.0.1";
+		this.apiVersion = "1.2.0";
 
 		this.id = "openeo-earthengine-driver";
 		this.title = "Google Earth Engine";
@@ -136,7 +136,7 @@ module.exports = class Config {
 		// Path to check disk usage for (e.g. C: on Windows, / on *nix)
 		this.diskUsagePath = null;
 
-		let config = require('../config.json');
+		let config = require('../../config.json');
 		for(var c in config) {
 			this[c] = config[c];
 		}

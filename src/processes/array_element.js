@@ -1,5 +1,5 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 
 module.exports = class array_element extends BaseProcess {
 

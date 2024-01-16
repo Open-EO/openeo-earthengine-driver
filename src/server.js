@@ -1,14 +1,14 @@
-const CapabilitiesAPI = require('./src/api/capabilities');
-const CollectionsAPI = require('./src/api/collections');
-const FilesAPI = require('./src/api/files');
-const JobsAPI = require('./src/api/jobs');
-const ProcessesAPI = require('./src/api/processes');
-const ProcessGraphsAPI = require('./src/api/storedprocessgraphs');
-const ServicesAPI = require('./src/api/services');
-const UsersAPI = require('./src/api/users');
+const CapabilitiesAPI = require('./api/capabilities');
+const CollectionsAPI = require('./api/collections');
+const FilesAPI = require('./api/files');
+const JobsAPI = require('./api/jobs');
+const ProcessesAPI = require('./api/processes');
+const ProcessGraphsAPI = require('./api/storedprocessgraphs');
+const ServicesAPI = require('./api/services');
+const UsersAPI = require('./api/users');
 
-const Utils = require('./src/utils');
-const ServerContext = require('./src/servercontext');
+const Utils = require('./utils/utils');
+const ServerContext = require('./utils/servercontext');
 
 const fse = require('fs-extra');
 const restify = require('restify');

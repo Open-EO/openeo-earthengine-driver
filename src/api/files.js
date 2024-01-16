@@ -1,10 +1,10 @@
 const fse = require('fs-extra');
 const path = require('path');
-const Errors = require('../errors');
-const Utils = require('../utils');
-const HttpUtils = require('../httpUtils');
+const Errors = require('../utils/errors');
+const Utils = require('../utils/utils');
+const HttpUtils = require('../utils/http');
 
-// ToDo: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
+// ToDo files: This is a mock and only uploads to the driver workspace, but not into the actual Google cloud storage, which would be required to use it in processes.
 // see https://github.com/Open-EO/openeo-earthengine-driver/issues/11
 module.exports = class FilesAPI {
 
@@ -13,150 +13,128 @@ module.exports = class FilesAPI {
 		this.context = context;
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		var pathRoutes = ['/files/{path}', '/files/*'];
 		server.addEndpoint('get', '/files', this.getFiles.bind(this));
 		server.addEndpoint('get', pathRoutes, this.getFileByPath.bind(this));
 		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
 		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));
-
-		return Promise.resolve();
 	}
 
-	getFiles(req, res, next) {
+	init(req, path = null) {
 		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+			throw new Errors.AuthenticationRequired();
 		}
-		var p = this.workspace.getPathFromRequest(req, '.');
+		const p = this.workspace.getPathFromRequest(req, path);
 		if (!p) {
-			return next(new Errors.FilePathInvalid());
+			throw new Errors.FilePathInvalid();
 		}
-
-		return fse.ensureDir(p)
-		.then(() => Utils.walk(path.normalize(p)))
-		.then(files => {
-			var output = files.map(file => {
-				return {
-					path: this.workspace.getFileName(req.user._id, file.path),
-					size: file.stat.size,
-					modified: Utils.getISODateTime(file.stat.mtime)
-				}
-			});
-			res.json( {
-				files: output,
-				links:[]
-			});
-			return next();
-		})
-		.catch(e => next(Errors.wrap(e)));
+		return p;
 	}
 
-	putFileByPath(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var p = this.workspace.getPathFromRequest(req);
-		if (!p) {
-			return next(new Errors.FilePathInvalid());
-		}
+	async getFiles(req, res) {
+		const p = this.init(req, '.');
 
-		return fse.stat(p)
-		.catch(() => {
-			 // File doesn't exist => not a problem for uploading; create missing folders and continue process chain.
-			let parent = path.dirname(p);
-			return fse.ensureDir(parent).then(() => {
-				return Promise.resolve(null);
-			})
-			.catch(err => Promise.reject(Errors.wrap(err)));
-		})
-		.then(stat => {
-			let fileExists = (stat !== null);
-			if (fileExists && stat.isDirectory()) {
+		await fse.ensureDir(p);
+		const files = await Utils.walk(path.normalize(p));
+
+		const output = files.map(file => {
+			return {
+				path: this.workspace.getFileName(req.user._id, file.path),
+				size: file.stat.size,
+				modified: Utils.getISODateTime(file.stat.mtime)
+			}
+		});
+		res.json({
+			files: output,
+			links:[]
+		});
+	}
+
+	async putFileByPath(req, res) {
+		const p = this.init(req);
+
+		let stat = null;
+		try {
+			stat = await fse.stat(p);
+			if (stat.isDirectory()) {
 				throw new Errors.FilePathInvalid();
 			}
-			let contentType = 'application/octet-stream';
-			if (req.contentType() !== contentType) {
-				throw new Errors.ContentTypeInvalid( {types:contentType});
-			}
+		} catch (e) {
+			 // File doesn't exist => not a problem for uploading; create missing folders and continue process chain.
+			await fse.ensureDir(path.dirname(p));
+		}
+		
+		let octetStream = 'application/octet-stream';
+		if (req.contentType() !== octetStream) {
+			throw new Errors.ContentTypeInvalid({types: octetStream});
+		}
 
-			var stream = fse.createWriteStream(p);
-			req.on('data', (chunk) => {
-				stream.write(chunk);
-			});
-			req.on('end', () => {
+		const cleanUp = async (p) => {
+			if (await fse.exists(p)) {
+				await fse.unlink(p);
+			}
+		};
+
+		const promise = new Promise((resolve, reject) => {
+			const stream = fse.createWriteStream(p);
+			req.on('data', chunk => stream.write(chunk));
+			req.on('end', () => stream.end());
+			req.on('error', async (e) => {
 				stream.end();
+				await cleanUp(p);
+				reject(e);
 			});
-			req.on('error', (e) => {
-				stream.end();
-				fse.exists(p).then(() => fse.unlink(p));
-				return next(Errors.wrap(e));
-			});
-			stream.on('close', () => {
-				var filePath = this.workspace.getFileName(req.user._id, p);
-				fse.stat(p).then(newFileStat => {
-					res.send(200, {
-						path: filePath,
+			stream.on('close', async () => {
+				const filePath = this.workspace.getFileName(req.user._id, p);
+				let response = {
+					path: filePath
+				};
+				try {
+					const newFileStat = await fse.stat(p);
+					Object.assign(response, {
 						size: newFileStat.size,
 						modified: Utils.getISODateTime(newFileStat.mtime)
 					});
-					return next();
-				}).catch(e => {
+				}
+				catch (e) {
 					if (this.context.debug) {
 						console.error(e);
 					}
-					res.send(200, {
-						path: filePath
-					});
-					return next();
-				});
+				} finally {
+					resolve(response);
+				}
 			});
-			stream.on('error', (e) => {
-				fse.exists(p).then(() => fse.unlink(p));
-				return next(Errors.wrap(e));
+			stream.on('error', async (e) => {
+				await cleanUp(p);
+				reject(e);
 			});
-		})
-		.catch(err => next(Errors.wrap(err)));
+		});
+
+		const response = await promise;
+		res.send(200, response);
 	}
 
-	deleteFileByPath(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var p = this.workspace.getPathFromRequest(req);
-		if (!p) {
-			return next(new Errors.FilePathInvalid());
-		}
-
-		HttpUtils.isFile(p)
-		.then(() => fse.unlink(p))
-		.then(() => {
-			res.send(204);
-			return next();
-		})
-		.catch(err => next(Errors.wrap(err)));
+	async deleteFileByPath(req, res) {
+		const p = this.init(req);
+		await HttpUtils.isFile(p);
+		await fse.unlink(p);
+		res.send(204);
 	}
 
-	getFileByPath(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var p = this.workspace.getPathFromRequest(req);
-		if (!p) {
-			return next(new Errors.FilePathInvalid());
-		}
-		HttpUtils.isFile(p).then(() => {
+	async getFileByPath(req, res) {
+		const p = this.init(req);
+		await HttpUtils.isFile(p);
+		await new Promise((resolve, reject) => {
 			let stream = fse.createReadStream(p);
 			res.setHeader('Content-Type', 'application/octet-stream');
 			stream.pipe(res);
-			stream.on('error', (e) => {
-				return next(Errors.wrap(e));
-			});
+			stream.on('error', reject);
 			stream.on('close', () => {
 				res.end();
-				return next();
+				resolve();
 			});
-		})
-		.catch(err => next(Errors.wrap(err)));
+		});
 	}
 
 };

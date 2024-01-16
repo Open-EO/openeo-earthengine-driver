@@ -1,5 +1,5 @@
-const Utils = require('../utils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const Errors = require('../utils/errors');
 const ProcessGraph = require('../processgraph/processgraph');
 
 module.exports = class ServicesAPI {
@@ -9,7 +9,7 @@ module.exports = class ServicesAPI {
 		this.context = context;
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		// Add endpoints
 		server.addEndpoint('get', '/services', this.getServices.bind(this));
 		server.addEndpoint('post', '/services', this.postService.bind(this));
@@ -18,253 +18,220 @@ module.exports = class ServicesAPI {
 		server.addEndpoint('delete', '/services/{service_id}', this.deleteService.bind(this));
 		server.addEndpoint('get', '/services/{service_id}/logs', this.getServiceLogs.bind(this));
 		server.addEndpoint('get', '/xyz/{service_id}/{z}/{x}/{y}', this.getXYZ.bind(this), false);
-
-		return Promise.resolve();
 	}
 
-	getXYZ(req, res, next) {
-		var query = {
+	init(req) {
+		if (!req.user._id) {
+			throw new Errors.AuthenticationRequired();
+		}
+	}
+
+	async getXYZ(req, res) {
+		const query = {
 			// Tiles are always public!
 			// user_id: req.user._id,
 			_id: req.params.service_id
 		};
-		this.storage.database().findOne(query, (err, service) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (service ===  null) {
-				return next(new Errors.ServiceNotFound());
-			}
+		const db = this.storage.database();
+		const service = await db.findOneAsync(query);
+		if (service ===  null) {
+			throw new Errors.ServiceNotFound();
+		}
 
-			try {
-				var rect = this.storage.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-				var context = this.context.processingContext(req);
-				// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
-				context.setUserId(service.user_id);
-				let logger = console;
-				this.storage.getLogsById(req.params.service_id, Utils.timeId())
-					.then(logs => {
-						var pg = new ProcessGraph(service.process, context);
-						pg.setLogger(logs);
-						logger = logs;
-						pg.optimizeLoadCollectionRect(rect);
-						return pg.execute();
-					})
-					.then(resultNode => {
-						var dataCube = resultNode.getResult();
-						dataCube.setOutputFormatParameter('size', '256x256');
-						dataCube.setSpatialExtent(rect);
-						dataCube.setCrs(3857);
-						return context.retrieveResults(dataCube);
-					})
-					.then(url => {
-						logger.debug(`Serving ${url} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
-						res.redirect(url, next);
-					})
-					.catch(e => {
-						logger.error(e);
-						return next(Errors.wrap(e));
-					});
-			} catch(e) {
-				return next(Errors.wrap(e));
-			}
-		});
+		let logger = console;
+		try {
+			const rect = this.storage.calculateXYZRect(req.params.x, req.params.y, req.params.z);
+			const context = this.context.processingContext(req);
+			// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
+			context.setUserId(service.user_id);
+
+			const logs = await this.storage.getLogsById(req.params.service_id, Utils.timeId());
+
+			var pg = new ProcessGraph(service.process, context);
+			pg.setLogger(logs);
+			logger = logs;
+
+			pg.optimizeLoadCollectionRect(rect);
+			const resultNode = await pg.execute();
+			const dataCube = resultNode.getResult();
+			dataCube.setOutputFormatParameter('size', '256x256');
+			dataCube.setSpatialExtent(rect);
+			dataCube.setCrs(3857);
+			const url = await context.retrieveResults(dataCube);
+			logger.debug(`Serving ${url} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
+			return res.redirect(url, Utils.noop);
+		} catch(e) {
+			logger.error(e);
+			throw e;
+		}
 	}
 
-	getServices(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var query = {
+	async getServices(req, res) {
+		this.init(req);
+
+		const query = {
 			user_id: req.user._id
 		};
-		this.storage.database().find(query, {}, (err, services) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else {
-				services = services.map(service =>  this.makeServiceResponse(service, false));
-				res.json({
-					services: services,
-					links: []
-				});
-				return next();
-			}
+		const db = this.storage.database();
+		const services = await db.findAsync(query);
+		res.json({
+			services: services.map(service => this.makeServiceResponse(service, false)),
+			links: []
 		});
 	}
 	  
-	deleteService(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var query = {
+	async deleteService(req, res) {
+		this.init(req);
+		
+		const query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
 		};
-		this.storage.database().remove(query, {}, (err, numRemoved) => {
-			if (err) {
-				return next(Errors.wrap(err));
+		const db = this.storage.database();
+		const numDeleted = await db.removeAsync(query);
+		if (numDeleted === 0) {
+			throw new Errors.ServiceNotFound();
+		}
+
+		try {
+			await this.storage.removeLogsById(req.params.service_id);
+		} catch (e) {
+			if (this.context.debug) {
+				console.error(e);
 			}
-			else if (numRemoved === 0) {
-				return next(new Errors.ServiceNotFound());
+		}
+		
+		res.send(204);
+	}
+
+	async patchService(req, res) {
+		this.init(req);
+		
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
+		}
+
+		const query = {
+			_id: req.params.service_id,
+			user_id: req.user._id
+		};
+		const db = this.storage.database();
+		const service = await db.findOneAsync(query);
+		if (service === null) {
+			throw new Errors.ServiceNotFound();
+		}
+
+		const data = {};
+		const promises = [];
+		for(let key in req.body) {
+			if (this.storage.isFieldEditable(key)) {
+				switch(key) {
+					case 'process':
+						var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+						// ToDo 1.0: Correctly handle service paramaters
+						pg.allowUndefinedParameters(false);
+						promises.push(pg.validate());
+						break;
+					case 'type':
+						promises.push(async () => {
+							if (!this.context.isValidServiceType(req.body.type)) {
+								throw new Errors.ServiceUnsupported();
+							}
+						});
+						break;
+					default:
+						// ToDo: Validate further data
+						// For example, if budget < costs, reject request
+				}
+				data[key] = req.body[key];
 			}
 			else {
-				res.send(204);
-				return next();
+				throw new Errors.PropertyNotEditable({property: key});
 			}
-		});
+		}
+
+		if (Utils.size(data) === 0) {
+			throw new Errors.NoDataForUpdate();
+		}
+
+		await Promise.all(promises);
+		
+		const { numAffected } = await db.updateAsync(query, { $set: data });
+		if (numAffected === 0) {
+			throw new Errors.Internal({message: 'Number of changed services was zero.'});
+		}
+	
+		res.send(204);
+
+		const logger = this.storage.getLogsById(req.params.service_id);
+		logger.info('Service updated', data);
 	}
 
-	patchService(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
-		}
-		var query = {
+	async getService(req, res) {
+		this.init(req);
+
+		const query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
 		};
-		this.storage.database().findOne(query, {}, (err, service) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (service === null) {
-				return next(new Errors.ServiceNotFound());
-			}
+		const db = this.storage.database();
+		const service = await db.findOneAsync(query);
+		if (service === null) {
+			throw new Errors.ServiceNotFound();
+		}
 
-			var data = {};
-			var promises = [];
-			for(let key in req.body) {
-				if (this.storage.isFieldEditable(key)) {
-					switch(key) {
-						case 'process':
-							var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
-							// ToDo 1.0: Correctly handle service paramaters
-							pg.allowUndefinedParameters(false);
-							promises.push(pg.validate());
-							break;
-						case 'type':
-							promises.push(new Promise((resolve, reject) => {
-								if (!this.context.isValidServiceType(req.body.type)) {
-									reject(new Errors.ServiceUnsupported());
-								}
-								resolve();
-							}));
-							break;
-						default:
-							// ToDo: Validate further data
-							// For example, if budget < costs, reject request
-					}
-					data[key] = req.body[key];
-				}
-				else {
-					return next(new Errors.PropertyNotEditable({property: key}));
-				}
-			}
-
-			if (Utils.size(data) === 0) {
-				return next(new Errors.NoDataForUpdate());
-			}
-
-			Promise.all(promises).then(() => {
-				this.storage.database().update(query, { $set: data }, {}, function (err, numChanged) {
-					if (err) {
-						return next(Errors.wrap(err));
-					}
-					else if (numChanged === 0) {
-						return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
-					}
-					else {
-						res.send(204);
-						return next();
-					}
-				});
-				return this.storage.getLogsById(req.params.service_id);
-			})
-			.then(logs => logs.info('Service updated', data))
-			.catch(e => next(Errors.wrap(e)));
-		});
+		res.json(this.makeServiceResponse(service));
 	}
 
-	getService(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var query = {
-			_id: req.params.service_id,
-			user_id: req.user._id
-		};
-		this.storage.database().findOne(query, {}, (err, service) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (service === null) {
-				return next(new Errors.ServiceNotFound());
-			}
-
-			res.json(this.makeServiceResponse(service));
-			return next();
-		});
-	}
-
-	postService(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
+	async postService(req, res) {
+		// ToDo 1.2: Added property log_level to indicate the minimum severity level that should be stored for logs. #329
+		this.init(req);
+		
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
 		}
 		else if (!this.context.isValidServiceType(req.body.type)) {
-			return next(new Errors.ServiceUnsupported());
+			throw new Errors.ServiceUnsupported();
 		}
 
 		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 		// ToDo 1.0: Correctly handle service paramaters
 		pg.allowUndefinedParameters(false);
-		pg.validate().then(() => {
-			// ToDo: Validate data
-			var data = {
-				title: req.body.title || null,
-				description: req.body.description || null,
-				process: req.body.process,
-				configuration: (typeof req.body === 'object' && Utils.isObject(req.body.configuration)) ? req.body.configuration : {},
-				attributes: {},
-				type: req.body.type,
-				enabled: typeof req.body.enabled === 'boolean' ? req.body.enabled : true,
-				created: Utils.getISODateTime(),
-				plan: req.body.plan || this.context.plans.default,
-				costs: 0,
-				budget: req.body.budget || null,
-				user_id: req.user._id
-			};
-			this.storage.database().insert(data, (err, service) => {
-				if (err) {
-					return next(Errors.wrap(err));
-				}
-				else {
-					// Create logs at creation time to avoid issues described in #51 
-					this.storage.getLogsById(service._id).then(() => {
-						res.header('OpenEO-Identifier', service._id);
-						res.redirect(201, Utils.getApiUrl('/services/' + service._id), next);
-					}).catch(e => next(e));
-				}
-			});
-		}).catch(e => next(e));
+		await pg.validate();
+
+		// ToDo: Validate further data
+		const data = {
+			title: req.body.title || null,
+			description: req.body.description || null,
+			process: req.body.process,
+			configuration: (typeof req.body === 'object' && Utils.isObject(req.body.configuration)) ? req.body.configuration : {},
+			attributes: {},
+			type: req.body.type,
+			enabled: typeof req.body.enabled === 'boolean' ? req.body.enabled : true,
+			created: Utils.getISODateTime(),
+			plan: req.body.plan || this.context.plans.default,
+			costs: 0,
+			budget: req.body.budget || null,
+			user_id: req.user._id
+		};
+		const db = this.storage.database();
+		const service = await db.insertAsync(data);
+
+		// Create logs at creation time to avoid issues described in #51 
+		await this.storage.getLogsById(service._id);
+
+		res.header('OpenEO-Identifier', service._id);
+		res.redirect(201, Utils.getApiUrl('/services/' + service._id), Utils.noop);
 	}
 
-	getServiceLogs(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		this.storage.getLogsById(req.params.service_id)
-		.then(logs => logs.get(req.query.offset, req.query.limit))
-		.then(json => {
-			res.json(json);
-			return next();
-		})
-		.catch(e => next(Errors.wrap(e)));
+	async getServiceLogs(req, res) {
+		// ToDo 1.2: Added level parameter to requests to set the minimum log level returned by the response. #485
+		// ToDo 1.2: Added level property in responses to reflect the minimum log level that may appear in the response. #329
+		this.init(req);
+
+		const manager = await this.storage.getLogsById(req.params.service_id);
+		const logs = await manager.get(req.query.offset, req.query.limit);
+		res.json(logs);
 	}
 
 	makeServiceResponse(service, full = true) {

@@ -1,5 +1,5 @@
-const openeo_errors = require('../storage/errors/errors.json');
-const custom_errors = require('../storage/errors/custom.json');
+const openeo_errors = require('../../storage/errors/errors.json');
+const custom_errors = require('../../storage/errors/custom.json');
 const restify_errors = require('restify-errors');
 const { Utils: CommonUtils } = require('@openeo/js-commons');
 const { ErrorList } = require('@openeo/js-processgraphs');

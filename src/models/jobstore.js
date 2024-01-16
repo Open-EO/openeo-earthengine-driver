@@ -1,15 +1,17 @@
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
+const DB = require('../utils/db');
 const fse = require('fs-extra');
 const path = require('path');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 const Logs = require('./logs');
 
 module.exports = class JobStore {
 
 	constructor() {
-		this.db = Utils.loadDB('jobs');
+		this.db = DB.load('jobs');
 		this.editableFields = ['title', 'description', 'process', 'plan', 'budget'];
 		this.jobFolder = './storage/job_files';
+		this.logFileName = 'logs.db';
 	}
 
 	database() {
@@ -28,63 +30,67 @@ module.exports = class JobStore {
 		return path.normalize(path.join(this.jobFolder, jobId, file))
 	}
 
+	getLogFile(jobId) {
+		return this.getJobFile(jobId, this.logFileName);
+	}
+
 	isFieldEditable(name) {
 		return this.editableFields.includes(name);
 	}
 
-	findJob(query) {
-		return new Promise((resolve, reject) => {
-			this.db.findOne(query, {}, (err, job) => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else if (job === null) {
-					reject(new Errors.JobNotFound());
-				}
-				else {
-					resolve(job);
-				}
-			});
-		});
+	async findJob(query) {
+		const job = this.db.findOneAsync(query);
+		if (job === null) {
+			throw new Errors.JobNotFound();
+		}
+		return job;
 	}
 
-	getById(job_id, user_id) {
-		return this.findJob({
+	async getById(job_id, user_id) {
+		return await this.findJob({
 			_id: job_id,
 			user_id: user_id
 		});
 	}
 
-	async getLogsById(job_id) {
-		let file = this.getJobFile(job_id, 'logs.db');
-		let url = Utils.getApiUrl('/jobs/' + job_id + '/logs');
-		return await Logs.loadLogsFromCache(file, url);
+	async removeLogsById(jobId) {
+		await fse.unlink(this.getLogFile(jobId));
 	}
 
-	updateJobStatus(query, status) {
-		return new Promise((resolve, reject) => {
-			this.db.update(query, { $set: { status: status } }, {}, function (err, numChanged) {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else if (numChanged === 0) {
-					reject(new Errors.JobNotFound());
-				}
-				else {
-					resolve();
-				}
-			});
-		});
+	async getLogsById(jobId) {
+		return await Logs.loadLogsFromCache(
+			this.getLogFile(jobId),
+			Utils.getApiUrl('/jobs/' + jobId + '/logs')
+		);
 	}
 
-	removeResults(jobId) {
-		var p = this.makeFolder(this.jobFolder, [jobId]);
+	async updateJobStatus(query, status) {
+		const { numAffected } = await this.db.updateAsync(query, { $set: { status: status } });
+		if (numAffected === 0) {
+			throw new Errors.JobNotFound();
+		}
+	}
+
+	async removeResults(jobId, removeLogs = true) {
+		const p = this.makeFolder(this.jobFolder, [jobId]);
 		if (!p) {
-			return Promise.reject(new Errors.NotFound());
+			throw new Errors.NotFound();
 		}
 
-		return fse.pathExists(p)
-		.then((exists) => exists ? fse.remove(p) : Promise.resolve());
+		const exists = await fse.pathExists(p);
+		if (exists) {
+			const promises = (await fse.readdir(p))
+				.map(async (file) => {
+					const fileDir = path.join(p, file);
+					if (removeLogs || file !== this.logFileName) {
+						return await fse.unlink(fileDir);
+					}
+				});
+			await Promise.all(promises);
+		}
+		if (removeLogs) {
+			await fse.remove(p);
+		}
 	}
 
 	makeFolder(baseFolder, dirs) {

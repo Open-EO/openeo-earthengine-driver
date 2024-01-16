@@ -4,8 +4,8 @@ services:
         build: 
             context: .
             dockerfile: DOCKERFILE
-        image: openeo-gee:0.2.0
-        container_name: openeo-gee-driver
+        image: openeo-gee:0.3.0
+        container_name: openeo-earthengine-driver
         ports:
             - "80:80"
             - "443:443"

@@ -1,14 +1,14 @@
 const Config = require('./config');
-const GeeProcessRegistry = require('./processgraph/registry');
-const ProcessingContext = require('./processgraph/context');
+const GeeProcessRegistry = require('../processgraph/registry');
+const ProcessingContext = require('../processgraph/context');
 const Utils = require('./utils');
 
-const DataCatalog = require('./models/catalog');
-const ProcessGraphStore = require('./models/processgraphstore');
-const FileWorkspace = require('./models/workspace');
-const JobStore = require('./models/jobstore');
-const UserStore = require('./models/userstore');
-const ServiceStore = require('./models/servicestore');
+const DataCatalog = require('../models/catalog');
+const ProcessGraphStore = require('../models/processgraphstore');
+const FileWorkspace = require('../models/workspace');
+const JobStore = require('../models/jobstore');
+const UserStore = require('../models/userstore');
+const ServiceStore = require('../models/servicestore');
 
 module.exports = class ServerContext extends Config {
 

@@ -1,8 +1,8 @@
 const fse = require('fs-extra');
 const path = require('path');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 const Datastore = require('@seald-io/nedb');
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
 var LOG_CACHE = {};
@@ -41,21 +41,12 @@ module.exports = class Logs {
 		this.requestId = requestId;
 	}
 
-	init() {
-		return new Promise((resolve, reject) => {
-			fse.ensureDir(path.dirname(this.file)).then(() => {
-				this.db = new Datastore({ filename: this.file });
-				this.db.persistence.stopAutocompaction();
-				this.db.loadDatabase(function (err) {
-					if (err) {
-						reject(Errors.wrap(err));
-					}
-					else {
-						resolve();
-					}
-				});
-			}).catch(err => reject(Errors.wrap(err)));
-		});
+	async init() {
+		await fse.ensureDir(path.dirname(this.file));
+		
+		this.db = new Datastore({ filename: this.file });
+		this.db.stopAutocompaction();
+		await this.db.loadDatabaseAsync();
 	}
 
 	debug(message, data = null, trace = undefined) {
@@ -108,30 +99,22 @@ module.exports = class Logs {
 			path: trace,
 			code: code,
 			links: links,
-			data: data
+			data: data,
+			time: Utils.getISODateTime()
 		};
 		if (global.server.serverContext.debug) {
 			console.log(log);
 		}
 		this.db.insert(log, err => {
-			if (err) {
+			if (err && global.server.serverContext.debug) {
 				console.warn(err);
 			}
 		});
 	}
 
-	clear() {
-		return new Promise((resolve, reject) => {
-			this.db.remove({}, { multi: true }, err => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else {
-					this.db.persistence.compactDatafile();
-					resolve();
-				}
-			});
-		});
+	async clear() {
+		await this.db.remove({}, { multi: true });
+		this.db.compactDatafile();
 	}
 
 	get(offset = null, limit = 0) {

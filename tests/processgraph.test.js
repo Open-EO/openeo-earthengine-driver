@@ -1,32 +1,36 @@
-const GeeProcessRegistry = require('../src/processgraph/registry');
-const ServerContext = require('../src/servercontext');
+const ServerContext = require('../src/utils/servercontext');
+const DB = require('../src/utils/db');
 const ProcessingContext = require('../src/processgraph/context');
 const GeeProcessGraph = require('../src/processgraph/processgraph');
 const json = require('./data/sample-processgraph.json');
 
 describe('Process Graph Registry', () => {
-	var p;
+	let serverContext;
 
 	beforeAll(async () => {
-		let serverContext = new ServerContext();
+		serverContext = new ServerContext();
 		await serverContext.collections().loadCatalog();
-		serverContext.processes().addFromFolder('./src/processes/');
-		p = new GeeProcessGraph(json, new ProcessingContext(serverContext));
+		await serverContext.processes().addFromFolder('./src/processes/');
+	});
+
+	afterAll(() => {
+		DB.closeAll();
 	});
 
 	test('Processes', () => {
-		let registry = p.getContext().server().processes();
-		expect(registry.count()).toBe(66);
+		const registry = serverContext.processes();
+		expect(registry.count()).toBe(67);
 		expect(registry.get('load_collection')).not.toBe(null);
 	});
 
 	test('Collections', () => {
-		let catalog = p.getContext().server().collections();
+		const catalog = serverContext.collections();
 		expect(catalog.getData('COPERNICUS/S2')).not.toBe(null);
 	});
 
 	test('Validate', async () => {
-		var errors = await p.validate(false);
+		const p = new GeeProcessGraph(json, new ProcessingContext(serverContext));
+		const errors = await p.validate(false);
 		if (errors.count() > 0) {
 			console.log(errors.getMessage());
 		}

@@ -1,5 +1,5 @@
-const Utils = require('../utils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const Errors = require('../utils/errors');
 
 module.exports = class Data {
 
@@ -18,17 +18,19 @@ module.exports = class Data {
 			type: 'text/html',
 			title: 'Human-readable Earth Engine Data Catalog'
 		};
-
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		server.addEndpoint('get', '/collections', this.getCollections.bind(this));
 		server.addEndpoint('get', ['/collections/{collection_id}', '/collections/*'], this.getCollectionById.bind(this));
+		// ToDo 1.2: New endpoint for metadata filters (queryables): /collections/{collection_id}/queryables. Also adds a new rel type to the collection links. #396
 
-		return this.catalog.loadCatalog();
+		const num = await this.catalog.loadCatalog();
+		console.log(`Loaded ${num} collections.`);
+		return num;
 	}
 
-	getCollections(req, res, next) {
+	async getCollections(req, res) {
 		var data = this.catalog.getData().map(c => {
 			return {
 				stac_version: c.stac_version,
@@ -61,10 +63,9 @@ module.exports = class Data {
 				this.geeSourceCatalogLink
 			]
 		});
-		return next();
 	}
 	
-	getCollectionById(req, res, next) {
+	async getCollectionById(req, res) {
 		var id = req.params['*'];
 		if (id.length === 0) {
 			// Redirect to correct route
@@ -72,13 +73,11 @@ module.exports = class Data {
 		}
 
 		var collection = this.catalog.getData(id);
-		if (collection !== null) {
-			res.json(collection);
-			return next();
+		if (collection === null) {
+			throw new Errors.CollectionNotFound();
 		}
-		else {
-			return next(new Errors.CollectionNotFound());
-		}
+
+		res.json(collection);
 	}
 
 };

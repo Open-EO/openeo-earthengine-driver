@@ -1,20 +1,11 @@
-from node:8-alpine
+from node:20-alpine
 
 WORKDIR /usr/src/app
-
-RUN apk --no-cache --virtual build-dependencies add \
-    python \
-    make \
-    g++ \
-    && npm install \
-    && apk del build-dependencies
-
-COPY package*.json ./
-RUN npm install
 
 COPY . .
 
 EXPOSE 80
 EXPOSE 443
 
-CMD ["npm", "start"]
+RUN npm install
+CMD ["npm", "run", "up"]

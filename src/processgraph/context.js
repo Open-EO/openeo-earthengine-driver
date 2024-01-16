@@ -1,6 +1,6 @@
-const Utils = require('../utils');
-const HttpUtils = require('../httpUtils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const HttpUtils = require('../utils/http');
+const Errors = require('../utils/errors');
 const path = require('path');
 const fse = require('fs-extra');
 
@@ -51,7 +51,7 @@ module.exports = class ProcessingContext {
 		return this.userId;
 	}
 
-	// TODO: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
+	// ToDo processes: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube) {
 		var logger = dataCube.getLogger();
 		var parameters = dataCube.getOutputFormatParameters();

@@ -1,6 +1,6 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
 
 module.exports = class climatological_normal extends BaseProcess {
 

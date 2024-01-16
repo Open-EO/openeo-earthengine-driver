@@ -1,8 +1,8 @@
-const Utils = require('../utils');
-const HttpUtils = require('../httpUtils');
+const Utils = require('../utils/utils');
+const HttpUtils = require('../utils/http');
 const fse = require('fs-extra');
 const path = require('path');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 const ProcessGraph = require('../processgraph/processgraph');
 const packageInfo = require('../../package.json');
 const Logs = require('../models/logs');
@@ -14,7 +14,7 @@ module.exports = class JobsAPI {
 		this.context = context;
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		server.addEndpoint('post', '/result', this.postSyncResult.bind(this));
 		server.addEndpoint('get', '/result/logs/{id}', this.getSyncLogFile.bind(this), false);
 
@@ -30,88 +30,79 @@ module.exports = class JobsAPI {
 		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
 		// We could use https://github.com/axios/axios#cancellation in the future
 
+		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this));
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this), false);
 		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this), false);
-
-		return Promise.resolve();
 	}
 
-	getTempFile(req, res, next) {
+	async getTempFile(req, res) {
 		var p = this.storage.makeFolder(this.context.getTempFolder(), [req.params.token, req.params.file]);
 		if (!p) {
-			return next(new Errors.NotFound());
+			throw new Errors.NotFound();
 		}
-		this.deliverFile(req, res, next, p);
+		await this.deliverFile(res, p);
 	}
 
-	getStorageFile(req, res, next) {
+	async getStorageFile(req, res) {
 		var p = this.storage.makeFolder(this.storage.getFolder(), [req.params.job_id, req.params.file]);
 		if (!p) {
-			return next(new Errors.NotFound());
+			throw new Errors.NotFound();
 		}
-		this.deliverFile(req, res, next, p);
+		await this.deliverFile(res, p);
 	}
 
-	deliverFile(req, res, next, path) {
-		HttpUtils.isFile(path).then(() => {
-			res.header('Content-Type', Utils.extensionToMediaType(path));
+	async deliverFile(res, path) {
+		await HttpUtils.isFile(path);
+		
+		res.header('Content-Type', Utils.extensionToMediaType(path));
+		return await new Promise((resolve, reject) => {
 			var stream = fse.createReadStream(path);
 			stream.pipe(res);
-			stream.on('error', (e) => {
-				return next(Errors.wrap(e));
-			});
+			stream.on('error', reject);
 			stream.on('close', () => {
 				res.end();
-				return next();
+				resolve();
 			});
-		})
-		.catch(err => next(Errors.wrap(err)));
-	}
-
-	getJobs(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var query = {
-			user_id: req.user._id
-		};
-		this.storage.database().find(query, {}, (err, jobs) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else {
-				jobs = jobs.map(job => this.makeJobResponse(job, false));
-				res.json({
-					jobs: jobs,
-					links: []
-				});
-				return next();
-			}
 		});
 	}
 
-	getJob(req, res, next) {
+	init(req) {
 		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+			throw new Errors.AuthenticationRequired();
 		}
-		this.storage.getById(req.params.job_id, req.user._id).then(job => {
-			res.json(this.makeJobResponse(job));
-			return next();
-		})
-		.catch(e => next(Errors.wrap(e)));
 	}
 
-	getJobLogs(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		this.storage.getLogsById(req.params.job_id)
-		.then(logs => logs.get(req.query.offset, req.query.limit))
-		.then(json => {
-			res.json(json);
-			return next();
-		})
-		.catch(e => next(Errors.wrap(e)));
+	async getJobs(req, res) {
+		this.init(req);
+
+		const query = {
+			user_id: req.user._id
+		};
+		const db = this.storage.database();
+		const jobs = (await db.findAsync(query))
+			.map(job => this.makeJobResponse(job, false));
+		
+		res.json({
+			jobs: jobs,
+			links: []
+		});
+	}
+
+	async getJob(req, res) {
+		this.init(req);
+
+		const job = await this.storage.getById(req.params.job_id, req.user._id);
+		res.json(this.makeJobResponse(job));
+	}
+
+	async getJobLogs(req, res) {
+		// ToDo 1.2: Added level parameter to requests to set the minimum log level returned by the response. #485
+		// ToDo 1.2: Added level property in responses to reflect the minimum log level that may appear in the response. #329
+		this.init(req);
+		
+		const manager = await this.storage.getLogsById(req.params.job_id);
+		const logs = await manager.get(req.query.offset, req.query.limit);
+		res.json(logs);
 	}
 
 	async getResultLogs(user_id, id) {
@@ -121,363 +112,325 @@ module.exports = class JobsAPI {
 		return logs;
 	}
 
-	getSyncLogFile(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+	async getSyncLogFile(req, res) {
+		this.init(req);
+
+		try {
+			// ToDo 1.2: Added level property in responses to reflect the minimum log level that may appear in the response. #329
+			const logs = await this.getResultLogs(req.user._id, req.params.id);
+			res.json(await logs.get());
+		} catch (e) {
+			throw new Errors.NotFound();
 		}
-		this.getResultLogs(req.user._id, req.params.id)
-			.then(logs => logs.get())
-			.then(json => {
-				res.json(json);
-				return next();
-			})
-			.catch(() => next(new Errors.NotFound()));
 	}
 
-	deleteJob(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		var query = {
+	async deleteJob(req, res) {
+		this.init(req);
+
+		const query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-		this.storage.database().remove(query, {}, (err, numRemoved) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (numRemoved === 0) {
-				return next(new Errors.JobNotFound());
-			}
-			else {
-				this.storage.removeResults(req.params.job_id)
-					.then(() => {
-						res.send(204);
-						return next();
-					})
-					.catch(e => next(Errors.wrap(e)));
-			}
-		});
+		const db = this.storage.database();
+		const numRemoved = db.removeAsync(query);
+		if (numRemoved === 0) {
+			throw new Errors.JobNotFound();
+		}
+		else {
+			await this.storage.removeResults(req.params.job_id);
+			res.send(204);
+		}
 	}
 
-	postJobResults(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
+	async postJobResults(req, res) {
+		this.init(req);
 
-		var query = {
+		const query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
 
-		var filePath, jobId, process, logger;
-		this.storage.findJob(query)
-		.then(job => {
+		let logger = console;
+		try {
+
+			const job = await this.storage.findJob(query);
 			if (job.status === 'queued' || job.status === 'running') {
 				throw new Errors.JobNotFinished();
 			}
 
-			jobId = job._id;
-			process = job.process;
-		})
-		.then(() => this.storage.removeResults(jobId))
-		.then(() => this.storage.getLogsById(jobId))
-		.then(logs => {
-			logger = logs;
-			return logs.clear();
-		})
-		.then(() => {
+			logger = await this.storage.getLogsById(job._id);
+
+			const promises = [];
+			promises.push(this.storage.removeResults(job._id, false));
+			promises.push(logger.clear());
+			await Promise.all(promises);
+
 			logger.info("Queueing batch job");
-			this.storage.updateJobStatus(query, 'queued').catch(() => {});
+			await this.storage.updateJobStatus(query, 'queued');
 		
 			res.send(202);
-			return next();
-		})
-		.then(() => {
-			logger.info("Starting batch job");
-			this.storage.updateJobStatus(query, 'running').catch(() => {});
 
-			var context = this.context.processingContext(req);
-			var pg = new ProcessGraph(process, context);
+			// ToDo sync: move all the following to a worker
+			logger.info("Starting batch job");
+			await this.storage.updateJobStatus(query, 'running');
+
+			const context = this.context.processingContext(req);
+			var pg = new ProcessGraph(job.process, context);
 			pg.setLogger(logger);
-			return pg.execute();
-		})
-		.then(resultNode => {
-			var context = resultNode.getProcessGraph().getContext();
-			var cube = resultNode.getResult();
-			var extension = context.getExtension(cube.getOutputFormat());
-			filePath = this.storage.getJobFile(jobId, Utils.generateHash() +  "." + extension);
-			return context.retrieveResults(cube);
-		})
-		.then(url => {
+
+			const resultNode = await pg.execute();
+
+			const cube = resultNode.getResult();
+			const url = await context.retrieveResults(cube);
+
 			logger.debug("Downloading data from Google: " + url);
-			return HttpUtils.stream({
+			const stream = await HttpUtils.stream({
 				method: 'get',
 				url: url,
 				responseType: 'stream'
 			});
-		})
-		.then(stream => {
+				
+			const extension = context.getExtension(cube.getOutputFormat());
+			const filePath = this.storage.getJobFile(job._id, Utils.generateHash() +  "." + extension);
 			logger.debug("Storing result to: " + filePath);
-			return fse.ensureDir(path.dirname(filePath))
-				.then(() => new Promise((resolve, reject) => {
-					var writer = fse.createWriteStream(filePath);
-					stream.data.pipe(writer);
-					writer.on('error', (e) => {
-						reject(Errors.wrap(e));
-					});
-					writer.on('close', () => {
-						resolve();
-					});
-				}));
-		})
-		.then(() => {
+			await fse.ensureDir(path.dirname(filePath));
+			await new Promise((resolve, reject) => {
+				const writer = fse.createWriteStream(filePath);
+				stream.data.pipe(writer);
+				writer.on('error', reject);
+				writer.on('close', resolve);
+			});
+			
 			logger.info("Finished");
 			this.storage.updateJobStatus(query, 'finished');
-		})
-		.catch(e => {
-			if(logger) {
-				logger.error(e);
+		} catch(e) {
+			logger.error(e);
+			this.storage.updateJobStatus(query, 'error');
+			throw e;
+		}
+	}
+
+	async getJobResultsByToken(req, res) {
+		var query = {
+			token: req.params.token
+		};
+
+		await this.getJobRultsByQuery(query, true, res);
+	}
+
+	async getJobResults(req, res) {
+		// ToDo 1.2:
+		// Added metadata field openeo:status to indicate the job status (and whether the result is complete or not).
+		// Added parameter partial to allow retrieving incomplete results, which must also add the new property openeo:status to the metadata. #430
+		this.init(req);
+
+		var query = {
+			_id: req.params.job_id,
+			user_id: req.user._id
+		};
+		await this.getJobRultsByQuery(query, false, res);
+	}
+
+	async getJobRultsByQuery(query, pub, res) {
+		const job = await this.storage.findJob(query);
+		if (job.status === 'error') {
+			return res.send(424, job.error); // ToDo 1.0: Send latest info from logging
+		}
+		else if (job.status === 'queued' || job.status === 'running') {
+			throw new Errors.JobNotFinished();
+		}
+		else if (job.status !== 'finished') {
+			throw new Errors.JobNotStarted();
+		}
+
+		const folder = this.storage.getJobFolder(job._id);
+		const files = await Utils.walk(folder);
+		const links = [
+			{
+				href: Utils.getApiUrl("/results/" + job.token),
+				rel: 'canonical',
+				type: 'application/json'
+			}
+		];
+		const assets = {};
+		for(const file of files) {
+			const fileName = path.relative(folder, file.path);
+			const href = Utils.getApiUrl("/storage/" + job._id + "/" + fileName);
+			const type = Utils.extensionToMediaType(fileName);
+			if (fileName === this.storage.logFileName) {
+				if (!pub) {
+					links.push({
+						href: href,
+						rel: 'monitor',
+						type: type,
+						title: 'Batch Job Log File'
+					});
+				}
 			}
 			else {
-				console.error(e);
+				assets[fileName] = {
+					href: href,
+					roles: ["data"],
+					type: type
+				};
 			}
-			this.storage.updateJobStatus(query, 'error');
-		});
+		}
+		const item = {
+			stac_version: packageInfo.stac_version,
+			stac_extensions: [],
+			id: job._id,
+			type: "Feature",
+			geometry: null, // ToDo 1.0: Set correct geometry, add bbox if geometry is set
+			properties: {
+				datetime: null, // ToDo 1.0: Set correct datetimes
+				title: job.title || null,
+				description: job.description || null,
+				created: job.created,
+				updated: job.updated
+			},
+			assets: assets,
+			links: links
+		};
+		res.send(item);
 	}
 
-	getJobResults(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+	async patchJob(req, res) {
+		this.init(req);
+		
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
 		}
 
-		var query = {
+		const query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
+		const job = await this.storage.findJob(query);
+		if (job.status === 'queued' || job.status === 'running') {
+			throw new Errors.JobLocked();
+		}
 
-		this.storage.findJob(query)
-		.then(job => {
-			if (job.status === 'error') {
-				res.send(424, job.error); // ToDo 1.0: Send latest info from logging
-				return next();
+		const data = {};
+		const promises = [];
+		for(let key in req.body) {
+			if (this.storage.isFieldEditable(key)) {
+				switch(key) {
+					case 'process':
+						var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+						pg.allowUndefinedParameters(false);
+						promises.push(pg.validate());
+						break;
+					default:
+						// ToDo: Validate further data
+						// For example, if budget < costs, reject request
+				}
+				data[key] = req.body[key];
 			}
-			else if (job.status === 'queued' || job.status === 'running') {
-				throw new Errors.JobNotFinished();
+			else {
+				throw new Errors.PropertyNotEditable({property: key});
 			}
-			else if (job.status !== 'finished') {
-				throw new Errors.JobNotStarted();
-			}
+		}
 
-			var folder = this.storage.getJobFolder(job._id);
-			return Utils.walk(folder)
-				.then(files => {
-					var links = [];
-					var assets = {};
-					for(var i in files) {
-						var file = files[i].path;
-						var fileName = path.relative(folder, file);
-						var href = Utils.getApiUrl("/storage/" + job._id + "/" + fileName);
-						var type = Utils.extensionToMediaType(fileName);
-						if (fileName === 'logs.db') {
-							links.push({
-								href: href,
-								rel: 'monitor',
-								type: type,
-								title: 'Batch Job Log File'
-							});
-						}
-						else {
-							assets[fileName] = {
-								href: href,
-								rel: "data",
-								type: type
-							};
-						}
-					}
-					let item = {
-						stac_version: packageInfo.stac_version,
-						stac_extensions: [],
-						id: job._id,
-						type: "Feature",
-						geometry: null, // ToDo 1.0: Set correct geometry, add bbox if geometry is set
-						properties: {
-							datetime: null, // ToDo 1.0: Set correct datetimes
-							title: job.title || null,
-							description: job.description || null,
-							created: job.created,
-							updated: job.updated
-						},
-						assets: assets,
-						links: links
-					};
-					res.send(item);
-					next();
-				});
-		})
-		.catch(e => next(Errors.wrap(e)));
+		if (Utils.size(data) === 0) {
+			throw new Errors.NoDataForUpdate();
+		}
+
+		await Promise.all(promises);
+
+		const db = this.storage.database();
+		const { numAffected } = db.updateAsync(query, { $set: data });
+		if (numAffected === 0) {
+			throw new Errors.Internal({message: 'Number of changed elements was 0.'});
+		}
+		res.send(204);
+
+		const logger = this.storage.getLogsById(req.params.job_id);
+		logger.info('Job updated', data);
 	}
 
-	patchJob(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
-		}
+	async postJob(req, res) {
+		// ToDo 1.2: Added property log_level to indicate the minimum severity level that should be stored for logs. #329
+		this.init(req);
 
-		var query = {
-			_id: req.params.job_id,
-			user_id: req.user._id
-		};
-		var data = {};
-		this.storage.findJob(query).then(job => {
-			if (job.status === 'queued' || job.status === 'running') {
-				throw new Errors.JobLocked();
-			}
-
-			var promises = [];
-			for(let key in req.body) {
-				if (this.storage.isFieldEditable(key)) {
-					switch(key) {
-						case 'process':
-							var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
-							pg.allowUndefinedParameters(false);
-							promises.push(pg.validate());
-							break;
-						default:
-							// ToDo: Validate further data
-							// For example, if budget < costs, reject request
-					}
-					data[key] = req.body[key];
-				}
-				else {
-					return next(new Errors.PropertyNotEditable({property: key}));
-				}
-			}
-
-			if (Utils.size(data) === 0) {
-				return next(new Errors.NoDataForUpdate());
-			}
-
-			return Promise.all(promises).then(() => data);
-		})
-		.then(data => {
-			this.storage.database().update(query, { $set: data }, {}, function (err, numChanged) {
-				if (err) {
-					return next(Errors.wrap(err));
-				}
-				else if (numChanged === 0) {
-					return next(new Errors.Internal({message: 'Number of changed elements was 0.'}));
-				}
-				else {
-					res.send(204);
-					return next();
-				}
-			});
-			return this.storage.getLogsById(req.params.job_id);
-		})
-		.then(logger => logger.info('Job updated', data))
-		.catch(e => next(Errors.wrap(e)));
-	}
-
-	postJob(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
 		}
 
 		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 		pg.allowUndefinedParameters(false);
-		pg.validate().then(() => {
-			// ToDo: Validate data
-			var data = {
-				title: req.body.title || null,
-				description: req.body.description || null,
-				process: req.body.process,
-				status: "created",
-				created: Utils.getISODateTime(),
-				updated: Utils.getISODateTime(),
-				plan: req.body.plan || this.context.plans.default,
-				costs: 0,
-				budget: req.body.budget || null,
-				user_id: req.user._id
-			};
-			this.storage.database().insert(data, (err, job) => {
-				if (err) {
-					next(Errors.wrap(err));
-				}
-				else {
-					// Create logs at creation time to avoid issues described in #51 
-					this.storage.getLogsById(job._id).then(() => {
-						res.header('OpenEO-Identifier', job._id);
-						res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), next);
-					}).catch(e => next(e));
-				}
-			});
-		})
-		.catch(e => next(Errors.wrap(e)));
+		await pg.validate();
+
+		// ToDo: Validate further data
+		var data = {
+			title: req.body.title || null,
+			description: req.body.description || null,
+			process: req.body.process,
+			status: "created",
+			created: Utils.getISODateTime(),
+			updated: Utils.getISODateTime(),
+			plan: req.body.plan || this.context.plans.default,
+			costs: 0,
+			budget: req.body.budget || null,
+			user_id: req.user._id,
+			token: Utils.generateHash(64)
+		};
+		const db = this.storage.database();
+		const job = await db.insertAsync(data);
+
+		// Create logs at creation time to avoid issues described in #51 
+		await this.storage.getLogsById(job._id);
+
+		res.header('OpenEO-Identifier', job._id);
+		res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), Utils.noop);
 	}
 
-	postSyncResult(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
+	async postSyncResult(req, res) {
+		// ToDo 1.2: Added property log_level to indicate the minimum severity level that should be stored for logs. #329
+		this.init(req);
+
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
 		}
 
-		let plan = req.body.plan || this.context.plans.default;
-		let budget = req.body.budget || null;
+		const plan = req.body.plan || this.context.plans.default;
+		const budget = req.body.budget || null;
 		// ToDo: Validate data, handle budget and plan input
 
-		let id = Utils.timeId();
-		let context, logger, pg;
-		this.getResultLogs(req.user._id, id)
-			.then(logs => {
-				logger = logs;
-				logger.debug("Starting to process request");
-				context = this.context.processingContext(req);
-				pg = new ProcessGraph(req.body.process, context);
-				pg.setLogger(logger);
-				pg.allowUndefinedParameters(false);
-				return pg.validate(false);
-			})
-			.then(errorList => {
-				if (errorList.count() > 0) {
-					errorList.getAll().forEach(error => logger.error(error));
-					throw errorList.first();
-				}
-				else {
-					logger.info("Validated without errors");
-				}
-				logger.debug("Executing processes");
-				return pg.execute();
-			})
-			.then(resultNode => context.retrieveResults(resultNode.getResult()))
-			.then(url => {
-				logger.debug("Downloading data from Google: " + url);
-				return HttpUtils.stream({
-					method: 'get',
-					url: url,
-					responseType: 'stream'
-				});
-			})
-			.then(stream => {
-				var contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
-				res.header('Content-Type', contentType);
-				res.header('OpenEO-Costs', 0);
-				var monitorUrl = Utils.getApiUrl('/result/logs/' + id);
-				res.header('Link', `<${monitorUrl}>; rel="monitor"`);
-				stream.data.pipe(res);
-				return next();
-			})
-			.catch(e => {
-				// ToDo: Check for error in response.
-				next(Errors.wrap(e));
-			});
+		const id = Utils.timeId();
+
+		const logger = await this.getResultLogs(req.user._id, id);
+		logger.debug("Starting to process request");
+
+		const context = this.context.processingContext(req);
+		const pg = new ProcessGraph(req.body.process, context);
+		pg.setLogger(logger);
+		pg.allowUndefinedParameters(false);
+		const errorList = await pg.validate(false);
+		if (errorList.count() > 0) {
+			errorList.getAll().forEach(error => logger.error(error));
+			throw errorList.first();
+		}
+		else {
+			logger.info("Validated without errors");
+		}
+
+		logger.debug("Executing processes");
+		const resultNode = await pg.execute();
+		const url = await context.retrieveResults(resultNode.getResult());
+
+		logger.debug("Downloading data from Google: " + url);
+		const stream = await HttpUtils.stream({
+			method: 'get',
+			url: url,
+			responseType: 'stream'
+		});
+
+		const contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
+		res.header('Content-Type', contentType);
+		res.header('OpenEO-Costs', 0);
+		const monitorUrl = Utils.getApiUrl('/result/logs/' + id);
+		res.header('Link', `<${monitorUrl}>; rel="monitor"`);
+		stream.data.pipe(res);
 	}
 
 	makeJobResponse(job, full = true) {
@@ -494,6 +447,7 @@ module.exports = class JobsAPI {
 		};
 		if (full) {
 			response.process = job.process;
+			response.links = [];
 		}
 		return response;
 	}

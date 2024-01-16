@@ -1,4 +1,4 @@
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 const { BaseProcess } = require('@openeo/js-processgraphs');
 
 module.exports = class rename_dimension extends BaseProcess {

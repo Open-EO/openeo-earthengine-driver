@@ -1,7 +1,6 @@
-const Utils = require('../utils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const Errors = require('../utils/errors');
 const ProcessGraph = require('../processgraph/processgraph');
-const { ErrorList } = require('@openeo/js-processgraphs');
 
 module.exports = class StoredProcessGraphs {
 
@@ -10,14 +9,12 @@ module.exports = class StoredProcessGraphs {
 		this.context = context;
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		server.addEndpoint('post', '/validation', this.postValidation.bind(this));
 		server.addEndpoint('get', '/process_graphs', this.getProcessGraphs.bind(this));
 		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraph.bind(this));
 		server.addEndpoint('put', '/process_graphs/{process_graph_id}', this.putProcessGraph.bind(this));
 		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraph.bind(this));
-
-		return Promise.resolve();
 	}
 
 	postValidation(req, res, next) {
@@ -58,6 +55,7 @@ module.exports = class StoredProcessGraphs {
 	}
 
 	putProcessGraph(req, res, next) {
+		// ToDo 1.2: Add canonical link for UDPs (see batch job results)
 		if (!req.user._id) {
 			return next(new Errors.AuthenticationRequired());
 		}

@@ -1,20 +1,31 @@
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
+const DB = require('../utils/db');
 const path = require('path');
+const fse = require('fs-extra');
 const Logs = require('./logs');
 
 module.exports = class ServiceStore {
 
 	constructor() {
-		this.db = Utils.loadDB('services');
+		this.db = DB.load('services');
 		this.editableFields = ['title', 'description', 'process', 'enabled', 'configuration', 'plan', 'budget'];
 		this.serviceFolder = './storage/service_files';
 		this.logCache = {};
 	}
 
+	getLogFile(serviceId) {
+		return path.normalize(path.join(this.serviceFolder, serviceId + '.logs.db'))
+	}
+
+	async removeLogsById(serviceId) {
+		await fse.unlink(this.getLogFile(serviceId));
+	}
+
 	async getLogsById(serviceId) {
-		let file = path.normalize(path.join(this.serviceFolder, serviceId + '.logs.db'));
-		let url = Utils.getApiUrl('/services/' + serviceId + '/logs');
-		return await Logs.loadLogsFromCache(file, url);
+		return await Logs.loadLogsFromCache(
+			this.getLogFile(serviceId),
+			Utils.getApiUrl('/services/' + serviceId + '/logs')
+		);
 	}
 
 	isFieldEditable(name) {

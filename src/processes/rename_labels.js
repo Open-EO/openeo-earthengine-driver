@@ -1,5 +1,5 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 
 module.exports = class rename_labels extends BaseProcess {
 
