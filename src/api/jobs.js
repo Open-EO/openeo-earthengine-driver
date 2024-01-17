@@ -31,8 +31,9 @@ module.exports = class JobsAPI {
 		// We could use https://github.com/axios/axios#cancellation in the future
 
 		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
+		// todo: What do we need the temp endpoint for?
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this), false);
-		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this), false);
+		server.addEndpoint('get', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
 	}
 
 	async getTempFile(req, res) {
@@ -44,7 +45,10 @@ module.exports = class JobsAPI {
 	}
 
 	async getStorageFile(req, res) {
-		var p = this.storage.makeFolder(this.storage.getFolder(), [req.params.job_id, req.params.file]);
+		const job = await this.storage.findJob({
+			token: req.params.token
+		});
+		const p = this.storage.makeFolder(this.storage.getFolder(), [job._id, req.params.file]);
 		if (!p) {
 			throw new Errors.NotFound();
 		}
@@ -252,18 +256,17 @@ module.exports = class JobsAPI {
 
 		const folder = this.storage.getJobFolder(job._id);
 		const files = await Utils.walk(folder);
-		const links = [];
-		if (job.token) {
-			links.push({
+		const links = [
+			{
 				href: Utils.getApiUrl("/results/" + job.token),
 				rel: 'canonical',
 				type: 'application/json'
-			});
-		}
+			}
+		];
 		const assets = {};
 		for(const file of files) {
 			const fileName = path.relative(folder, file.path);
-			const href = Utils.getApiUrl("/storage/" + job._id + "/" + fileName);
+			const href = Utils.getApiUrl("/storage/" + job.token + "/" + fileName);
 			const type = Utils.extensionToMediaType(fileName);
 			if (fileName === this.storage.logFileName) {
 				if (!pub) {
