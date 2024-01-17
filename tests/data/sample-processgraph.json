@@ -69,7 +69,7 @@
         "reducer": {
           "process_graph": {
             "max": {
-              "process_id": "max",
+              "process_id": "min",
               "arguments": {
                 "data": {
                   "from_parameter": "data"
