@@ -15,122 +15,115 @@ module.exports = class StoredProcessGraphs {
 		server.addEndpoint('get', '/process_graphs/{process_graph_id}', this.getProcessGraph.bind(this));
 		server.addEndpoint('put', '/process_graphs/{process_graph_id}', this.putProcessGraph.bind(this));
 		server.addEndpoint('delete', '/process_graphs/{process_graph_id}', this.deleteProcessGraph.bind(this));
+		server.addEndpoint('get', '/udp/{token}', this.getProcessGraphByToken.bind(this), false);
 	}
 
-	postValidation(req, res, next) {
-		if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
-		}
-		var pg = new ProcessGraph(req.body, this.context.processingContext(req));
-		pg.validate(false)
-			.then(errors => {
-				res.send(200, {
-					errors: errors.toJSON()
-				});
-				next();
-			})
-			.catch(e => next(e));
-	}
-
-	getProcessGraphs(req, res, next) {
+	init(req) {
 		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+			throw new Errors.AuthenticationRequired();
 		}
-		var query = {
-			user_id: req.user._id
-		};
-		this.storage.database().find(query, {}, (err, graphs) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else {
-				var data = graphs.map(pg => this.makeResponse(pg, false));
-				res.json({
-					processes: data,
-					links: []
-				});
-				return next();
-			}
+	}
+
+	async postValidation(req, res) {
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
+		}
+		const pg = new ProcessGraph(req.body, this.context.processingContext(req));
+		const errors = await pg.validate(false);
+		res.send(200, {
+			errors: errors.toJSON()
 		});
 	}
 
-	putProcessGraph(req, res, next) {
-		// ToDo 1.2: Add canonical link for UDPs (see batch job results)
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
-		}
-		else if (!Utils.isObject(req.body)) {
-			return next(new Errors.RequestBodyMissing());
-		}
-		else if (typeof req.params.process_graph_id !== 'string' || req.params.process_graph_id.match(/^\w+$/i) === null) {
-			return next(new Errors.ProcessGraphIdInvalid());
-		}
-		else if (typeof req.body.id !== 'undefined' && req.body.id !== req.params.process_graph_id) {
-			return next(new Errors.ProcessGraphIdDoesntMatch());
-		}
-		else if (this.context.processes().get(req.params.process_graph_id) !== null) {
-			return next(new Errors.PredefinedProcessExists());
-		}
+	async getProcessGraphs(req, res) {
+		this.init(req);
 
-		// Set the id in the JSON body if not set by the user
-		req.body.id = req.params.process_graph_id;
-
-		var pg = new ProcessGraph(req.body, this.context.processingContext(req));
-		pg.validate().then(() => {
-			let query = {
-				id: req.body.id,
-				user_id: req.user._id
-			};
-			let data = Object.assign({}, query, req.body);
-			this.storage.database().update(
-				query,
-				data,
-				{ upsert: true },
-				err => {
-					if (err) {
-						return next(Errors.wrap(err));
-					}
-					else {
-						res.send(200);
-						return next();
-					}
-				}
-			);
-		})
-		.catch(e => next(e));
+		const query = {
+			user_id: req.user._id
+		};
+		const db = this.storage.database();
+		const graphs = await db.findAsync(query);
+		res.json({
+			processes: graphs.map(pg => this.makeResponse(pg, false)),
+			links: []
+		});
 	}
 
-	deleteProcessGraph(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+	async putProcessGraph(req, res) {
+		this.init(req);
+		
+		if (!Utils.isObject(req.body)) {
+			throw new Errors.RequestBodyMissing();
 		}
-		var query = {
+		else if (typeof req.params.process_graph_id !== 'string' || req.params.process_graph_id.match(/^\w+$/i) === null) {
+			throw new Errors.ProcessGraphIdInvalid();
+		}
+		else if (typeof req.body.id !== 'undefined' && req.body.id !== req.params.process_graph_id) {
+			throw new Errors.ProcessGraphIdDoesntMatch();
+		}
+		else if (this.context.processes().get(req.params.process_graph_id) !== null) {
+			throw new Errors.PredefinedProcessExists();
+		}
+
+		const pg = new ProcessGraph(req.body, this.context.processingContext(req));
+		await pg.validate();
+
+		const query = {
+			id: req.params.process_graph_id,
+			user_id: req.user._id,
+			// Set the token for public access
+			token: Utils.generateHash(64)
+		};
+		const data = Object.assign({}, req.body, query);
+		const db = this.storage.database();
+		const { numAffected } = await db.updateAsync(query, data, { upsert: true });
+		if (numAffected === 0) {
+			throw new Errors.Internal({message: 'Number of changed processes was zero.'});
+		}
+
+		res.send(200);
+	}
+
+	async deleteProcessGraph(req, res) {
+		this.init(req);
+		
+		const query = {
 			id: req.params.process_graph_id,
 			user_id: req.user._id
 		};
-		this.storage.database().remove(query, {}, (err, numRemoved) => {
-			if (err) {
-				return next(Errors.wrap(err));
-			}
-			else if (numRemoved === 0) {
-				return next(new Errors.ProcessGraphNotFound());
-			}
-			else {
-				res.send(204);
-				return next();
-			}
-		});
+		const db = this.storage.database();
+		const numRemoved = db.removeAsync(query);
+		if (numRemoved === 0) {
+			throw new Errors.ProcessGraphNotFound();
+		}
+		else {
+			res.send(204);
+		}
 	}
 
-	getProcessGraph(req, res, next) {
-		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+	async getProcessGraph(req, res) {
+		this.init(req);
+		const pg = await this.storage.getById(req.params.process_graph_id, req.user._id);
+		res.json(this.prepareProcess(pg));
+	}
+
+	async getProcessGraphByToken(req, res) {
+		const pg = await this.storage.getByToken(req.params.token);
+		res.json(this.prepareProcess(pg));
+	}
+
+	prepareProcess(pg) {
+		if (pg.token) {
+			if (!Array.isArray(pg.links)) {
+				pg.links = [];
+			}
+			pg.links.push({
+				href: Utils.getApiUrl("/udp/" + pg.token),
+				rel: 'canonical',
+				type: 'application/json'
+			});
 		}
-		this.storage.getById(req.params.process_graph_id, req.user._id).then(pg => {
-			res.json(this.makeResponse(pg));
-			next();
-		})
-		.catch(err => next(err));
+		return this.makeResponse(pg);
 	}
 
 	makeResponse(pg, full = true) {

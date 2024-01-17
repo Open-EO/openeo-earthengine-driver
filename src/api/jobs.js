@@ -30,7 +30,7 @@ module.exports = class JobsAPI {
 		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
 		// We could use https://github.com/axios/axios#cancellation in the future
 
-		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this));
+		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this), false);
 		server.addEndpoint('get', '/storage/{job_id}/{file}', this.getStorageFile.bind(this), false);
 	}
@@ -242,13 +242,14 @@ module.exports = class JobsAPI {
 
 		const folder = this.storage.getJobFolder(job._id);
 		const files = await Utils.walk(folder);
-		const links = [
-			{
+		const links = [];
+		if (job.token) {
+			links.push({
 				href: Utils.getApiUrl("/results/" + job.token),
 				rel: 'canonical',
 				type: 'application/json'
-			}
-		];
+			});
+		}
 		const assets = {};
 		for(const file of files) {
 			const fileName = path.relative(folder, file.path);

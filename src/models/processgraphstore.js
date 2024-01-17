@@ -32,6 +32,17 @@ class ProcessGraphStore {
 		return pg;
 	}
 
+	async getByToken(token) {
+		const query = {
+			token: token
+		};
+		const pg = await this.db.findOneAsync(query);
+		if (pg === null) {
+			throw new Errors.ProcessGraphNotFound();
+		}
+		return pg;
+	}
+
 };
 
 ProcessGraphStore.FIELDS = [
