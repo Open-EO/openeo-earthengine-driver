@@ -117,39 +117,44 @@ module.exports = class Logs {
 		this.db.compactDatafile();
 	}
 
-	get(offset = null, limit = 0) {
+	async get(offset = null, limit = 0, level = null) {
 		limit = parseInt(limit);
 		offset = typeof offset === 'string' ? offset : null;
+		level = LOG_LEVELS.includes(level) ? level : 'debug';
 
-		return new Promise((resolve, reject) => {
-			let query = {};
-			if (offset) {
-				query._id = { $gt: offset };
-			}
-			let cur = this.db.find(query, {_id: 0});
+		let query = {};
+		if (offset) {
+			query._id = { $gt: offset };
+		}
+		if (level !== 'debug') {
+			const levels = LOG_LEVELS.slice(0, LOG_LEVELS.indexOf(level) + 1);
+			query.level = { $in: levels };
+		} // else: debug is the lowest level, so all levels will be included anyway
+
+		let cur = this.db.find(query, {_id: 0});
+		if (limit >= 1) {
+			cur = cur.limit(limit + 1); // +1 to check for more elements
+		}
+		const logs = await cur.execAsync();
+		let links = [];
+		// Are there more elements?
+		if (limit >= 1 && logs.length === limit + 1) {
+			logs.pop();
+			let last = logs[logs.length - 1];
+			let url = new URL(this.url);
+			url.searchParams.set('offset', last.id);
 			if (limit >= 1) {
-				cur = cur.limit(limit + 1); // +1 to check for more elements
+				url.searchParams.set('limit', limit);
 			}
-			cur.exec((err, logs) => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else {
-					let links = [];
-					// Are there more elements?
-					if (limit >= 1 && logs.length === limit + 1) {
-						logs.pop();
-						let last = logs[logs.length - 1];
-						let url = this.url + '?offset=' + last.id + (limit >= 1 ? '&limit=' + limit : '')
-						links.push({
-							rel: 'next',
-							href: url
-						});
-					}
-					resolve({logs, links});
-				}
+			if (level) {
+				url.searchParams.set('level', level);
+			}
+			links.push({
+				rel: 'next',
+				href: url.toString()
 			});
-		});
+		}
+		return {level, logs, links};
 	}
 
 };

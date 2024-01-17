@@ -96,12 +96,10 @@ module.exports = class JobsAPI {
 	}
 
 	async getJobLogs(req, res) {
-		// ToDo 1.2: Added level parameter to requests to set the minimum log level returned by the response. #485
-		// ToDo 1.2: Added level property in responses to reflect the minimum log level that may appear in the response. #329
 		this.init(req);
 		
 		const manager = await this.storage.getLogsById(req.params.job_id);
-		const logs = await manager.get(req.query.offset, req.query.limit);
+		const logs = await manager.get(req.query.offset, req.query.limit, req.query.level);
 		res.json(logs);
 	}
 
@@ -116,9 +114,8 @@ module.exports = class JobsAPI {
 		this.init(req);
 
 		try {
-			// ToDo 1.2: Added level property in responses to reflect the minimum log level that may appear in the response. #329
 			const logs = await this.getResultLogs(req.user._id, req.params.id);
-			res.json(await logs.get());
+			res.json(await logs.get(null, 0, 'debug'));
 		} catch (e) {
 			throw new Errors.NotFound();
 		}

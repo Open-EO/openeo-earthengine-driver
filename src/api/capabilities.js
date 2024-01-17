@@ -64,11 +64,16 @@ module.exports = class CapabilitiesAPI {
 				plans: this.context.plans.options
 			},
 			links: [
-				// ToDo 1.2: add relation types create-form and recovery-form?
 				{
 					rel: 'about',
 					href: 'https://earthengine.google.com/',
 					title: 'Google Earth Engine Homepage'
+				},
+				{
+					rel: 'create-form',
+					href: 'https://earthengine.google.com/signup/',
+					type: 'text/html',
+					title: 'Sign Up for Google Earth Engine'
 				},
 				{
 					rel: 'terms-of-service',
@@ -110,10 +115,11 @@ module.exports = class CapabilitiesAPI {
 	}
 
 	async getConformance(req, res) {
-		// ToDo 1.2: Add conformance classes for STAC API and openEO API
 		res.json({
 			"conformsTo": [
-				"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"
+				"https://api.openeo.org/1.2.0",
+				"https://api.stacspec.org/v1.0.0/core",
+				"https://api.stacspec.org/v1.0.0/collections"
 			]
 		});
 	}

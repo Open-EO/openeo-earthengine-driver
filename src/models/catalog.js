@@ -124,6 +124,12 @@ module.exports = class DataCatalog {
 			}
 			return l;
 		});
+		c.links.push({
+			rel: 'http://www.opengis.net/def/rel/ogc/1.0/queryables',
+			href: Utils.getApiUrl(`/collections/${c.id}/queryables`),
+			title: "Queryables",
+			type: "application/schema+json"
+		});
 		return c;
 	}
 

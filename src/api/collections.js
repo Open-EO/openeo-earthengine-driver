@@ -23,7 +23,8 @@ module.exports = class Data {
 	async beforeServerStart(server) {
 		server.addEndpoint('get', '/collections', this.getCollections.bind(this));
 		server.addEndpoint('get', ['/collections/{collection_id}', '/collections/*'], this.getCollectionById.bind(this));
-		// ToDo 1.2: New endpoint for metadata filters (queryables): /collections/{collection_id}/queryables. Also adds a new rel type to the collection links. #396
+		server.addEndpoint('get', '/collections/{collection_id}/queryables', this.getCollectionQueryables.bind(this));
+		// Some queryables may be routed through the /collections/{collection_id} endpoint due to the wildcard
 
 		const num = await this.catalog.loadCatalog();
 		console.log(`Loaded ${num} collections.`);
@@ -31,7 +32,7 @@ module.exports = class Data {
 	}
 
 	async getCollections(req, res) {
-		var data = this.catalog.getData().map(c => {
+		const data = this.catalog.getData().map(c => {
 			return {
 				stac_version: c.stac_version,
 				stac_extensions: [],
@@ -66,18 +67,45 @@ module.exports = class Data {
 	}
 	
 	async getCollectionById(req, res) {
-		var id = req.params['*'];
+		const id = req.params['*'];
 		if (id.length === 0) {
 			// Redirect to correct route
-			return this.getCollections(req, res, next);
+			return await this.getCollections(req, res);
+		}
+		// Some queryables may be routed through the /collections/{collection_id} endpoint due to the wildcard
+		else if (id.endsWith('/queryables')) {
+			return await this.getCollectionQueryables(req, res);
 		}
 
-		var collection = this.catalog.getData(id);
+		const collection = this.catalog.getData(id);
 		if (collection === null) {
 			throw new Errors.CollectionNotFound();
 		}
 
 		res.json(collection);
+	}
+
+	async getCollectionQueryables(req, res) {
+		// Get the ID from the normal parameter
+		let id = req.params.collection_id;
+		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
+		if (req.params['*'] && !req.params.collection_id) {
+			id = req.params['*'].replace(/\/queryables$/, '');
+		}
+		
+		const collection = this.catalog.getData(id);
+		if (collection === null) {
+			throw new Errors.CollectionNotFound();
+		}
+		// ToDo metadata/processes: Implement queryables
+		res.json({
+			"$schema" : "https://json-schema.org/draft/2019-09/schema",
+			"$id" : Utils.getApiUrl(`/collections/${id}/queryables`),
+			"title" : "Queryables",
+			"type" : "object",
+			"properties" : {},
+			"additionalProperties": false
+		});
 	}
 
 };
