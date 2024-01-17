@@ -177,6 +177,7 @@ module.exports = class ServicesAPI {
 		if (service === null) {
 			throw new Errors.ServiceNotFound();
 		}
+		return service;
 	}
 
 	async getService(req, res) {
