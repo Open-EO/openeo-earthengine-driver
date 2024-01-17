@@ -32,7 +32,7 @@ module.exports = class climatological_normal extends BaseProcess {
 				geeFrequencyName = "month";
 				// Adopt start and end time of climatology period depending on data availability
 				var earlyStart = start.advance(-1, 'month');
-				start = ee.Algorithms.If( // ToDo: Document in process definition
+				start = ee.Algorithms.If( // ToDo processes: Document in process definition
 					dc.imageCollection().filter(ee.Filter.date(earlyStart, start)).size(),
 					earlyStart,
 					start.advance(2, 'month')

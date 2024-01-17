@@ -21,10 +21,11 @@ module.exports = class ServiceStore {
 		await fse.unlink(this.getLogFile(serviceId));
 	}
 
-	async getLogsById(serviceId) {
+	async getLogsById(serviceId, log_level) {
 		return await Logs.loadLogsFromCache(
 			this.getLogFile(serviceId),
-			Utils.getApiUrl('/services/' + serviceId + '/logs')
+			Utils.getApiUrl('/services/' + serviceId + '/logs'),
+			log_level
 		);
 	}
 

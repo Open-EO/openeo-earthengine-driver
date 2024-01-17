@@ -2,7 +2,7 @@ const { BaseProcess } = require('@openeo/js-processgraphs');
 const Commons = require('../processgraph/commons');
 
 module.exports = class sd extends BaseProcess {
-// ToDo: ignore_nodata parameter
+// ToDo processes: ignore_nodata parameter
 	geeReducer() {
 		return 'stdDev';
 	}

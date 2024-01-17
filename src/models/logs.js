@@ -9,7 +9,18 @@ var LOG_CACHE = {};
 
 module.exports = class Logs {
 
-	static async loadLogsFromCache(file, url) {
+	static checkLevel(level, defaulValue = null) {
+		if (typeof level === 'string') {
+			level = level.toLowerCase();
+		}
+		return LOG_LEVELS.includes(level) ? level : defaulValue;
+	}
+
+	static getApplicableLevels(level) {
+		return LOG_LEVELS.slice(0, LOG_LEVELS.indexOf(level) + 1);
+	}
+
+	static async loadLogsFromCache(file, url, log_level) {
 		let now = Date.now();
 		// Free up memory
 		for(let file in LOG_CACHE) {
@@ -25,7 +36,7 @@ module.exports = class Logs {
 		}
 		// Read db from fs
 		else {
-			let logs = new Logs(file, url);
+			let logs = new Logs(file, url, log_level);
 			await logs.init();
 			LOG_CACHE[file] = {
 				lastAccess: now,
@@ -35,10 +46,10 @@ module.exports = class Logs {
 		}
 	}
 
-	constructor(file, baseUrl, requestId = null) {
+	constructor(file, baseUrl, level = null) {
 		this.file = file;
 		this.url = baseUrl;
-		this.requestId = requestId;
+		this.level = level;
 	}
 
 	async init() {
@@ -47,6 +58,10 @@ module.exports = class Logs {
 		this.db = new Datastore({ filename: this.file });
 		this.db.stopAutocompaction();
 		await this.db.loadDatabaseAsync();
+	}
+
+	shouldLog(level) {
+		return !this.level || LOG_LEVELS.indexOf(level) <= LOG_LEVELS.indexOf(this.level);
 	}
 
 	debug(message, data = null, trace = undefined) {
@@ -87,9 +102,6 @@ module.exports = class Logs {
 	add(message, level = "debug", data = null, trace = undefined, code = undefined, links = undefined, id = undefined) {
 		id = id || Utils.timeId();
 		message = String(message);
-		if (this.requestId) {
-			message = this.requestId + ' | ' + message;
-		}
 		level = LOG_LEVELS.includes(level) ? level : 'debug';
 		let log = {
 			_id: id,
@@ -105,11 +117,13 @@ module.exports = class Logs {
 		if (global.server.serverContext.debug) {
 			console.log(log);
 		}
-		this.db.insert(log, err => {
-			if (err && global.server.serverContext.debug) {
-				console.warn(err);
-			}
-		});
+		if (this.shouldLog(level)) {
+			this.db.insert(log, err => {
+				if (err && global.server.serverContext.debug) {
+					console.warn(err);
+				}
+			});
+		}
 	}
 
 	async clear() {
@@ -120,15 +134,14 @@ module.exports = class Logs {
 	async get(offset = null, limit = 0, level = null) {
 		limit = parseInt(limit);
 		offset = typeof offset === 'string' ? offset : null;
-		level = LOG_LEVELS.includes(level) ? level : 'debug';
+		level = Logs.checkLevel(level, this.level);
 
 		let query = {};
 		if (offset) {
 			query._id = { $gt: offset };
 		}
 		if (level !== 'debug') {
-			const levels = LOG_LEVELS.slice(0, LOG_LEVELS.indexOf(level) + 1);
-			query.level = { $in: levels };
+			query.level = { $in: Logs.getApplicableLevels(level) };
 		} // else: debug is the lowest level, so all levels will be included anyway
 
 		let cur = this.db.find(query, {_id: 0});

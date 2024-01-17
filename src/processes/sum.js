@@ -7,7 +7,7 @@ module.exports = class sum extends BaseProcess {
 		return 'sum';
 	}
   
-    //ToDo: ignore_nodata parameter
+    //ToDo processes: ignore_nodata parameter
 	async execute(node) {
 		return Commons.reduceInCallback(
 			node,

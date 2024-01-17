@@ -17,7 +17,7 @@ module.exports = class mask extends BaseProcess {
 
         return data.imageCollection(ic => ic.map(function(image) {
             // Get corresponding (first) image from mask by date
-            // ToDo: there might be multiple, maybe we should warn if this is ambiguous
+            // ToDo processes: there might be multiple, maybe we should warn if this is ambiguous
             var maskImg = maskCude.filterDate(image.date()).first();
             // Mask image / Set no-data
             var maskedImg = image.updateMask(maskImg);

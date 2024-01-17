@@ -20,7 +20,7 @@ module.exports = class add_dimension extends BaseProcess {
 
 		dimension.addValue(label);
 
-		// TODO A Number value for label causes problems
+		// Todo processes: A Number value for label causes problems
 		if (!Number.isInteger(label)) {
 			dc.renameLabels(dimension, [label], ["#"]);
 		}

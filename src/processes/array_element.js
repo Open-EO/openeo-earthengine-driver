@@ -19,7 +19,7 @@ module.exports = class array_element extends BaseProcess {
 
         let parentNode = node.getParent();
         if (label !== null && parentNode) {
-            // ToDo: check data type of data
+            // ToDo processes: check data type of data
             var dimensionName = parentNode.getArgument("dimension");
             var dc = parentNode.getArgument("data");
             var dimension = dc.getDimension(dimensionName);
@@ -28,7 +28,7 @@ module.exports = class array_element extends BaseProcess {
                 throw new Errors.ArrayElementNotAvailable();
             }
             else{
-                // ToDo: only bands is currently supported
+                // ToDo processes: only bands is currently supported
                 if (dimension.type !== "bands") {
                     throw new Errors.ProcessArgumentInvalid({
                         process: this.id,

@@ -3,7 +3,7 @@ const Commons = require('../processgraph/commons');
 
 module.exports = class round extends BaseProcess {
 
-    // ToDo: Check whether GEE and JS really follow IEEE 754 rounding behavior
+    // ToDo processes: Check whether GEE and JS really follow IEEE 754 rounding behavior
     async execute(node) {
         var p = node.getArgument("p");
         var scaleFactor = p !== null ? 10**p : null;

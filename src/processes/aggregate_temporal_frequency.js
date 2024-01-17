@@ -4,7 +4,7 @@ const Commons = require('../processgraph/commons');
 module.exports = class aggregate_temporal_frequency extends BaseProcess {
 
 	/*async*/ reduce(node, imageCollection) {
-		// ToDo: Execute reducer, see also https://github.com/Open-EO/openeo-earthengine-driver/issues/36
+		// ToDo processes: Execute reducer, see also https://github.com/Open-EO/openeo-earthengine-driver/issues/36
 		// Use ... await Commons.reduce(...);
 
 		var callback = node.getArgument('reducer');

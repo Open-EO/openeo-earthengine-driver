@@ -97,15 +97,15 @@ module.exports = class JobsAPI {
 
 	async getJobLogs(req, res) {
 		this.init(req);
-		
-		const manager = await this.storage.getLogsById(req.params.job_id);
+		const job = await this.storage.getById(req.params.job_id, req.user._id);
+		const manager = await this.storage.getLogsById(req.params.job_id, job.log_level);
 		const logs = await manager.get(req.query.offset, req.query.limit, req.query.level);
 		res.json(logs);
 	}
 
-	async getResultLogs(user_id, id) {
+	async getResultLogs(user_id, id, log_level) {
 		let file = path.normalize(path.join('./storage/user_files/', user_id, 'sync_logs' , id + '.logs.db'));
-		let logs = new Logs(file, Utils.getApiUrl('/result/logs/' + id));
+		let logs = new Logs(file, Utils.getApiUrl('/result/logs/' + id), log_level);
 		await logs.init();
 		return logs;
 	}
@@ -114,8 +114,8 @@ module.exports = class JobsAPI {
 		this.init(req);
 
 		try {
-			const logs = await this.getResultLogs(req.user._id, req.params.id);
-			res.json(await logs.get(null, 0, 'debug'));
+			const logs = await this.getResultLogs(req.user._id, req.params.id, req.query.log_level);
+			res.json(await logs.get(null, 0));
 		} catch (e) {
 			throw new Errors.NotFound();
 		}
@@ -155,7 +155,7 @@ module.exports = class JobsAPI {
 				throw new Errors.JobNotFinished();
 			}
 
-			logger = await this.storage.getLogsById(job._id);
+			logger = await this.storage.getLogsById(job._id, job.log_level);
 
 			const promises = [];
 			promises.push(this.storage.removeResults(job._id, false));
@@ -212,29 +212,39 @@ module.exports = class JobsAPI {
 			token: req.params.token
 		};
 
-		await this.getJobRultsByQuery(query, true, res);
+		await this.getJobRultsByQuery(query, true, req, res);
 	}
 
 	async getJobResults(req, res) {
-		// ToDo 1.2:
-		// Added metadata field openeo:status to indicate the job status (and whether the result is complete or not).
-		// Added parameter partial to allow retrieving incomplete results, which must also add the new property openeo:status to the metadata. #430
 		this.init(req);
 
 		var query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-		await this.getJobRultsByQuery(query, false, res);
+		await this.getJobRultsByQuery(query, false, req, res);
 	}
 
-	async getJobRultsByQuery(query, pub, res) {
+	async getJobRultsByQuery(query, pub, req, res) {
 		const job = await this.storage.findJob(query);
+		const partial = typeof req.query.partial !== 'undefined';
 		if (job.status === 'error') {
-			return res.send(424, job.error); // ToDo 1.0: Send latest info from logging
+			const manager = await this.storage.getLogsById(job._id, job.log_level);
+			const logs = await manager.get(null, 1, 'error');
+			let error = new Errors.Internal();
+			if (Array.isArray(logs.logs) && logs.logs.length > 0) {
+				error = logs.logs[0];
+			}
+			return res.send(424, error);
 		}
 		else if (job.status === 'queued' || job.status === 'running') {
-			throw new Errors.JobNotFinished();
+			if (partial) {
+				// ToDo 1.2: Implement partial results
+				throw new Errors.QueryParameterUnsupported({name: 'partial'});
+			}
+			else {
+				throw new Errors.JobNotFinished();
+			}
 		}
 		else if (job.status !== 'finished') {
 			throw new Errors.JobNotStarted();
@@ -284,7 +294,8 @@ module.exports = class JobsAPI {
 				title: job.title || null,
 				description: job.description || null,
 				created: job.created,
-				updated: job.updated
+				updated: job.updated,
+				'openeo:status': job.status
 			},
 			assets: assets,
 			links: links
@@ -342,12 +353,11 @@ module.exports = class JobsAPI {
 		}
 		res.send(204);
 
-		const logger = this.storage.getLogsById(req.params.job_id);
+		const logger = this.storage.getLogsById(req.params.job_id, data.log_level || job.log_level);
 		logger.info('Job updated', data);
 	}
 
 	async postJob(req, res) {
-		// ToDo 1.2: Added property log_level to indicate the minimum severity level that should be stored for logs. #329
 		this.init(req);
 
 		if (!Utils.isObject(req.body)) {
@@ -370,20 +380,20 @@ module.exports = class JobsAPI {
 			costs: 0,
 			budget: req.body.budget || null,
 			user_id: req.user._id,
-			token: Utils.generateHash(64)
+			token: Utils.generateHash(64),
+			log_level: Logs.checkLevel(req.body.log_level, 'info')
 		};
 		const db = this.storage.database();
 		const job = await db.insertAsync(data);
 
 		// Create logs at creation time to avoid issues described in #51 
-		await this.storage.getLogsById(job._id);
+		await this.storage.getLogsById(job._id, job.log_level);
 
 		res.header('OpenEO-Identifier', job._id);
 		res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), Utils.noop);
 	}
 
 	async postSyncResult(req, res) {
-		// ToDo 1.2: Added property log_level to indicate the minimum severity level that should be stored for logs. #329
 		this.init(req);
 
 		if (!Utils.isObject(req.body)) {
@@ -395,8 +405,8 @@ module.exports = class JobsAPI {
 		// ToDo: Validate data, handle budget and plan input
 
 		const id = Utils.timeId();
-
-		const logger = await this.getResultLogs(req.user._id, id);
+		const log_level = Logs.checkLevel(req.body.log_level, 'info');
+		const logger = await this.getResultLogs(req.user._id, id, log_level);
 		logger.debug("Starting to process request");
 
 		const context = this.context.processingContext(req);
@@ -426,7 +436,7 @@ module.exports = class JobsAPI {
 		const contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
 		res.header('Content-Type', contentType);
 		res.header('OpenEO-Costs', 0);
-		const monitorUrl = Utils.getApiUrl('/result/logs/' + id);
+		const monitorUrl = Utils.getApiUrl('/result/logs/' + id) + '?log_level=' + log_level;
 		res.header('Link', `<${monitorUrl}>; rel="monitor"`);
 		stream.data.pipe(res);
 	}

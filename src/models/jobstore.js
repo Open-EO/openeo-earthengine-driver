@@ -57,10 +57,11 @@ module.exports = class JobStore {
 		await fse.unlink(this.getLogFile(jobId));
 	}
 
-	async getLogsById(jobId) {
+	async getLogsById(jobId, log_level) {
 		return await Logs.loadLogsFromCache(
 			this.getLogFile(jobId),
-			Utils.getApiUrl('/jobs/' + jobId + '/logs')
+			Utils.getApiUrl('/jobs/' + jobId + '/logs'),
+			log_level
 		);
 	}
 

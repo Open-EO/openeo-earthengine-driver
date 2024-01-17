@@ -45,7 +45,7 @@ module.exports = class ServicesAPI {
 			// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
 			context.setUserId(service.user_id);
 
-			const logs = await this.storage.getLogsById(req.params.service_id, Utils.timeId());
+			const logs = await this.storage.getLogsById(req.params.service_id, service.log_level);
 
 			var pg = new ProcessGraph(service.process, context);
 			pg.setLogger(logs);
@@ -163,13 +163,11 @@ module.exports = class ServicesAPI {
 	
 		res.send(204);
 
-		const logger = this.storage.getLogsById(req.params.service_id);
+		const logger = this.storage.getLogsById(req.params.service_id, data.log_level || service.log_level);
 		logger.info('Service updated', data);
 	}
 
-	async getService(req, res) {
-		this.init(req);
-
+	async getServiceById(req) {
 		const query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -179,12 +177,15 @@ module.exports = class ServicesAPI {
 		if (service === null) {
 			throw new Errors.ServiceNotFound();
 		}
+	}
 
+	async getService(req, res) {
+		this.init(req);
+		const service = await this.getServiceById(req);
 		res.json(this.makeServiceResponse(service));
 	}
 
 	async postService(req, res) {
-		// ToDo 1.2: Added property log_level to indicate the minimum severity level that should be stored for logs. #329
 		this.init(req);
 		
 		if (!Utils.isObject(req.body)) {
@@ -212,13 +213,14 @@ module.exports = class ServicesAPI {
 			plan: req.body.plan || this.context.plans.default,
 			costs: 0,
 			budget: req.body.budget || null,
-			user_id: req.user._id
+			user_id: req.user._id,
+			log_level: Logs.checkLevel(req.body.log_level, 'info')
 		};
 		const db = this.storage.database();
 		const service = await db.insertAsync(data);
 
 		// Create logs at creation time to avoid issues described in #51 
-		await this.storage.getLogsById(service._id);
+		await this.storage.getLogsById(service._id, service.log_level);
 
 		res.header('OpenEO-Identifier', service._id);
 		res.redirect(201, Utils.getApiUrl('/services/' + service._id), Utils.noop);
@@ -226,8 +228,8 @@ module.exports = class ServicesAPI {
 
 	async getServiceLogs(req, res) {
 		this.init(req);
-
-		const manager = await this.storage.getLogsById(req.params.service_id);
+		const service = await this.getServiceById(req);
+		const manager = await this.storage.getLogsById(service._id, service.log_level);
 		const logs = await manager.get(req.query.offset, req.query.limit, req.query.level);
 		res.json(logs);
 	}
