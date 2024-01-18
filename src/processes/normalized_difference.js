@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class normalized_difference extends BaseProcess {
+export default class normalized_difference extends BaseProcess {
 
 	async execute(node) {
 		return Commons.reduceBinaryInCallback(
@@ -11,4 +11,4 @@ module.exports = class normalized_difference extends BaseProcess {
 		);
 	}
 
-};
+}

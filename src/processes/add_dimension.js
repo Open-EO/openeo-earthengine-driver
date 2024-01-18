@@ -1,7 +1,7 @@
-const Errors = require('../utils/errors');
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import Errors from '../utils/errors.js';
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class add_dimension extends BaseProcess {
+export default class add_dimension extends BaseProcess {
 
 	async execute(node) {
 		var dc = node.getDataCube("data");
@@ -27,4 +27,4 @@ module.exports = class add_dimension extends BaseProcess {
 		return dc;
 	}
 
-};
+}

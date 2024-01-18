@@ -1,8 +1,8 @@
-const Utils = require('../utils/utils');
-const Errors = require('../utils/errors');
-const ProcessGraph = require('../processgraph/processgraph');
+import Utils from '../utils/utils.js';
+import Errors from '../utils/errors.js';
+import ProcessGraph from '../processgraph/processgraph.js';
 
-module.exports = class StoredProcessGraphs {
+export default class StoredProcessGraphs {
 
 	constructor(context) {
 		this.storage = context.storedProcessGraphs();
@@ -51,7 +51,7 @@ module.exports = class StoredProcessGraphs {
 
 	async putProcessGraph(req, res) {
 		this.init(req);
-		
+
 		if (!Utils.isObject(req.body)) {
 			throw new Errors.RequestBodyMissing();
 		}
@@ -86,7 +86,7 @@ module.exports = class StoredProcessGraphs {
 
 	async deleteProcessGraph(req, res) {
 		this.init(req);
-		
+
 		const query = {
 			id: req.params.process_graph_id,
 			user_id: req.user._id
@@ -147,4 +147,4 @@ module.exports = class StoredProcessGraphs {
 		return response;
 	}
 
-};
+}

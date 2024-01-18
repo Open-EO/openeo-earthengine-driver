@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class arsinh extends BaseProcess {
+export default class arsinh extends BaseProcess {
 
     async execute(node) {
         return Commons.applyInCallback(
@@ -18,4 +18,4 @@ module.exports = class arsinh extends BaseProcess {
         );
     }
 
-};
+}

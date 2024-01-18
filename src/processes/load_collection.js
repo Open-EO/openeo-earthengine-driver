@@ -1,8 +1,8 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const DataCube = require('../processgraph/datacube');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import DataCube from '../processgraph/datacube.js';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class load_collection extends BaseProcess {
+export default class load_collection extends BaseProcess {
 
 	async execute(node) {
 		// Load data
@@ -48,4 +48,4 @@ module.exports = class load_collection extends BaseProcess {
 		return dc;
 	}
 
-};
+}

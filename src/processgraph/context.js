@@ -1,10 +1,10 @@
-const Utils = require('../utils/utils');
-const HttpUtils = require('../utils/http');
-const Errors = require('../utils/errors');
-const path = require('path');
-const fse = require('fs-extra');
+import Utils from '../utils/utils.js';
+import HttpUtils from '../utils/http.js';
+import Errors from '../utils/errors.js';
+import path from 'path';
+import fse from 'fs-extra';
 
-module.exports = class ProcessingContext {
+export default class ProcessingContext {
 
 	constructor(serverContext, userId = null) {
 		this.serverContext = serverContext;
@@ -181,4 +181,4 @@ module.exports = class ProcessingContext {
 		}
 	}
 
-};
+}

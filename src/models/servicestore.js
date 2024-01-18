@@ -1,10 +1,10 @@
-const Utils = require('../utils/utils');
-const DB = require('../utils/db');
-const path = require('path');
-const fse = require('fs-extra');
-const Logs = require('./logs');
+import Utils from '../utils/utils.js';
+import DB from '../utils/db.js';
+import path from 'path';
+import fse from 'fs-extra';
+import Logs from './logs.js';
 
-module.exports = class ServiceStore {
+export default class ServiceStore {
 
 	constructor() {
 		this.db = DB.load('services');
@@ -71,4 +71,4 @@ module.exports = class ServiceStore {
 		};
 	}
 
-};
+}

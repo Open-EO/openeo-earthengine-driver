@@ -1,12 +1,12 @@
-const fse = require('fs-extra');
-const path = require('path');
-const Errors = require('../utils/errors');
-const Utils = require('../utils/utils');
-const HttpUtils = require('../utils/http');
+import fse from 'fs-extra';
+import path from 'path';
+import Errors from '../utils/errors.js';
+import Utils from '../utils/utils.js';
+import HttpUtils from '../utils/http.js';
 
 // ToDo files: This is a mock and only uploads to the driver workspace, but not into the actual
 // Google cloud storage, which would be required to use it in processes. #11
-module.exports = class FilesAPI {
+export default class FilesAPI {
 
 	constructor(context) {
 		this.workspace = context.files();
@@ -61,10 +61,10 @@ module.exports = class FilesAPI {
 				throw new Errors.FilePathInvalid();
 			}
 		} catch (e) {
-			 // File doesn't exist => not a problem for uploading; create missing folders and continue process chain.
+			// File doesn't exist => not a problem for uploading; create missing folders and continue process chain.
 			await fse.ensureDir(path.dirname(p));
 		}
-		
+
 		let octetStream = 'application/octet-stream';
 		if (req.contentType() !== octetStream) {
 			throw new Errors.ContentTypeInvalid({types: octetStream});
@@ -137,4 +137,4 @@ module.exports = class FilesAPI {
 		});
 	}
 
-};
+}

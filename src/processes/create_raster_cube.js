@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const DataCube = require('../processgraph/datacube');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import DataCube from '../processgraph/datacube.js';
 
-module.exports = class create_raster_cube extends BaseProcess {
+export default class create_raster_cube extends BaseProcess {
 
     async execute(node) {
         let dc = new DataCube();
@@ -9,4 +9,4 @@ module.exports = class create_raster_cube extends BaseProcess {
         return dc;
     }
 
-};
+}

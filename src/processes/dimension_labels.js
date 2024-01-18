@@ -1,6 +1,6 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class dimension_labels extends BaseProcess {
+export default class dimension_labels extends BaseProcess {
 
     async execute(node) {
         var dc = node.getArgument('data');
@@ -10,4 +10,4 @@ module.exports = class dimension_labels extends BaseProcess {
         return Array.from(dimension.values);
     }
 
-};
+}

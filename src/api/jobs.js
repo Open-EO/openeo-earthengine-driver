@@ -1,13 +1,13 @@
-const Utils = require('../utils/utils');
-const HttpUtils = require('../utils/http');
-const fse = require('fs-extra');
-const path = require('path');
-const Errors = require('../utils/errors');
-const ProcessGraph = require('../processgraph/processgraph');
-const packageInfo = require('../../package.json');
-const Logs = require('../models/logs');
+import Utils from '../utils/utils.js';
+import HttpUtils from '../utils/http.js';
+import fse from 'fs-extra';
+import path from 'path';
+import Errors from '../utils/errors.js';
+import ProcessGraph from '../processgraph/processgraph.js';
+import Logs from '../models/logs.js';
+const packageInfo = Utils.require('../../package.json');
 
-module.exports = class JobsAPI {
+export default class JobsAPI {
 
 	constructor(context) {
 		this.storage = context.jobs();
@@ -57,7 +57,7 @@ module.exports = class JobsAPI {
 
 	async deliverFile(res, path) {
 		await HttpUtils.isFile(path);
-		
+
 		res.header('Content-Type', Utils.extensionToMediaType(path));
 		return await new Promise((resolve, reject) => {
 			var stream = fse.createReadStream(path);
@@ -85,7 +85,7 @@ module.exports = class JobsAPI {
 		const db = this.storage.database();
 		const jobs = (await db.findAsync(query))
 			.map(job => this.makeJobResponse(job, false));
-		
+
 		res.json({
 			jobs: jobs,
 			links: []
@@ -168,7 +168,7 @@ module.exports = class JobsAPI {
 
 			logger.info("Queueing batch job");
 			await this.storage.updateJobStatus(query, 'queued');
-		
+
 			res.send(202);
 
 			// ToDo sync: move all the following to a worker #77
@@ -190,7 +190,7 @@ module.exports = class JobsAPI {
 				url: url,
 				responseType: 'stream'
 			});
-				
+
 			const extension = context.getExtension(cube.getOutputFormat());
 			const filePath = this.storage.getJobFile(job._id, Utils.generateHash() +  "." + extension);
 			logger.debug("Storing result to: " + filePath);
@@ -201,7 +201,7 @@ module.exports = class JobsAPI {
 				writer.on('error', reject);
 				writer.on('close', resolve);
 			});
-			
+
 			logger.info("Finished");
 			this.storage.updateJobStatus(query, 'finished');
 		} catch(e) {
@@ -235,7 +235,7 @@ module.exports = class JobsAPI {
 		if (job.status === 'error') {
 			const manager = await this.storage.getLogsById(job._id, job.log_level);
 			const logs = await manager.get(null, 1, 'error');
-			let error = new Errors.Internal();
+			let error = new Errors.Internal({message: 'Unknown failure'});
 			if (Array.isArray(logs.logs) && logs.logs.length > 0) {
 				error = logs.logs[0];
 			}
@@ -308,7 +308,7 @@ module.exports = class JobsAPI {
 
 	async patchJob(req, res) {
 		this.init(req);
-		
+
 		if (!Utils.isObject(req.body)) {
 			throw new Errors.RequestBodyMissing();
 		}
@@ -389,7 +389,7 @@ module.exports = class JobsAPI {
 		const db = this.storage.database();
 		const job = await db.insertAsync(data);
 
-		// Create logs at creation time to avoid issues described in #51 
+		// Create logs at creation time to avoid issues described in #51
 		await this.storage.getLogsById(job._id, job.log_level);
 
 		res.header('OpenEO-Identifier', job._id);
@@ -403,8 +403,8 @@ module.exports = class JobsAPI {
 			throw new Errors.RequestBodyMissing();
 		}
 
-		const plan = req.body.plan || this.context.plans.default;
-		const budget = req.body.budget || null;
+		// const plan = req.body.plan || this.context.plans.default;
+		// const budget = req.body.budget || null;
 		// ToDo: Validate data, handle budget and plan input #73
 
 		const id = Utils.timeId();
@@ -463,4 +463,4 @@ module.exports = class JobsAPI {
 		return response;
 	}
 
-};
+}

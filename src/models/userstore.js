@@ -1,10 +1,10 @@
-const Utils = require('../utils/utils');
-const DB = require('../utils/db');
-const Errors = require('../utils/errors');
-const crypto = require("crypto");
+import Utils from '../utils/utils.js';
+import DB from '../utils/db.js';
+import Errors from '../utils/errors.js';
+import crypto from "crypto";
 
-module.exports = class UserStore {
-	
+export default class UserStore {
+
 	constructor() {
 		this.db = DB.load('users');
 		this.tokenDb = DB.load('token');
@@ -124,4 +124,4 @@ module.exports = class UserStore {
 		return user;
 	}
 
-};
+}

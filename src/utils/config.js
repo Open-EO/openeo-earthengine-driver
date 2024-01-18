@@ -1,4 +1,6 @@
-module.exports = class Config {
+import Utils from "./utils.js";
+
+export default class Config {
 
 	constructor() {
 		// Set default that can be overriden by the config.json
@@ -19,7 +21,7 @@ module.exports = class Config {
 			port: 443,
 			exposePort: null,
 			key: null,
-			certificate: null 
+			certificate: null
 		};
 
 		this.serviceAccountCredentialsFile = "privatekey.json";
@@ -136,7 +138,7 @@ module.exports = class Config {
 		// Path to check disk usage for (e.g. C: on Windows, / on *nix)
 		this.diskUsagePath = null;
 
-		let config = require('../../config.json');
+		const config = Utils.require('../../config.json');
 		for(var c in config) {
 			this[c] = config[c];
 		}

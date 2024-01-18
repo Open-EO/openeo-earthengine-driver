@@ -1,7 +1,7 @@
-const { JsonSchemaValidator } = require('@openeo/js-processgraphs');
-const ajv = require('ajv');
+import { JsonSchemaValidator } from '@openeo/js-processgraphs';
+import ajv from 'ajv';
 
-module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
+export default class GeeJsonSchemaValidator extends JsonSchemaValidator {
 
 	constructor(context) {
 		super();
@@ -16,8 +16,8 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 		}
 		return true;
 	}
-	
-	async validateJobId() {
+
+	async validateJobId(data) {
 		var job = await this.context.getJob(data);
 		if (job === null) {
 			throw new ajv.ValidationError([{
@@ -26,7 +26,7 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 		}
 		return true;
 	}
-	
+
 	async validateOutputFormat(data) {
 		if (!this.context.server().isValidOutputFormat(data)) {
 			throw new ajv.ValidationError([{
@@ -35,7 +35,7 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 		}
 		return true;
 	}
-	
+
 	async validateInputFormat(data) {
 		if (!this.context.server().isValidInputFormat(data)) {
 			throw new ajv.ValidationError([{
@@ -44,8 +44,8 @@ module.exports = class GeeJsonSchemaValidator extends JsonSchemaValidator {
 		}
 		return true;
 	}
-	
-	async validateProcessGraphId() {
+
+	async validateProcessGraphId(data) {
 		var pg = await this.context.getStoredProcessGraph(data);
 		if (pg === null) {
 			throw new ajv.ValidationError([{

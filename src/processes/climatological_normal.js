@@ -1,19 +1,19 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
-const Utils = require('../utils/utils');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
+import Utils from '../utils/utils.js';
 
-module.exports = class climatological_normal extends BaseProcess {
+export default class climatological_normal extends BaseProcess {
 
 	async execute(node) {
-		var dc = node.getDataCube('data');
-		var frequency = node.getArgument('frequency');
+		const dc = node.getDataCube('data');
+		const frequency = node.getArgument('frequency');
 
 		// Get a data cube restricted to the climatological period (default: from 1981 to 2010)
-		var climatologyPeriod = node.getArgument('climatology_period', ["1981","2010"]).map(x => parseInt(x, 10));
-		var start = ee.Date(climatologyPeriod[0] + "-01-01");
-		var end = ee.Date(climatologyPeriod[1] + "-12-31");
+		const climatologyPeriod = node.getArgument('climatology_period', ["1981","2010"]).map(x => parseInt(x, 10));
+		let start = ee.Date(climatologyPeriod[0] + "-01-01");
+		let end = ee.Date(climatologyPeriod[1] + "-12-31");
 
-		var labels, range, geeFrequencyName, seasons, geeSeasons;
+		let labels, range, geeFrequencyName, seasons, geeSeasons, earlyStart;
 		switch (frequency) {
 			case 'daily':
 				labels = range = Utils.sequence(1, 365);
@@ -31,7 +31,7 @@ module.exports = class climatological_normal extends BaseProcess {
 				range = geeSeasons.values();
 				geeFrequencyName = "month";
 				// Adopt start and end time of climatology period depending on data availability
-				var earlyStart = start.advance(-1, 'month');
+				earlyStart = start.advance(-1, 'month');
 				start = ee.Algorithms.If( // ToDo processes: Document in process definition
 					dc.imageCollection().filter(ee.Filter.date(earlyStart, start)).size(),
 					earlyStart,
@@ -47,7 +47,7 @@ module.exports = class climatological_normal extends BaseProcess {
 				range = geeSeasons.values();
 				geeFrequencyName = "month";
 				// Adopt start and end time of climatology period depending on data availability
-				var earlyStart = start.advance(-2, 'month');
+				earlyStart = start.advance(-2, 'month');
 				start = ee.Algorithms.If(
 					dc.imageCollection().filter(ee.Filter.date(earlyStart, start)).size(),
 					earlyStart,
@@ -66,7 +66,7 @@ module.exports = class climatological_normal extends BaseProcess {
 		var filteredData = Commons.filterTemporal(dc, [start, end.advance(1, "day")], 'anomaly', 'climatology_period').imageCollection();
 
 		var normals = ee.List(range).map(x => {
-			var calFilter = null;
+			let calFilter = null;
 			switch(frequency) {
 				case 'climatology_period':
 				case 'yearly': // alias for climatology_period
@@ -74,6 +74,9 @@ module.exports = class climatological_normal extends BaseProcess {
 				case 'tropical_seasons':
 					x = ee.List(x);
 					calFilter = ee.Filter.calendarRange(x.get(0), x.get(-1), geeFrequencyName);
+					break;
+			}
+			switch(frequency) {
 				case 'seasons':
 				case 'tropical_seasons':
 					calFilter = ee.Filter(ee.Algorithms.If(
@@ -89,11 +92,11 @@ module.exports = class climatological_normal extends BaseProcess {
 			var firstImg = periodData.first();
 			return periodData.mean().copyProperties({source: firstImg, properties: firstImg.propertyNames()});
 		});
-		
+
 		dc.setData(ee.ImageCollection(normals));
 		dc.dimT().setValues(labels);
 
 		return dc;
 	}
 
-};
+}

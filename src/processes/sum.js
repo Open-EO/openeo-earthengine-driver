@@ -1,12 +1,12 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class sum extends BaseProcess {
+export default class sum extends BaseProcess {
 
 	geeReducer() {
 		return 'sum';
 	}
-  
+
     //ToDo processes: ignore_nodata parameter
 	async execute(node) {
 		return Commons.reduceInCallback(
@@ -16,4 +16,4 @@ module.exports = class sum extends BaseProcess {
 		);
 	}
 
-};
+}

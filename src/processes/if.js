@@ -1,6 +1,6 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class If extends BaseProcess {
+export default class If extends BaseProcess {
 
     async execute(node) {
         var value = node.getArgument('value');
@@ -16,4 +16,4 @@ module.exports = class If extends BaseProcess {
         //}
     }
 
-};
+}

@@ -1,4 +1,4 @@
-module.exports = class Dimension {
+export default class Dimension {
 
 	constructor(datacube, options) {
 		this.datacube = datacube;
@@ -108,4 +108,4 @@ module.exports = class Dimension {
 		}
 	}
 
-};
+}

@@ -1,6 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Errors from '../utils/errors.js';
 
-module.exports = class last extends BaseProcess {
+export default class last extends BaseProcess {
 
 	geeReducer(node) {
 		return node.getArgument('ignore_nodata', true) ? 'lastNonNull' : 'last';
@@ -25,4 +26,4 @@ module.exports = class last extends BaseProcess {
 		}
 	}
 
-};
+}

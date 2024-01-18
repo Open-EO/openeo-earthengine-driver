@@ -1,17 +1,24 @@
-const ServerContext = require('../src/utils/servercontext');
-const DB = require('../src/utils/db');
-const ProcessingContext = require('../src/processgraph/context');
-const GeeProcessGraph = require('../src/processgraph/processgraph');
-const json = require('./data/sample-processgraph.json');
+/* global describe, beforeAll, afterAll, test, expect */
+import ServerContext from '../src/utils/servercontext.js';
+import DB from '../src/utils/db.js';
+import ProcessingContext from '../src/processgraph/context.js';
+import GeeProcessGraph from '../src/processgraph/processgraph.js';
+import Utils from '../src/utils/utils.js';
+import fse from 'fs-extra';
 
 describe('Process Graph Registry', () => {
-	let serverContext;
+	let serverContext, json;
 
 	beforeAll(async () => {
+		Utils.serverUrl = 'http://localhost:8080';
+		Utils.apiPath = '/v1';
+
 		serverContext = new ServerContext();
 		await serverContext.collections().loadCatalog();
 		await serverContext.processes().addFromFolder('./src/processes/');
-	});
+
+		json = await fse.readJSON('./tests/data/sample-processgraph.json');
+	}, 2 * 60 * 1000);
 
 	afterAll(() => {
 		DB.closeAll();

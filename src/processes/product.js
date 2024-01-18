@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class product extends BaseProcess {
+export default class product extends BaseProcess {
 
 	geeReducer() {
 		return 'product';
@@ -15,4 +15,4 @@ module.exports = class product extends BaseProcess {
             (a,b) => a * b
         );
     }
-};
+}

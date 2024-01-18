@@ -1,11 +1,11 @@
-const Utils = require('../utils/utils');
-const DB = require('../utils/db');
-const fse = require('fs-extra');
-const path = require('path');
-const Errors = require('../utils/errors');
-const Logs = require('./logs');
+import Utils from '../utils/utils.js';
+import DB from '../utils/db.js';
+import fse from 'fs-extra';
+import path from 'path';
+import Errors from '../utils/errors.js';
+import Logs from './logs.js';
 
-module.exports = class JobStore {
+export default class JobStore {
 
 	constructor() {
 		this.db = DB.load('jobs');
@@ -102,4 +102,4 @@ module.exports = class JobStore {
 		return p;
 	}
 
-};
+}

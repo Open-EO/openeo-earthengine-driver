@@ -1,21 +1,20 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class debug extends BaseProcess {
+export default class debug extends BaseProcess {
 
 	async execute(node) {
-        var dc = node.getArgument('data');
-        var code = node.getArgument('data');
-        var level = node.getArgument('data', 'info');
-        var message = node.getArgument('data');
+		const data = node.getArgument('data');
+		const code = node.getArgument('data');
+		const level = node.getArgument('data', 'info');
+		const message = node.getArgument('data');
 
-		var logger = node.getLogger();
+		const logger = node.getLogger();
 		logger[level](message, data, code);
 
 		// ToDo 1.2: rename to inspect #81
 		// ToDo processes: Implement that if GEE objects are passed into data, it requests gee.getInfo on them and logs the result. #81
 
-		return dc;
+		return data;
 	}
 
-};
+}

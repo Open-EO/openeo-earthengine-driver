@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class clip extends BaseProcess {
+export default class clip extends BaseProcess {
 
     async execute(node) {
         var min = node.getArgument('min');
@@ -13,4 +13,4 @@ module.exports = class clip extends BaseProcess {
         );
     }
 
-};
+}

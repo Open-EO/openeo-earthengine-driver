@@ -1,7 +1,7 @@
-const Utils = require('../utils/utils');
-const packageInfo = require('../../package.json');
+import Utils from '../utils/utils.js';
+const packageInfo = Utils.require('../../package.json');
 
-module.exports = class CapabilitiesAPI {
+export default class CapabilitiesAPI {
 
 	constructor(context) {
 		this.endpoints = [];
@@ -134,4 +134,4 @@ module.exports = class CapabilitiesAPI {
 			output: this.context.outputFormats
 		});
 	}
-};
+}

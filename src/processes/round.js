@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class round extends BaseProcess {
+export default class round extends BaseProcess {
 
     // ToDo processes: Check whether GEE and JS really follow IEEE 754 rounding behavior
     async execute(node) {
@@ -28,4 +28,4 @@ module.exports = class round extends BaseProcess {
         );
     }
 
-};
+}

@@ -1,13 +1,12 @@
-const fse = require('fs-extra');
-const path = require('path');
-const Errors = require('../utils/errors');
-const Datastore = require('@seald-io/nedb');
-const Utils = require('../utils/utils');
+import fse from 'fs-extra';
+import path from 'path';
+import Datastore from '@seald-io/nedb';
+import Utils from '../utils/utils.js';
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
 var LOG_CACHE = {};
 
-module.exports = class Logs {
+export default class Logs {
 
 	static checkLevel(level, defaulValue = null) {
 		if (typeof level === 'string') {
@@ -54,7 +53,7 @@ module.exports = class Logs {
 
 	async init() {
 		await fse.ensureDir(path.dirname(this.file));
-		
+
 		this.db = new Datastore({ filename: this.file });
 		this.db.stopAutocompaction();
 		await this.db.loadDatabaseAsync();
@@ -170,4 +169,4 @@ module.exports = class Logs {
 		return {level, logs, links};
 	}
 
-};
+}

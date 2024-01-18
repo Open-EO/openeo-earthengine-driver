@@ -1,6 +1,6 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class mask extends BaseProcess {
+export default class mask extends BaseProcess {
 
     async execute(node) {
         var data = node.getArgument("data");
@@ -31,4 +31,4 @@ module.exports = class mask extends BaseProcess {
         }));
     }
 
-};
+}
