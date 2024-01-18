@@ -27,11 +27,11 @@ module.exports = class JobsAPI {
 		server.addEndpoint('get', '/jobs/{job_id}/logs', this.getJobLogs.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
 		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
-		// It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
-		// We could use https://github.com/axios/axios#cancellation in the future
+		// todo: It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
+		// We could use https://github.com/axios/axios#cancellation in the future. #76
 
 		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
-		// todo: What do we need the temp endpoint for?
+		// todo: What do we need the temp endpoint for? #75
 		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this), false);
 		server.addEndpoint('get', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
 	}
@@ -171,7 +171,7 @@ module.exports = class JobsAPI {
 		
 			res.send(202);
 
-			// ToDo sync: move all the following to a worker
+			// ToDo sync: move all the following to a worker #77
 			logger.info("Starting batch job");
 			await this.storage.updateJobStatus(query, 'running');
 
@@ -243,7 +243,7 @@ module.exports = class JobsAPI {
 		}
 		else if (job.status === 'queued' || job.status === 'running') {
 			if (partial) {
-				// ToDo 1.2: Implement partial results
+				// ToDo 1.2: Implement partial results #74
 				throw new Errors.QueryParameterUnsupported({name: 'partial'});
 			}
 			else {
@@ -291,9 +291,9 @@ module.exports = class JobsAPI {
 			stac_extensions: [],
 			id: job._id,
 			type: "Feature",
-			geometry: null, // ToDo 1.0: Set correct geometry, add bbox if geometry is set
+			geometry: null, // ToDo 1.0: Set correct geometry, add bbox if geometry is set #78
 			properties: {
-				datetime: null, // ToDo 1.0: Set correct datetimes
+				datetime: null, // ToDo 1.0: Set correct datetimes #78
 				title: job.title || null,
 				description: job.description || null,
 				created: job.created,
@@ -333,7 +333,7 @@ module.exports = class JobsAPI {
 						promises.push(pg.validate());
 						break;
 					default:
-						// ToDo: Validate further data
+						// ToDo: Validate further data #73
 						// For example, if budget < costs, reject request
 				}
 				data[key] = req.body[key];
@@ -371,7 +371,7 @@ module.exports = class JobsAPI {
 		pg.allowUndefinedParameters(false);
 		await pg.validate();
 
-		// ToDo: Validate further data
+		// ToDo: Validate further data #73
 		var data = {
 			title: req.body.title || null,
 			description: req.body.description || null,
@@ -405,7 +405,7 @@ module.exports = class JobsAPI {
 
 		const plan = req.body.plan || this.context.plans.default;
 		const budget = req.body.budget || null;
-		// ToDo: Validate data, handle budget and plan input
+		// ToDo: Validate data, handle budget and plan input #73
 
 		const id = Utils.timeId();
 		const log_level = Logs.checkLevel(req.body.log_level, 'info');

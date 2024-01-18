@@ -6,7 +6,7 @@ const ProcessGraph = require('./processgraph');
 
 module.exports = class Commons {
 
-	// ToDo processes: Also implement ee.Array.* instead only ee.Image.*
+	// ToDo processes: Also implement ee.Array.* instead only ee.Image.* #35
 
 	static async reduce(node, dc, process_id, allowedDimensionTypes = ["temporal", "bands"], reducerArgName = "reducer", dimensionArgName = "dimension", contextArgName = "context") {
 		var dimensionName = node.getArgument(dimensionArgName);

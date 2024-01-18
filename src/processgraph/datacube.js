@@ -476,7 +476,7 @@ module.exports = class DataCube {
 		return this.output.parameters;
 	}
 
-	// ToDo processes: revise this functions for other/more complex use cases
+	// ToDo processes: revise this functions for other/more complex use cases #64
 	stackCollection(collection) {
 		// create an initial image.
 		var first = ee.Image(collection.first()).select([]);

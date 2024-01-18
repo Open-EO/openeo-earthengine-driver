@@ -12,8 +12,8 @@ module.exports = class debug extends BaseProcess {
 		var logger = node.getLogger();
 		logger[level](message, data, code);
 
-		// ToDo 1.2: rename to inspect
-		// ToDo processes: Implement that if GEE objects are passed into data, it requests gee.getInfo on them and logs the result.
+		// ToDo 1.2: rename to inspect #81
+		// ToDo processes: Implement that if GEE objects are passed into data, it requests gee.getInfo on them and logs the result. #81
 
 		return dc;
 	}

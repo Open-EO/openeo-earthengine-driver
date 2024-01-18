@@ -128,7 +128,7 @@ module.exports = class ServicesAPI {
 				switch(key) {
 					case 'process':
 						var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
-						// ToDo 1.0: Correctly handle service paramaters
+						// ToDo 1.0: Correctly handle service paramaters #79
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());
 						break;
@@ -140,7 +140,7 @@ module.exports = class ServicesAPI {
 						});
 						break;
 					default:
-						// ToDo: Validate further data
+						// ToDo: Validate further data  #73
 						// For example, if budget < costs, reject request
 				}
 				data[key] = req.body[key];
@@ -197,11 +197,11 @@ module.exports = class ServicesAPI {
 		}
 
 		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
-		// ToDo 1.0: Correctly handle service paramaters
+		// ToDo 1.0: Correctly handle service paramaters #79
 		pg.allowUndefinedParameters(false);
 		await pg.validate();
 
-		// ToDo: Validate further data
+		// ToDo: Validate further data  #73
 		const data = {
 			title: req.body.title || null,
 			description: req.body.description || null,

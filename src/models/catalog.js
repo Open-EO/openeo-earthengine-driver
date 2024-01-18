@@ -178,8 +178,6 @@ module.exports = class DataCatalog {
 			}
 		}
 
-		// ToDo 1.0: This assumes Google never exposes more than one extent per dimension
-		// Add default dimensions
 		var x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
 		var y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
 		c.stac_extensions = ["datacube"];
@@ -194,7 +192,7 @@ module.exports = class DataCatalog {
 				axis: "y",
 				extent: [c.extent.spatial.bbox[0][1], c.extent.spatial.bbox[0][y2]]
 			},
-			// ToDo metadata: Dimension t should not apply for ee.Image (applies only for ee.ImageCollection)
+			// ToDo metadata: Dimension t should not apply for ee.Image (applies only for ee.ImageCollection) #80
 			t: {
 				type: "temporal",
 				extent: c.extent.temporal.interval[0]

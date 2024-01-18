@@ -3,6 +3,7 @@ const GeeJsonSchemaValidator = require('./jsonschema');
 const GeeProcessGraphNode = require('./node');
 const Errors = require('../utils/errors');
 const Utils = require('../utils/utils');
+const epsg = require('epsg-index/all.json');
 
 module.exports = class GeeProcessGraph extends ProcessGraph {
 
@@ -27,8 +28,7 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 
 	createJsonSchemaValidatorInstance() {
 		let validator = new GeeJsonSchemaValidator(this.context);
-		// ToDo 1.0: Set EPSG Codes
-		// validator.setEpsgCodes();
+		validator.setEpsgCodes(Object.keys(epsg));
 		return validator;
 	}
 
