@@ -41,7 +41,6 @@ export default class Data {
 				title: c.title,
 				description: c.description,
 				license: c.license,
-				providers: c.providers,
 				extent: c.extent,
 				links: c.links
 			};

@@ -3,6 +3,8 @@ import fse from 'fs-extra';
 import path from 'path';
 import { Storage } from '@google-cloud/storage';
 
+const STAC_DATACUBE_EXTENSION = "https://stac-extensions.github.io/datacube/v2.2.0/schema.json";
+
 // Rough auto mapping for common band names until GEE lists them.
 // Optimized for Copernicus S2 data
 const commonNames = {
@@ -177,9 +179,11 @@ export default class DataCatalog {
 			}
 		}
 
+		c.stac_extensions = [STAC_DATACUBE_EXTENSION];
+
+		// spatial dimensions for all data types
 		const x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
 		const y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
-		c.stac_extensions = ["datacube"];
 		c['cube:dimensions'] = {
 			x: {
 				type: "spatial",
@@ -191,20 +195,21 @@ export default class DataCatalog {
 				axis: "y",
 				extent: [c.extent.spatial.bbox[0][1], c.extent.spatial.bbox[0][y2]]
 			},
-			// ToDo metadata: Dimension t should not apply for ee.Image (applies only for ee.ImageCollection) #80
-			t: {
+		};
+
+		// temporal dimension only for image collections
+		if (c['gee:type'] === 'image_collection') {
+			c['cube:dimensions'].t = {
 				type: "temporal",
 				extent: c.extent.temporal.interval[0]
 			}
-		};
-		const bandNames = [];
-		const bands = c.summaries['eo:bands'] || c.summaries['sar:bands'];
-		for(const j in bands) {
-			const b = bands[j];
-			if (typeof b.name === 'string') {
-				bandNames.push(b.name);
-			}
 		}
+
+		// bands for all images and image collections
+		const bands = c.summaries['eo:bands'] || c.summaries['sar:bands'] || [];
+		const bandNames = bands
+			.filter(b => typeof b.name === 'string')
+			.map(b => b.name);
 		if (bandNames.length > 0) {
 			c['cube:dimensions'].bands = {
 				type: "bands",
