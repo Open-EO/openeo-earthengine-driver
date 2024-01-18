@@ -3,14 +3,14 @@ import Commons from '../processgraph/commons.js';
 
 export default class power extends BaseProcess {
 
-    async execute(node) {
-        var power = node.getArgument('p');
-        return Commons.applyInCallback(
-            node,
-            image => image.pow(power),
-            x => Math.pow(x, power),
-            "base"
-        );
-    }
+  async execute(node) {
+    const p = node.getArgument('p');
+    return Commons.applyInCallback(
+      node,
+      image => image.pow(p),
+      x => Math.pow(x, p),
+      "base"
+    );
+  }
 
 }

@@ -64,7 +64,7 @@ class Server {
 		if (expose && !root) {
 			this.api.capabilities.addEndpoint(method, path[0]);
 		}
-		var apiPath = root ? '' : this.serverContext.apiPath;
+		const apiPath = root ? '' : this.serverContext.apiPath;
 
 		if (method === 'delete') {
 			method = 'del';
@@ -77,8 +77,8 @@ class Server {
 	}
 
 	beforeServerStart() {
-		let p = [];
-		for(var i in this.api) {
+		const p = [];
+		for(const i in this.api) {
 			p.push(this.api[i].beforeServerStart(this));
 		}
 		return Promise.all(p);
@@ -95,7 +95,7 @@ class Server {
 
 	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
-			var https_options = Object.assign({}, this.serverOptions, {
+			const https_options = Object.assign({}, this.serverOptions, {
 				key: fse.readFileSync(this.serverContext.ssl.key),
 				certificate: fse.readFileSync(this.serverContext.ssl.certificate)
 			});
@@ -155,7 +155,7 @@ class Server {
 		return new Promise((resolve) => {
 			const port = process.env.PORT || this.serverContext.port;
 			this.http_server.listen(port, () => {
-				var exposePortStr = this.serverContext.exposePort != 80 ? ":" + this.serverContext.exposePort : "";
+				const exposePortStr = this.serverContext.exposePort !== 80 ? ":" + this.serverContext.exposePort : "";
 				Utils.serverUrl = "http://" + this.serverContext.hostname + exposePortStr;
 				Utils.apiPath = this.serverContext.apiPath;
 				console.info('HTTP-Server listening at %s', Utils.getApiUrl());
@@ -167,9 +167,9 @@ class Server {
 	startServerHttps() {
 		return new Promise((resolve) => {
 			if (this.isHttpsEnabled()) {
-				var sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
+				const sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
 				this.https_server.listen(sslport, () => {
-					var exposePortStr = this.serverContext.ssl.exposePort != 443 ? ":" + this.serverContext.ssl.exposePort : "";
+					const exposePortStr = this.serverContext.ssl.exposePort !== 443 ? ":" + this.serverContext.ssl.exposePort : "";
 					Utils.serverUrl = "https://" + this.serverContext.hostname + exposePortStr;
 					Utils.apiPath = this.serverContext.apiPath;
 					console.info('HTTPS-Server listening at %s', Utils.getApiUrl());

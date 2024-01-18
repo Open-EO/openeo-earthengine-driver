@@ -24,7 +24,7 @@ export default class UserStore {
 	}
 
 	hashPassword(password, salt){
-		var hash = crypto.createHmac('sha512', salt);
+		const hash = crypto.createHmac('sha512', salt);
 		hash.update(password);
 		return {
 			salt: salt,
@@ -33,7 +33,7 @@ export default class UserStore {
 	}
 
 	emptyUser(withId = true) {
-		var user = {
+		const user = {
 			name: null,
 			password: null,
 			passwordSalt: null
@@ -48,7 +48,7 @@ export default class UserStore {
 		const query = {
 			name: username
 		};
-		let user = await this.db.findOne(query);
+		const user = await this.db.findOne(query);
 		if (user === null) {
 			throw new Errors.AuthenticationRequired({
 				reason: 'User not found'
@@ -74,7 +74,7 @@ export default class UserStore {
 		await this.tokenDb.remove(query, { multi: true });
 
 		// Insert new token
-		var tokenData = {
+		const tokenData = {
 			user: user._id,
 			token: Utils.generateHash(),
 			validity: Utils.getTimestamp() + this.tokenValidity

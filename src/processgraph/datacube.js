@@ -24,7 +24,7 @@ export default class DataCube {
 			}
 			this.logger = sourceDataCube.logger;
 			this.output = Object.assign({}, sourceDataCube.output);
-			for(var i in sourceDataCube.dimensions) {
+			for(const i in sourceDataCube.dimensions) {
 				this.dimensions[i] = new Dimension(this, sourceDataCube.dimensions[i]);
 			}
 		}
@@ -64,7 +64,7 @@ export default class DataCube {
 				logger.warn("Calling slow function getInfo(); Try to avoid this.");
 			}
 			// ToDo perf: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
-			var info = data.getInfo();
+			const info = data.getInfo();
 			// Only works for Image and ImageCollection and maybe some other types, but not for Array for example.
 			// Arrays, numbers and all other scalars should be handled with the native JS code below.
 			if (Utils.isObject(info) && typeof info.type === 'string') {
@@ -172,20 +172,20 @@ export default class DataCube {
 	}
 
 	findSingleDimension(type, axis = null) {
-		var filter;
-		var label = "type '" + type + "'";
+		let filter;
+		let label = "type '" + type + "'";
 		if (axis) {
-			filter = dim => dim.type == type && dim.axis == axis;
+			filter = dim => dim.type === type && dim.axis === axis;
 			label += " with axis '" + axis + "'";
 		}
 		else {
-			filter = dim => dim.type == type;
+			filter = dim => dim.type === type;
 		}
-		var dims = Object.values(this.dimensions).filter(filter);
+		const dims = Object.values(this.dimensions).filter(filter);
 		if (dims.length > 1) {
 			throw new Error("Multiple dimensions matching "+label+" found. Should be only one.");
 		}
-		else if (dims.length == 0) {
+		else if (dims.length === 0) {
 			throw new Error("No dimension of "+label+" found.");
 		}
 		return dims[0];
@@ -204,7 +204,7 @@ export default class DataCube {
 	}
 
 	dimsZ() {
-		return Object.values(this.dimensions).filter(dim => dim.type == 'spatial' && dim.axis == 'z');
+		return Object.values(this.dimensions).filter(dim => dim.type === 'spatial' && dim.axis === 'z');
 	}
 
 	dimT() {
@@ -212,7 +212,7 @@ export default class DataCube {
 	}
 
 	dimsT() {
-		return Object.values(this.dimensions).filter(dim => dim.type == 'temporal');
+		return Object.values(this.dimensions).filter(dim => dim.type === 'temporal');
 	}
 
 	dimBands() {
@@ -239,7 +239,7 @@ export default class DataCube {
 			extent = Utils.projExtent(extent, 4326);
 		}
 		// Use only the overlapping part of the bbox specified by the data and the bbox specified by the CRS
-		let crsBbox = Utils.getCrsBBox(newCrs);
+		const crsBbox = Utils.getCrsBBox(newCrs);
 		if (Array.isArray(crsBbox)) {
 			if(this.logger && (crsBbox[1] > extent.west || crsBbox[2] > extent.south || crsBbox[3] < extent.east || crsBbox[0] < extent.north)) {
 				this.logger.warn("Bounding Box has been reduced to the maximum bounding box supported by the target CRS.");
@@ -258,9 +258,9 @@ export default class DataCube {
 
 	setSpatialExtent(extent) {
 		extent.crs = extent.crs > 0 ? extent.crs : 4326;
-		var toCrs = this.getCrs();
-		var p1 = Utils.proj(extent.crs, toCrs, [extent.west, extent.south]);
-		var p2 = Utils.proj(extent.crs, toCrs, [extent.east, extent.north]);
+		const toCrs = this.getCrs();
+		const p1 = Utils.proj(extent.crs, toCrs, [extent.west, extent.south]);
+		const p2 = Utils.proj(extent.crs, toCrs, [extent.east, extent.north]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
 		if (Utils.isNumeric(extent.base) && Utils.isNumeric(extent.height)) {
@@ -273,8 +273,8 @@ export default class DataCube {
 	}
 
 	getSpatialExtent() {
-		var x = this.dimX();
-		var y = this.dimY();
+		const x = this.dimX();
+		const y = this.dimY();
 		return {
 			west: x.min(),
 			east: x.max(),
@@ -290,7 +290,7 @@ export default class DataCube {
 
 	// returns: array
 	getEarthEngineBands() {
-		var bands = this.getBands();
+		let bands = this.getBands();
 		if (bands.length === 0) {
 			bands.push("#");
 		}
@@ -319,10 +319,10 @@ export default class DataCube {
 	}
 
 	getCrs() {
-		var x = this.dimX();
-		var y = this.dimY();
+		const x = this.dimX();
+		const y = this.dimY();
 
-		if (x.crs() != y.crs()) {
+		if (x.crs() !== y.crs()) {
 			throw new Error("Spatial dimensions for x and y must not differ.");
 		}
 
@@ -330,14 +330,14 @@ export default class DataCube {
 	}
 
 	setCrs(refSys) {
-		var extent = this.getSpatialExtent();
+		const extent = this.getSpatialExtent();
 		this.dimX().setReferenceSystem(refSys);
 		this.dimY().setReferenceSystem(refSys);
 		this.setSpatialExtent(this.limitExtentToCrs(extent, refSys)); // Update the extent based on the new CRS
 	}
 
 	setReferenceSystem(dimName, refSys) {
-		let dimension = this.getDimension(dimName);
+		const dimension = this.getDimension(dimName);
 		if (dimension.type === 'spatial' && ['x', 'y'].includes(dimension.axis)) {
 			throw new Error("You need to set spatial reference systems for axes x and y with setCrs().");
 		}
@@ -373,7 +373,7 @@ export default class DataCube {
 		if (this.dimensions[name] instanceof Dimension) {
 			throw new Error("Dimension '" + name + "' already exists.");
 		}
-		var dimension = new Dimension(this, {
+		const dimension = new Dimension(this, {
 			type: type,
 			axis: axis
 		});
@@ -383,7 +383,7 @@ export default class DataCube {
 
 	setDimensionsFromSTAC(dimensions) {
 		this.dimensions = [];
-		for (var name in dimensions) {
+		for (const name in dimensions) {
 			this.dimensions[name] = new Dimension(this, dimensions[name]);
 		}
 	}
@@ -400,8 +400,8 @@ export default class DataCube {
 	}
 
 	renameLabels(dimension, target, source) {
-		var oldLabels;  // array for storing the old label names given by the user
-		var allOldLabels;  // array for storing the old existing label names
+		let oldLabels; // array for storing the old label names given by the user
+		let allOldLabels; // array for storing the old existing label names
 		if (source !== undefined) {
 			oldLabels = source;
 			allOldLabels = Array.from(dimension.values); // copy is important
@@ -415,10 +415,10 @@ export default class DataCube {
 			throw new Errors.LabelMismatch();
 		}
 
-		for (var i = 0; i < oldLabels.length; i++){
-			var oldLabel = oldLabels[i];
-			var newLabel = target[i];
-			if (typeof oldLabel === 'undefined') {  // dimension was previously removed, so the GEE band is named "#"
+		for (let i = 0; i < oldLabels.length; i++){
+			let oldLabel = oldLabels[i];
+			let newLabel = target[i];
+			if (typeof oldLabel === 'undefined') { // dimension was previously removed, so the GEE band is named "#"
 				oldLabels[i] = "#";
 				allOldLabels = Array.from(newLabel);
 			}
@@ -426,7 +426,7 @@ export default class DataCube {
 				if (oldLabels.includes(newLabel)){
 					throw Errors.LabelExists();
 				}
-				var labelIdx = allOldLabels.indexOf(oldLabel);
+				const labelIdx = allOldLabels.indexOf(oldLabel);
 				if (labelIdx === null) {
 					throw new Errors.LabelNotAvailable();
 				}
@@ -442,7 +442,7 @@ export default class DataCube {
 
 	dropDimension(name) {
 		if (name instanceof Dimension) {
-			for(var key in this.dimensions) {
+			for(const key in this.dimensions) {
 				if (this.dimensions[key] === name) {
 					delete this.dimensions[key];
 					return;
@@ -479,9 +479,9 @@ export default class DataCube {
 	// ToDo processes: revise this functions for other/more complex use cases #64
 	stackCollection(collection) {
 		// create an initial image.
-		var first = ee.Image(collection.first()).select([]);
+		const first = ee.Image(collection.first()).select([]);
 		// write a function that appends a band to an image.
-		var appendBands = function(image, previous) {
+		const appendBands = function(image, previous) {
 			return ee.Image(previous).addBands(image);
 		};
 		return ee.ImageCollection([collection.iterate(appendBands, first)]);
@@ -494,21 +494,21 @@ export default class DataCube {
 				this.setData(this.stackCollection(this.data.merge(otherDataCube.data)));
 			}
 			this.output = Object.assign(this.output, otherDataCube.output);
-			for(var i in otherDataCube.dimensions) {
+			for(const i in otherDataCube.dimensions) {
 				if (!(i in this.dimensions)){
 					this.dimensions[i] = new Dimension(this, otherDataCube.dimensions[i]);
 				}
 				else {
 					// retrieve values and extents
-					var this_dim_vals = this.dimensions[i].values;
-					var other_dim_vals = otherDataCube.dimensions[i].values;
-					var this_extent = this.dimensions[i].extent;
-					var other_extent = otherDataCube.dimensions[i].extent;
+					const this_dim_vals = this.dimensions[i].values;
+					const other_dim_vals = otherDataCube.dimensions[i].values;
+					const this_extent = this.dimensions[i].extent;
+					const other_extent = otherDataCube.dimensions[i].extent;
 
 					// merge extents
-					var min_extent = [this_extent[0], other_extent[0]];
-					var max_extent = [this_extent[1], other_extent[1]];
-					var merged_extent = [Math.max(...min_extent), Math.min(...max_extent)];
+					const min_extent = [this_extent[0], other_extent[0]];
+					const max_extent = [this_extent[1], other_extent[1]];
+					const merged_extent = [Math.max(...min_extent), Math.min(...max_extent)];
 
 
 					// check if there are duplicate values

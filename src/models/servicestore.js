@@ -42,7 +42,7 @@ export default class ServiceStore {
 	}
 
 	tile2lat(y, z) {
-		var n = Math.PI - (2*Math.PI*y) / Math.pow(2,z);
+		const n = Math.PI - (2*Math.PI*y) / Math.pow(2,z);
 		return ((180 / Math.PI) * Math.atan( 0.5*(Math.exp(n)-Math.exp(-n)) ));
 	}
 
@@ -53,14 +53,14 @@ export default class ServiceStore {
 
 		// Calculate tile bounds
 		// see: https://wiki.openstreetmap.org/wiki/Slippy_map_tilenames#ECMAScript_.28JavaScript.2FActionScript.2C_etc..29
-		var nw_lng = this.tile2long(x, z);
-		var nw_lat = this.tile2lat(y, z);
-		var se_lng  = this.tile2long(x+1, z);
-		var se_lat = this.tile2lat(y+1, z);
-		var xMin = Math.min(nw_lng, se_lng);
-		var xMax = Math.max(nw_lng, se_lng);
-		var yMin = Math.min(nw_lat, se_lat);
-		var yMax = Math.max(nw_lat, se_lat);
+		const nw_lng = this.tile2long(x, z);
+		const nw_lat = this.tile2lat(y, z);
+		const se_lng = this.tile2long(x+1, z);
+		const se_lat = this.tile2lat(y+1, z);
+		const xMin = Math.min(nw_lng, se_lng);
+		const xMax = Math.max(nw_lng, se_lng);
+		const yMin = Math.min(nw_lat, se_lat);
+		const yMax = Math.max(nw_lat, se_lat);
 
 		return {
 			west: xMin,

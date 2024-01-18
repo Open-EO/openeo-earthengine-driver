@@ -32,14 +32,14 @@ export default class Config {
 			options: []
 		};
 
-		let sizeOption = {
+		const sizeOption = {
 			type: 'integer',
 			description: 'The size for the longest side the image, in pixels.',
 			default: 1000,
 			minimum: 1,
 			maximum: 2000
 		};
-		let visOptions = {
+		const visOptions = {
 			red: {
 				type: 'string',
 				subtype: 'band-name', // The formats are not specification compliant, but are allowed to be added.
@@ -139,7 +139,7 @@ export default class Config {
 		this.diskUsagePath = null;
 
 		const config = Utils.require('../../config.json');
-		for(var c in config) {
+		for(const c in config) {
 			this[c] = config[c];
 		}
 

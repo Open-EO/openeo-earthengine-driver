@@ -95,7 +95,7 @@ export default class JobStore {
 	}
 
 	makeFolder(baseFolder, dirs) {
-		var p = path.normalize(path.join(baseFolder, ...dirs));
+		const p = path.normalize(path.join(baseFolder, ...dirs));
 		if (!p || !p.startsWith(path.normalize(baseFolder))) {
 			return false;
 		}

@@ -8,7 +8,7 @@ export default class Dimension {
 	fromSTAC(source) {
 		this.type = source.type || 'other';
 		this.axis = source.type === 'spatial' ? source.axis : null;
-		this.extent = Array.isArray(source.extent) && source.extent.length == 2 ? source.extent : [];
+		this.extent = Array.isArray(source.extent) && source.extent.length === 2 ? source.extent : [];
 		this.values = Array.isArray(source.values) ? source.values : [];
 		this.resolution = source.step ? source.step : null;
 		this.unit = source.unit ? source.unit : '';
@@ -19,13 +19,13 @@ export default class Dimension {
 	}
 
 	toSTAC() {
-		var obj = {
+		const obj = {
 			type: this.type
 		};
 		if (this.axis) {
 			obj.axis = this.axis;
 		}
-		if (this.extent.length == 2) {
+		if (this.extent.length === 2) {
 			obj.extent = this.extent;
 		}
 		if (this.values.length > 0) {
@@ -69,7 +69,7 @@ export default class Dimension {
 
 	setExtent(e, e2 = null) {
 		this.values = [];
-		if (Array.isArray(e) && e.length == 2) {
+		if (Array.isArray(e) && e.length === 2) {
 			this.extent = e;
 		}
 		else {

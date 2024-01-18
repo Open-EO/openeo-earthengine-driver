@@ -2,7 +2,7 @@ import axios from 'axios';
 import Errors from './errors.js';
 import fse from 'fs-extra';
 
-var HttpUtils = {
+const HttpUtils = {
 
 	async isFile(path) {
 		try {
@@ -24,7 +24,7 @@ var HttpUtils = {
 				// JSON error responses are Blobs and streams if responseType is set as such, so convert to JSON if required.
 				// See: https://github.com/axios/axios/issues/815
 				return new Promise((_, reject) => {
-					var chunks = [];
+					const chunks = [];
 					error.response.data.on("data", chunk => chunks.push(chunk));
 					error.response.data.on("error", () => reject(error));
 					error.response.data.on("end", () => reject(new Errors.EarthEngineError({

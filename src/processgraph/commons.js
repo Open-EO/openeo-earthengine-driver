@@ -9,8 +9,8 @@ export default class Commons {
 	// ToDo processes: Also implement ee.Array.* instead only ee.Image.* #35
 
 	static async reduce(node, dc, process_id, allowedDimensionTypes = ["temporal", "bands"], reducerArgName = "reducer", dimensionArgName = "dimension", contextArgName = "context") {
-		var dimensionName = node.getArgument(dimensionArgName);
-		var dimension = dc.getDimension(dimensionName);
+		const dimensionName = node.getArgument(dimensionArgName);
+		const dimension = dc.getDimension(dimensionName);
 		if (!allowedDimensionTypes.includes(dimension.type)) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: process_id,
@@ -19,7 +19,7 @@ export default class Commons {
 			});
 		}
 
-		var callback = node.getArgument(reducerArgName);
+		const callback = node.getArgument(reducerArgName);
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: process_id,
@@ -29,8 +29,8 @@ export default class Commons {
 		}
 		else if (callback.getNodeCount() === 1) {
 			// This is a simple reducer with just one node
-			var childNode = callback.getResultNode();
-			var process = callback.getProcess(childNode);
+			const childNode = callback.getResultNode();
+			const process = callback.getProcess(childNode);
 			if (typeof process.geeReducer !== 'function') {
 				throw new Errors.ProcessArgumentInvalid({
 					process: process_id,
@@ -43,15 +43,15 @@ export default class Commons {
 		}
 		else {
 			// This is a complex reducer
-			var values;
-			var ic = dc.imageCollection();
+			let values;
+			const ic = dc.imageCollection();
 			if (dimension.type === 'temporal') {
 				values = ic.toList(ic.size());
 			}
 			else if (dimension.type === 'bands') {
 				values = dimension.getValues().map(band => ic.select(band));
 			}
-			var resultNode = await callback.execute({
+			const resultNode = await callback.execute({
 				data: values,
 				context: node.getArgument(contextArgName)
 			});
@@ -84,20 +84,20 @@ export default class Commons {
 		dc.imageCollection(data => data.reduce(reducerFunc));
 
 		// revert renaming of the bands following to the GEE convention
-		var bandNames = dc.getEarthEngineBands();
+		const bandNames = dc.getEarthEngineBands();
 		if (bandNames.length > 0) {
 			// Map GEE band names to openEO band names
-			var rename = {};
-			for(let bandName of bandNames) {
-				let geeBandName = bandName + "_" + reducerName;
+			const rename = {};
+			for(const bandName of bandNames) {
+				const geeBandName = bandName + "_" + reducerName;
 				rename[geeBandName] = bandName;
 			}
 
 			dc.imageCollection(data => data.map(
 				img => {
 					// Create a GEE list with expected band names
-					var geeBands = img.bandNames();
-					for(var geeBandName in rename) {
+					let geeBands = img.bandNames();
+					for(const geeBandName in rename) {
 						geeBands = geeBands.replace(geeBandName, rename[geeBandName]);
 					}
 
@@ -111,8 +111,8 @@ export default class Commons {
 	}
 
 	static reduceBinaryInCallback(node, imgReducer, jsReducer, arg1Name = "x", arg2Name = "y") {
-		var arg1 = node.getArgument(arg1Name);
-		var arg2 = node.getArgument(arg2Name);
+		const arg1 = node.getArgument(arg1Name);
+		const arg2 = node.getArgument(arg2Name);
 		if (typeof arg1 === 'undefined') {
 			throw new Errors.ProcessArgumentInvalid({
 				process: node.process_id,
@@ -132,7 +132,7 @@ export default class Commons {
 	}
 
 	static reduceInCallback(node, imgReducer, jsReducer, dataArg = "data") {
-		var list = node.getArgument(dataArg);
+		const list = node.getArgument(dataArg);
 		if (!Array.isArray(list) || list.length <= 1) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: node.process_id,
@@ -141,8 +141,8 @@ export default class Commons {
 			});
 		}
 
-		var result;
-		for(var i = 1; i < list.length; i++) {
+		let result;
+		for(let i = 1; i < list.length; i++) {
 			result = this._reduceBinary(node, imgReducer, jsReducer, list[i-1], list[i], dataArg);
 		}
 		return result;
@@ -151,13 +151,13 @@ export default class Commons {
 	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB, dataArg = "data") {
 		let result;
 
-		let dataCubeA = new DataCube(null, valA);
+		const dataCubeA = new DataCube(null, valA);
 		dataCubeA.setLogger(node.getLogger());
 
-		let dataCubeB = new DataCube(null, valB);
+		const dataCubeB = new DataCube(null, valB);
 		dataCubeA.setLogger(node.getLogger());
 
-		let imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
+		const imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
 
 		if (typeof valA === 'undefined' && typeof valB === 'undefined') {
 			// Should be caught by reduce(Binary)InCallback already...
@@ -172,7 +172,7 @@ export default class Commons {
 			return valA;
 		}
 		else if (typeof valA === 'number') {
-			let imgA = ee.Image(valA);
+			const imgA = ee.Image(valA);
 			if (typeof valB === 'number') {
 				result = jsReducer(valA, valB);
 			}
@@ -192,17 +192,17 @@ export default class Commons {
 		}
 		else if (dataCubeA.isImageCollection()) {
 			if (typeof valB === 'number' || dataCubeB.isImage()) {
-				let imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+				const imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
 				result = dataCubeA.imageCollection().map(imgA => imgReducer(imgA, imgB));
 			}
 			else if (dataCubeB.isImageCollection()) {
-				let collA = dataCubeA.imageCollection();
-				let collB = dataCubeB.imageCollection();
-				let listA = collA.toList(collA.size());
-				let listB = collB.toList(collB.size());
+				const collA = dataCubeA.imageCollection();
+				const collB = dataCubeB.imageCollection();
+				const listA = collA.toList(collA.size());
+				const listB = collB.toList(collB.size());
 				result = collA.map(imgA => {
-					let index = listA.indexOf(imgA);
-					let imgB = listB.get(index);
+					const index = listA.indexOf(imgA);
+					const imgB = listB.get(index);
 					return imgReducer(imgA, imgB);
 				});
 			}
@@ -216,7 +216,7 @@ export default class Commons {
 		}
 		else if (dataCubeA.isImage()) {
 			if (typeof valB === 'number' || dataCubeB.isImage()) {
-				let imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+				const imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
 				result = imgReducer(dataCubeA.image(), imgB);
 			}
 			else if (dataCubeB.isImageCollection()) {
@@ -241,10 +241,10 @@ export default class Commons {
 	}
 
 	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
-		let data = node.getArgument(dataArg);
-		let dc = new DataCube(null, data);
+		const data = node.getArgument(dataArg);
+		const dc = new DataCube(null, data);
 		dc.setLogger(node.getLogger());
-		let imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
+		const imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {
 			return null;
 		}
@@ -255,7 +255,7 @@ export default class Commons {
 			return dc.image(imgProcess);
 		}
 		else if (dc.isImageCollection()) {
-			return dc.imageCollection(data => data.map(imgProcess));
+			return dc.imageCollection(img => img.map(imgProcess));
 		}
 		else {
 			throw new Error("Applying " + node.process_id + " not supported for given data type: " + dc.objectType());
@@ -283,16 +283,16 @@ export default class Commons {
 	}
 
 	static filterBands(dc, bands, node) {
-		var dc_bands = dc.getBands();
-		var col_id = dc.getCollectionId();
-		var col_meta = node.getContext().getCollection(col_id);
-		var band_list = [];
-		for(let b of bands) {
+		const dc_bands = dc.getBands();
+		const col_id = dc.getCollectionId();
+		const col_meta = node.getContext().getCollection(col_id);
+		const band_list = [];
+		for(const b of bands) {
 			if (dc_bands.indexOf(b) > -1) {
 				band_list.push(b)
 			}
 			else {
-				for (let eob of col_meta.summaries["eo:bands"]){
+				for (const eob of col_meta.summaries["eo:bands"]){
 					if (b === eob["common_name"]) {
 						band_list.push(eob["name"]);
 						break;
@@ -307,7 +307,7 @@ export default class Commons {
 
 	static filterGeoJSON(dc, geometries, process_id, paramName) {
 		try {
-			var geom = Utils.geoJsonToGeometry(geometries);
+			const geom = Utils.geoJsonToGeometry(geometries);
 			dc.setSpatialExtentFromGeometry(geometries);
 			dc = Commons.restrictToSpatialExtent(dc);
 			dc.imageCollection(ic => ic.map(img => img.clip(geom)));
@@ -326,9 +326,9 @@ export default class Commons {
 		// Data for all dimensions is restricted on Googles side, but we set the extent in the virtual data cube accordingly.
 		dc.imageCollection(ic => ic.filterDate(
 			extent[0] === null ? '0000-01-01' : extent[0], // If Open date range: We just set the extent to the minimal start date here.
-			extent[1] === null ? Date.now() : extent[1]  // If Open date range: The end date is set to the current date
+			extent[1] === null ? Date.now() : extent[1] // If Open date range: The end date is set to the current date
 		));
-		var dim = null;
+		let dim = null;
 		if (dimension !== null) {
 			dim = dc.dim(dimension);
 		}
@@ -348,9 +348,9 @@ export default class Commons {
 	}
 
 	static setAggregationLabels(images, frequency) {
-		var aggregationFormat = null;
-		var temporalFormat = null;
-		var seasons = {};
+		let aggregationFormat = null;
+		let temporalFormat = null;
+		let seasons = {};
 		switch (frequency) {
 			case 'hourly':
 				aggregationFormat = "yyyy-MM-DD-HH";
@@ -389,39 +389,40 @@ export default class Commons {
 			case 'monthly':
 			case 'yearly':
 				return images.map(img => {
-					var date = img.date();
+					const date = img.date();
 					return img.set('aggregationLabel', date.format(aggregationFormat)).set("label", date.format(temporalFormat));
 				});
 			case 'seasons':
-			case 'tropical_seasons':
+			case 'tropical_seasons': {
 				// This is are lists with relative months, e.g. 0 is december of the prev. year, -1 is november etc.
 				seasons = ee.Dictionary(seasons);
 				// Convert the relative months like -1 to their absolute values like 11.
-				var realSeasons = seasons.map((label, months) => {
+				const realSeasons = seasons.map((label, months) => {
 					return ee.List(months).map(m => {
-						var num = ee.Number(m);
+						const num = ee.Number(m);
 						return ee.Algorithms.If(num.lt(1), num.add(12), num);
 					});
 				});
 
 				// Prepare image collection to contain aggregation label
 				return images.map(img => {
-					var date = img.date();
-					var month = date.get('month');
+					const date = img.date();
+					const month = date.get('month');
 					// Compute the corresponding season for the date
-					var remainingSeason = seasons.map((label, months) => {
-						var monthsInSeason = ee.List(realSeasons.get(label));
+					const remainingSeason = seasons.map((label, months) => {
+						const monthsInSeason = ee.List(realSeasons.get(label));
 						return ee.Algorithms.If(monthsInSeason.contains(month), months, null); // null removes the element from the list
 					});
 					// Get the season - there should only be one entry left
-					var season = remainingSeason.keys().get(0);
-					var months = ee.List(remainingSeason.values().get(0));
+					const season = remainingSeason.keys().get(0);
+					const months = ee.List(remainingSeason.values().get(0));
 					// Construct the "season label"
-					var year = date.get('year');
+					let year = date.get('year');
 					year = ee.Algorithms.If(months.contains(month), year, ee.Number(year).add(1));
-					var index = ee.String(year).cat('-').cat(season); // e.g. 1979-son
+					const index = ee.String(year).cat('-').cat(season); // e.g. 1979-son
 					return img.set('aggregationLabel', index).set("label", season);
 				});
+			}
 		}
 	}
 

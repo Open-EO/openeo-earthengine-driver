@@ -9,7 +9,7 @@ export default class climatological_normal extends BaseProcess {
 		const frequency = node.getArgument('frequency');
 
 		// Get a data cube restricted to the climatological period (default: from 1981 to 2010)
-		const climatologyPeriod = node.getArgument('climatology_period', ["1981","2010"]).map(x => parseInt(x, 10));
+		const climatologyPeriod = node.getArgument('climatology_period', ["1981", "2010"]).map(x => parseInt(x, 10));
 		let start = ee.Date(climatologyPeriod[0] + "-01-01");
 		let end = ee.Date(climatologyPeriod[1] + "-12-31");
 
@@ -63,11 +63,11 @@ export default class climatological_normal extends BaseProcess {
 				break;
 		}
 
-		var filteredData = Commons.filterTemporal(dc, [start, end.advance(1, "day")], 'anomaly', 'climatology_period').imageCollection();
+		const filteredData = Commons.filterTemporal(dc, [start, end.advance(1, "day")], 'anomaly', 'climatology_period').imageCollection();
 
-		var normals = ee.List(range).map(x => {
+		const normals = ee.List(range).map(x => {
 			let calFilter = null;
-			switch(frequency) {
+			switch (frequency) {
 				case 'climatology_period':
 				case 'yearly': // alias for climatology_period
 				case 'seasons':
@@ -76,7 +76,7 @@ export default class climatological_normal extends BaseProcess {
 					calFilter = ee.Filter.calendarRange(x.get(0), x.get(-1), geeFrequencyName);
 					break;
 			}
-			switch(frequency) {
+			switch (frequency) {
 				case 'seasons':
 				case 'tropical_seasons':
 					calFilter = ee.Filter(ee.Algorithms.If(
@@ -88,9 +88,9 @@ export default class climatological_normal extends BaseProcess {
 				default: // daily, monthly
 					calFilter = ee.Filter.calendarRange(x, x, geeFrequencyName);
 			}
-			var periodData = filteredData.filter(calFilter);
-			var firstImg = periodData.first();
-			return periodData.mean().copyProperties({source: firstImg, properties: firstImg.propertyNames()});
+			const periodData = filteredData.filter(calFilter);
+			const firstImg = periodData.first();
+			return periodData.mean().copyProperties({ source: firstImg, properties: firstImg.propertyNames() });
 		});
 
 		dc.setData(ee.ImageCollection(normals));

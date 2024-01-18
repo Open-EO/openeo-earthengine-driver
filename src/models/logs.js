@@ -4,7 +4,7 @@ import Datastore from '@seald-io/nedb';
 import Utils from '../utils/utils.js';
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
-var LOG_CACHE = {};
+const LOG_CACHE = {};
 
 export default class Logs {
 
@@ -20,14 +20,14 @@ export default class Logs {
 	}
 
 	static async loadLogsFromCache(file, url, log_level) {
-		let now = Date.now();
+		const now = Date.now();
 		// Free up memory
-		for(let file in LOG_CACHE) {
-			if (LOG_CACHE[file].lastAccess < now - 6*60*60*1000) {
-				delete LOG_CACHE[file];
+		for(const f in LOG_CACHE) {
+			if (LOG_CACHE[f].lastAccess < now - 6*60*60*1000) {
+				delete LOG_CACHE[f];
 			}
 		}
-		let exists = await fse.exists(file);
+		const exists = await fse.exists(file);
 		// Load db from cache
 		if (exists && LOG_CACHE[file]) {
 			LOG_CACHE[file].lastAccess = now;
@@ -35,7 +35,7 @@ export default class Logs {
 		}
 		// Read db from fs
 		else {
-			let logs = new Logs(file, url, log_level);
+			const logs = new Logs(file, url, log_level);
 			await logs.init();
 			LOG_CACHE[file] = {
 				lastAccess: now,
@@ -78,7 +78,7 @@ export default class Logs {
 	error(error, data = null, trace = undefined, code = undefined, links = undefined) {
 		if (Utils.isObject(error)) {
 			if (error.url) {
-				let link = {
+				const link = {
 					href: error.url,
 					rel: 'about'
 				};
@@ -90,7 +90,7 @@ export default class Logs {
 				}
 			}
 			code = code || error.code || error.constructor.name;
-			let message = error.message || String(error);
+			const message = error.message || String(error);
 			this.add(message, 'error', data, trace, code, links, error.id);
 		}
 		else {
@@ -102,7 +102,7 @@ export default class Logs {
 		id = id || Utils.timeId();
 		message = String(message);
 		level = LOG_LEVELS.includes(level) ? level : 'debug';
-		let log = {
+		const log = {
 			_id: id,
 			id: id,
 			message: message,
@@ -131,11 +131,11 @@ export default class Logs {
 	}
 
 	async get(offset = null, limit = 0, level = null) {
-		limit = parseInt(limit);
+		limit = parseInt(limit, 10);
 		offset = typeof offset === 'string' ? offset : null;
 		level = Logs.checkLevel(level, this.level);
 
-		let query = {};
+		const query = {};
 		if (offset) {
 			query._id = { $gt: offset };
 		}
@@ -148,12 +148,12 @@ export default class Logs {
 			cur = cur.limit(limit + 1); // +1 to check for more elements
 		}
 		const logs = await cur.execAsync();
-		let links = [];
+		const links = [];
 		// Are there more elements?
 		if (limit >= 1 && logs.length === limit + 1) {
 			logs.pop();
-			let last = logs[logs.length - 1];
-			let url = new URL(this.url);
+			const last = logs[logs.length - 1];
+			const url = new URL(this.url);
 			url.searchParams.set('offset', last.id);
 			if (limit >= 1) {
 				url.searchParams.set('limit', limit);

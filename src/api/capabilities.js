@@ -19,8 +19,8 @@ export default class CapabilitiesAPI {
 
 	addEndpoint(method, path) {
 		method = method.toUpperCase();
-		for(let i in this.endpoints) {
-			if (this.endpoints[i].path == path) {
+		for(const i in this.endpoints) {
+			if (this.endpoints[i].path === path) {
 				this.endpoints[i].methods.push(method);
 				return;
 			}
@@ -36,15 +36,13 @@ export default class CapabilitiesAPI {
 	}
 
 	async getVersions(req, res) {
-		var versions = this.context.otherVersions.slice(0); // Make sure to clone it
+		const versions = this.context.otherVersions.slice(0); // Make sure to clone it
 		versions.push({
 			url: Utils.getApiUrl(),
 			production: this.context.production,
 			api_version: this.context.apiVersion
 		});
-		res.json({
-			versions: versions
-		});
+		res.json({ versions });
 	}
 
 	async getCapabilities(req, res) {

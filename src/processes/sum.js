@@ -7,12 +7,12 @@ export default class sum extends BaseProcess {
 		return 'sum';
 	}
 
-    //ToDo processes: ignore_nodata parameter
+	//ToDo processes: ignore_nodata parameter
 	async execute(node) {
 		return Commons.reduceInCallback(
 			node,
-			(a,b) => a.add(b),
-			(a,b) => a + b
+			(a, b) => a.add(b),
+			(a, b) => a + b
 		);
 	}
 

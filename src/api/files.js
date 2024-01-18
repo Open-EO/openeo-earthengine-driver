@@ -14,18 +14,18 @@ export default class FilesAPI {
 	}
 
 	async beforeServerStart(server) {
-		var pathRoutes = ['/files/{path}', '/files/*'];
+		const pathRoutes = ['/files/{path}', '/files/*'];
 		server.addEndpoint('get', '/files', this.getFiles.bind(this));
 		server.addEndpoint('get', pathRoutes, this.getFileByPath.bind(this));
 		server.addEndpoint('put', pathRoutes, this.putFileByPath.bind(this));
 		server.addEndpoint('delete', pathRoutes, this.deleteFileByPath.bind(this));
 	}
 
-	init(req, path = null) {
+	init(req, location = null) {
 		if (!req.user._id) {
 			throw new Errors.AuthenticationRequired();
 		}
-		const p = this.workspace.getPathFromRequest(req, path);
+		const p = this.workspace.getPathFromRequest(req, location);
 		if (!p) {
 			throw new Errors.FilePathInvalid();
 		}
@@ -65,14 +65,14 @@ export default class FilesAPI {
 			await fse.ensureDir(path.dirname(p));
 		}
 
-		let octetStream = 'application/octet-stream';
+		const octetStream = 'application/octet-stream';
 		if (req.contentType() !== octetStream) {
 			throw new Errors.ContentTypeInvalid({types: octetStream});
 		}
 
-		const cleanUp = async (p) => {
-			if (await fse.exists(p)) {
-				await fse.unlink(p);
+		const cleanUp = async (filepath) => {
+			if (await fse.exists(filepath)) {
+				await fse.unlink(filepath);
 			}
 		};
 
@@ -126,7 +126,7 @@ export default class FilesAPI {
 		const p = this.init(req);
 		await HttpUtils.isFile(p);
 		await new Promise((resolve, reject) => {
-			let stream = fse.createReadStream(p);
+			const stream = fse.createReadStream(p);
 			res.setHeader('Content-Type', 'application/octet-stream');
 			stream.pipe(res);
 			stream.on('error', reject);

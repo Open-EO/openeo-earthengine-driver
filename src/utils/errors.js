@@ -10,7 +10,7 @@ const errors = Object.assign(openeo_errors, custom_errors);
 
 const ABOUT_URL = "https://openeo.org/documentation/1.0/developers/api/errors.html";
 
-for(var name in errors) {
+for(const name in errors) {
 	restify_errors[name] = restify_errors.makeConstructor(name, {
 		code: name,
 		statusCode: errors[name].http,
@@ -27,7 +27,7 @@ for(var name in errors) {
 		}
 	});
 
-	var old = restify_errors[name].prototype;
+	let old = restify_errors[name].prototype;
 	restify_errors[name] = function(obj, args = {}) {
 		if (CommonUtils.isObject(obj) && obj.constructor.name === 'ProcessGraphError') {
 			this.originalError = obj;

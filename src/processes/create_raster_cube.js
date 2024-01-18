@@ -3,10 +3,10 @@ import DataCube from '../processgraph/datacube.js';
 
 export default class create_raster_cube extends BaseProcess {
 
-    async execute(node) {
-        let dc = new DataCube();
-        dc.setLogger(node.getLogger());
-        return dc;
-    }
+  async execute(node) {
+    const dc = new DataCube();
+    dc.setLogger(node.getLogger());
+    return dc;
+  }
 
 }

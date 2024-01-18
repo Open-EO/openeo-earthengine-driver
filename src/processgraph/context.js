@@ -28,7 +28,7 @@ export default class ProcessingContext {
 	}
 
 	isFileFromWorkspace(file) { // returns promise
-		var p = this.workspace.getPath(this.userId, file);
+		const p = this.workspace.getPath(this.userId, file);
 		if (!p) {
 			throw new Errors.FilePathInvalid();
 		}
@@ -53,9 +53,9 @@ export default class ProcessingContext {
 
 	// ToDo processes: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
 	async retrieveResults(dataCube) {
-		var logger = dataCube.getLogger();
-		var parameters = dataCube.getOutputFormatParameters();
-		var format = dataCube.getOutputFormat();
+		const logger = dataCube.getLogger();
+		const parameters = dataCube.getOutputFormatParameters();
+		let format = dataCube.getOutputFormat();
 		if (typeof format === 'string') {
 			format = format.toLowerCase();
 		}
@@ -69,14 +69,14 @@ export default class ProcessingContext {
 		else if (parameters.epsgCode > 0) {
 			dataCube.setCrs(parameters.epsgCode);
 		}
-		var region = Utils.bboxToGeoJson(dataCube.getSpatialExtent());
-		var crs = Utils.crsToString(dataCube.getCrs());
+		const region = Utils.bboxToGeoJson(dataCube.getSpatialExtent());
+		const crs = Utils.crsToString(dataCube.getCrs());
 
 		switch(format) {
 			case 'jpeg':
-			case 'png':
-				var visBands = null;
-				var visPalette = null;
+			case 'png': {
+				let visBands = null;
+				let visPalette = null;
 				if (Array.isArray(parameters.palette)) {
 					visPalette = parameters.palette;
 				}
@@ -118,6 +118,7 @@ export default class ProcessingContext {
 						}
 					});
 				});
+			}
 			case 'gtiff-thumb':
 				return new Promise((resolve, reject) => {
 					dataCube.image().getThumbURL({
@@ -155,13 +156,14 @@ export default class ProcessingContext {
 						}
 					});
 				});
-			case 'json':
-				var fileName = Utils.generateHash() + "/result-" + Date.now() +  "." + this.getExtension(format);
-				var p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
-				var parent = path.dirname(p);
+			case 'json': {
+				const fileName = Utils.generateHash() + "/result-" + Date.now() + "." + this.getExtension(format);
+				const p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
+				const parent = path.dirname(p);
 				await fse.ensureDir(parent);
 				await fse.writeJson(p, dataCube.getData());
 				return Utils.getApiUrl("/temp/" + fileName);
+			}
 			default:
 				throw new Error('File format not supported.');
 		}

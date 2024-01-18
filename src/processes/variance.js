@@ -7,7 +7,7 @@ export default class variance extends BaseProcess {
 	}
 
 	async execute() {
-		throw "Not implemented yet.";
+		throw new Error("Not implemented yet.");
 	}
 
 }

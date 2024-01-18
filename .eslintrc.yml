@@ -13,3 +13,42 @@ rules:
     - error
     - allowModules:
       - restify-errors
+  no-constant-condition:
+    - error
+    - checkLoops: false
+  no-template-curly-in-string: error
+  block-scoped-var: error
+  no-unreachable-loop: error
+  require-atomic-updates: warn
+  max-classes-per-file: error
+  no-alert: error
+  no-caller: error
+  eqeqeq: error
+  no-constructor-return: error
+  no-eval: error
+  no-extend-native: error
+  no-extra-bind: error
+  no-implicit-coercion: error
+  no-invalid-this: error
+  no-multi-spaces: error
+  no-multi-str: error
+  no-return-assign: error
+  no-self-compare: error
+  no-sequences: error
+  no-throw-literal: error
+  no-unmodified-loop-condition: error
+  no-unused-expressions: error
+  no-useless-call: error
+  no-useless-concat: error
+  no-useless-return: error
+  no-void: error
+  no-warning-comments: warn
+  radix: error
+  no-shadow: error
+  no-use-before-define:
+    - error
+    - functions: false
+  arrow-spacing: error
+  no-confusing-arrow: error
+  no-duplicate-imports: error
+  no-var: error

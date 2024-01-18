@@ -5,9 +5,9 @@ import ProcessGraph from '../processgraph/processgraph.js';
 export default class apply extends BaseProcess {
 
 	async execute(node) {
-		var dc = node.getDataCube("data");
+		const dc = node.getDataCube("data");
 
-		var callback = node.getArgument("process");
+		const callback = node.getArgument("process");
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: this.id,
@@ -16,11 +16,11 @@ export default class apply extends BaseProcess {
 			});
 		}
 
-		var resultNode = await callback.execute({
+		const resultNode = await callback.execute({
 			x: dc.getData(),
 			context: node.getArgument("context")
 		});
-        dc.setData(resultNode.getResult());
+		dc.setData(resultNode.getResult());
 		return dc;
 	}
 

@@ -127,18 +127,18 @@ export default class StoredProcessGraphs {
 	}
 
 	makeResponse(pg, full = true) {
-		var response = {
+		const response = {
 			id: pg.id
 		};
-		let optionalFields = ['summary', 'description', 'categories', 'parameters', 'returns', 'deprecated', 'experimental'];
-		for(let field of optionalFields) {
+		const optionalFields = ['summary', 'description', 'categories', 'parameters', 'returns', 'deprecated', 'experimental'];
+		for(const field of optionalFields) {
 			if (typeof pg[field] !== 'undefined') {
 				response[field] = pg[field];
 			}
 		}
 		if (full) {
-			let fullFields = ['exceptions', 'examples', 'links', 'process_graph'];
-			for(let field of fullFields) {
+			const fullFields = ['exceptions', 'examples', 'links', 'process_graph'];
+			for(const field of fullFields) {
 				if (typeof pg[field] !== 'undefined') {
 					response[field] = pg[field];
 				}

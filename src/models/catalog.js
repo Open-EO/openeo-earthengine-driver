@@ -40,8 +40,7 @@ export default class DataCatalog {
 			const name = path.basename(file.name);
 			if (file.isFile() && name.endsWith('.json') && name !== 'catalog.json') {
 				try {
-					let collection = await fse.readJson(this.dataFolder + name);
-					collection = this.fixData(collection);
+					const collection = this.fixData(await fse.readJson(this.dataFolder + name));
 					if (this.supportedGeeTypes.includes(collection['gee:type'])) {
 						this.collections[collection.id] = collection;
 					}
@@ -152,8 +151,8 @@ export default class DataCatalog {
 		delete c.summaries['gee:visualizations'];
 
 		// Fix invalid summaries
-		for(let key in c.summaries) {
-			let summary = c.summaries[key];
+		for(const key in c.summaries) {
+			const summary = c.summaries[key];
 			if (!Utils.isObject(summary) && !Array.isArray(summary)) {
 				c.summaries[key] = [summary];
 			}
@@ -161,14 +160,14 @@ export default class DataCatalog {
 
 		// Add common band names
 		if (Array.isArray(c.summaries['eo:bands'])) {
-			for(var i in c.summaries['eo:bands']) {
-				var band = c.summaries['eo:bands'][i];
+			for(const i in c.summaries['eo:bands']) {
+				const band = c.summaries['eo:bands'][i];
 				if (band.common_name || !band.center_wavelength) {
 					continue;
 				}
 
-				for(var name in commonNames) {
-					var wavelengths = commonNames[name];
+				for(const name in commonNames) {
+					const wavelengths = commonNames[name];
 					if (band.center_wavelength >= wavelengths[0] && band.center_wavelength < wavelengths[1]) {
 						band.common_name = name;
 						break;
@@ -178,8 +177,8 @@ export default class DataCatalog {
 			}
 		}
 
-		var x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
-		var y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
+		const x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
+		const y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
 		c.stac_extensions = ["datacube"];
 		c['cube:dimensions'] = {
 			x: {
@@ -198,10 +197,10 @@ export default class DataCatalog {
 				extent: c.extent.temporal.interval[0]
 			}
 		};
-		var bandNames = [];
-		var bands = c.summaries['eo:bands'] || c.summaries['sar:bands'];
-		for(var j in bands) {
-			var b = bands[j];
+		const bandNames = [];
+		const bands = c.summaries['eo:bands'] || c.summaries['sar:bands'];
+		for(const j in bands) {
+			const b = bands[j];
 			if (typeof b.name === 'string') {
 				bandNames.push(b.name);
 			}

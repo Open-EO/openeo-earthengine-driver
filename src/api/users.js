@@ -17,7 +17,7 @@ export default class UsersAPI {
 	}
 
 	async checkRequestAuthToken(req, res) {
-		var token = null;
+		let token = null;
 		if (req.authorization.scheme === 'Bearer') {
 			token = req.authorization.credentials;
 		}
@@ -26,8 +26,7 @@ export default class UsersAPI {
 		}
 
 		try {
-			const user = await this.storage.checkAuthToken(token);
-			req.user = user;
+			req.user = await this.storage.checkAuthToken(token);
 		} catch(err) {
 			res.send(Error.wrap(err));
 		}
@@ -41,7 +40,7 @@ export default class UsersAPI {
 		if (!req.authorization.scheme) {
 			throw new Errors.AuthenticationRequired();
 		}
-		else if (req.authorization.scheme != 'Basic') {
+		else if (req.authorization.scheme !== 'Basic') {
 			throw new Errors.AuthenticationSchemeInvalid();
 		}
 
@@ -57,7 +56,7 @@ export default class UsersAPI {
 		if (!req.user._id) {
 			throw new Errors.AuthenticationRequired();
 		}
-		var data = {
+		const data = {
 			user_id: req.user._id,
 			name: req.user.name,
 			budget: null,
@@ -81,7 +80,7 @@ export default class UsersAPI {
 		};
 		if (this.context.diskUsagePath !== null) {
 			try {
-				var info = await checkDiskSpace(this.context.diskUsagePath);
+				const info = await checkDiskSpace(this.context.diskUsagePath);
 				data.storage = {
 					free: info.free,
 					quota: info.size

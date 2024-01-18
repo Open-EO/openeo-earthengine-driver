@@ -37,7 +37,7 @@ export default class JobsAPI {
 	}
 
 	async getTempFile(req, res) {
-		var p = this.storage.makeFolder(this.context.getTempFolder(), [req.params.token, req.params.file]);
+		const p = this.storage.makeFolder(this.context.getTempFolder(), [req.params.token, req.params.file]);
 		if (!p) {
 			throw new Errors.NotFound();
 		}
@@ -55,12 +55,12 @@ export default class JobsAPI {
 		await this.deliverFile(res, p);
 	}
 
-	async deliverFile(res, path) {
-		await HttpUtils.isFile(path);
+	async deliverFile(res, filepath) {
+		await HttpUtils.isFile(filepath);
 
-		res.header('Content-Type', Utils.extensionToMediaType(path));
+		res.header('Content-Type', Utils.extensionToMediaType(filepath));
 		return await new Promise((resolve, reject) => {
-			var stream = fse.createReadStream(path);
+			const stream = fse.createReadStream(filepath);
 			stream.pipe(res);
 			stream.on('error', reject);
 			stream.on('close', () => {
@@ -108,8 +108,8 @@ export default class JobsAPI {
 	}
 
 	async getResultLogs(user_id, id, log_level) {
-		let file = path.normalize(path.join('./storage/user_files/', user_id, 'sync_logs' , id + '.logs.db'));
-		let logs = new Logs(file, Utils.getApiUrl('/result/logs/' + id), log_level);
+		const file = path.normalize(path.join('./storage/user_files/', user_id, 'sync_logs' , id + '.logs.db'));
+		const logs = new Logs(file, Utils.getApiUrl('/result/logs/' + id), log_level);
 		await logs.init();
 		return logs;
 	}
@@ -176,7 +176,7 @@ export default class JobsAPI {
 			await this.storage.updateJobStatus(query, 'running');
 
 			const context = this.context.processingContext(req);
-			var pg = new ProcessGraph(job.process, context);
+			const pg = new ProcessGraph(job.process, context);
 			pg.setLogger(logger);
 
 			const resultNode = await pg.execute();
@@ -192,7 +192,7 @@ export default class JobsAPI {
 			});
 
 			const extension = context.getExtension(cube.getOutputFormat());
-			const filePath = this.storage.getJobFile(job._id, Utils.generateHash() +  "." + extension);
+			const filePath = this.storage.getJobFile(job._id, Utils.generateHash() + "." + extension);
 			logger.debug("Storing result to: " + filePath);
 			await fse.ensureDir(path.dirname(filePath));
 			await new Promise((resolve, reject) => {
@@ -212,7 +212,7 @@ export default class JobsAPI {
 	}
 
 	async getJobResultsByToken(req, res) {
-		var query = {
+		const query = {
 			token: req.params.token
 		};
 
@@ -222,7 +222,7 @@ export default class JobsAPI {
 	async getJobResults(req, res) {
 		this.init(req);
 
-		var query = {
+		const query = {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
@@ -324,14 +324,15 @@ export default class JobsAPI {
 
 		const data = {};
 		const promises = [];
-		for(let key in req.body) {
+		for(const key in req.body) {
 			if (this.storage.isFieldEditable(key)) {
 				switch(key) {
-					case 'process':
-						var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+					case 'process': {
+						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());
 						break;
+					}
 					default:
 						// ToDo: Validate further data #73
 						// For example, if budget < costs, reject request
@@ -367,12 +368,12 @@ export default class JobsAPI {
 			throw new Errors.RequestBodyMissing();
 		}
 
-		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+		const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 		pg.allowUndefinedParameters(false);
 		await pg.validate();
 
 		// ToDo: Validate further data #73
-		var data = {
+		const data = {
 			title: req.body.title || null,
 			description: req.body.description || null,
 			process: req.body.process,
@@ -445,7 +446,7 @@ export default class JobsAPI {
 	}
 
 	makeJobResponse(job, full = true) {
-		var response = {
+		const response = {
 			id: job._id,
 			title: job.title,
 			description: job.description,

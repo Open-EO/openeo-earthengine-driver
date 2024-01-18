@@ -27,7 +27,7 @@ export default class GeeProcessGraph extends ProcessGraph {
 	}
 
 	createJsonSchemaValidatorInstance() {
-		let validator = new GeeJsonSchemaValidator(this.context);
+		const validator = new GeeJsonSchemaValidator(this.context);
 		validator.setEpsgCodes(Object.keys(epsg));
 		return validator;
 	}
@@ -42,7 +42,7 @@ export default class GeeProcessGraph extends ProcessGraph {
 	}
 
 	createProcessGraphInstance(process) {
-		let pg = new GeeProcessGraph(process, this.context);
+		const pg = new GeeProcessGraph(process, this.context);
 		pg.setLogger(this.getLogger());
 		return pg;
 	}
@@ -53,12 +53,12 @@ export default class GeeProcessGraph extends ProcessGraph {
 	}
 
 	async validateNode(node) {
-		var process = this.getProcess(node);
+		const process = this.getProcess(node);
 		return await process.validate(node, this.context);
 	}
 
 	async executeNode(node) {
-		var process = this.getProcess(node);
+		const process = this.getProcess(node);
 		node.debug("Executing node " + node.id);
 		return await process.execute(node, this.context);
 	}

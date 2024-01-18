@@ -22,9 +22,9 @@ export default class FileWorkspace {
 	}
 
 	getPath(user_id, p) {
-		let userFolder = this.getUserFolder(user_id);
-		let userPath = path.normalize(userFolder);
-		let filePath = path.normalize(path.join(userFolder, p));
+		const userFolder = this.getUserFolder(user_id);
+		const userPath = path.normalize(userFolder);
+		const filePath = path.normalize(path.join(userFolder, p));
 		if (filePath.startsWith(userPath)) {
 			return filePath;
 		}
@@ -39,13 +39,13 @@ export default class FileWorkspace {
 		if (!user_id) {
 			throw new Errors.FilePathInvalid();
 		}
-		const path = this.getPath(user_id, p);
-		if (!path) {
+		const filepath = this.getPath(user_id, p);
+		if (!filepath) {
 			throw new Errors.FilePathInvalid();
 		}
 
-		await HttpUtils.isFile(path);
-		return await fse.readFile(path);
+		await HttpUtils.isFile(filepath);
+		return await fse.readFile(filepath);
 	}
 
 }

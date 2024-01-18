@@ -3,9 +3,9 @@ import { BaseProcess } from '@openeo/js-processgraphs';
 
 export default class rename_dimension extends BaseProcess {
 	async execute(node) {
-		var dc = node.getDataCube("data");
-		var srcName = node.getArgument('source');
-		var trgName = node.getArgument('target');
+		const dc = node.getDataCube("data");
+		const srcName = node.getArgument('source');
+		const trgName = node.getArgument('target');
 
 		if (dc.hasDimension(srcName)) {
 			throw new Errors.DimensionNotAvailable({
@@ -13,7 +13,7 @@ export default class rename_dimension extends BaseProcess {
 				argument: 'source'
 			});
 		}
-		else  if (dc.hasDimension(trgName)) {
+		else if (dc.hasDimension(trgName)) {
 			throw new Errors.DimensionExists({
 				process: this.id,
 				argument: 'target'

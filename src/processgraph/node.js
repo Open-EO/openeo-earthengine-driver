@@ -12,7 +12,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 	}
 
 	getLoggerPath() {
-		let path = [];
+		const path = [];
 		let node = this;
 		do {
 			path.push(node.id);

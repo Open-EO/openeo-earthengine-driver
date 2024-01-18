@@ -7,8 +7,8 @@ export default class divide extends BaseProcess {
 	async execute(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a,b) => a.divide(b),
-			(a,b) => a / b
+			(a, b) => a.divide(b),
+			(a, b) => a / b
 		);
 	}
 

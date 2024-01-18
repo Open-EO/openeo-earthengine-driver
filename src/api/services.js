@@ -35,7 +35,7 @@ export default class ServicesAPI {
 		};
 		const db = this.storage.database();
 		const service = await db.findOneAsync(query);
-		if (service ===  null) {
+		if (service === null) {
 			throw new Errors.ServiceNotFound();
 		}
 
@@ -48,7 +48,7 @@ export default class ServicesAPI {
 
 			const logs = await this.storage.getLogsById(req.params.service_id, service.log_level);
 
-			var pg = new ProcessGraph(service.process, context);
+			const pg = new ProcessGraph(service.process, context);
 			pg.setLogger(logs);
 			logger = logs;
 
@@ -124,15 +124,16 @@ export default class ServicesAPI {
 
 		const data = {};
 		const promises = [];
-		for(let key in req.body) {
+		for(const key in req.body) {
 			if (this.storage.isFieldEditable(key)) {
 				switch(key) {
-					case 'process':
-						var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+					case 'process': {
+						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 						// ToDo 1.0: Correctly handle service paramaters #79
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());
 						break;
+					}
 					case 'type':
 						promises.push(async () => {
 							if (!this.context.isValidServiceType(req.body.type)) {
@@ -197,7 +198,7 @@ export default class ServicesAPI {
 			throw new Errors.ServiceUnsupported();
 		}
 
-		var pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+		const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
 		// ToDo 1.0: Correctly handle service paramaters #79
 		pg.allowUndefinedParameters(false);
 		await pg.validate();
@@ -237,7 +238,7 @@ export default class ServicesAPI {
 	}
 
 	makeServiceResponse(service, full = true) {
-		var response = {
+		const response = {
 			id: service._id,
 			title: service.title || null,
 			description: service.description || null,

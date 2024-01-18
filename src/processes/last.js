@@ -8,13 +8,13 @@ export default class last extends BaseProcess {
 	}
 
 	async execute(node) {
-		var data = node.getArgument('data');
+		const data = node.getArgument('data');
 
 		if (Array.isArray(data)) {
-			return [data[data.length-1]];
+			return [data[data.length - 1]];
 		}
 		else if (data instanceof ee.Array) {
-			var data_list = data.toList();
+			let data_list = data.toList();
 			data_list = data_list.reverse();
 			return data_list.get(0);
 		}

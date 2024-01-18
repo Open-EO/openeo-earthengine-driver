@@ -11,7 +11,7 @@ export default class Data {
 			rel: 'alternate',
 			type: 'application/json',
 			title: 'Machine-readable Earth Engine Data Catalog'
-		},
+		};
 		this.geeBrowsableCatalogLink = {
 			rel: 'alternate',
 			href: 'https://developers.google.com/earth-engine/datasets/catalog/',

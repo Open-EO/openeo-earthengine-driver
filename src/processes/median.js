@@ -3,11 +3,11 @@ import { BaseProcess } from '@openeo/js-processgraphs';
 export default class median extends BaseProcess {
 
   geeReducer() {
-      return 'median';
+    return 'median';
   }
 
-	async execute() {
-		throw "Not implemented yet.";
-	}
+  async execute() {
+    throw new Error("Not implemented yet.");
+  }
 
 }

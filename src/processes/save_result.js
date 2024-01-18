@@ -6,7 +6,7 @@ export default class save_result extends BaseProcess {
 	async validate(node) {
 		await super.validate(node);
 
-		var format = node.getArgument("format");
+		const format = node.getArgument("format");
 		if (!node.getServerContext().isValidOutputFormat(format)) {
 			throw new Errors.FormatUnsupported();
 		}
@@ -15,7 +15,7 @@ export default class save_result extends BaseProcess {
 	}
 
 	async execute(node) {
-		var data = node.getDataCube("data");
+		const data = node.getDataCube("data");
 		data.setOutputFormat(
 			node.getArgument("format"),
 			node.getArgument("options")

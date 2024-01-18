@@ -8,7 +8,7 @@ export default class first extends BaseProcess {
 	}
 
 	async execute(node) {
-		var data = node.getArgument('data');
+		const data = node.getArgument('data');
 
 		if (Array.isArray(data)) {
 			return data[0];

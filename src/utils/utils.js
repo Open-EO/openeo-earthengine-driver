@@ -37,18 +37,18 @@ const Utils = {
 	},
 
 	sequence(min, max) {
-		var list = [];
-		for(var i = min; i <= max; i++) {
+		const list = [];
+		for(let i = min; i <= max; i++) {
 			list.push(i);
 		}
 		return list;
 	},
 
-	getApiUrl(path = '') {
+	getApiUrl(endpoint = '') {
 		if (this.serverUrl === null || this.apiPath === null) {
 			console.warn('Server has not started yet, Utils.getApiUrl() is not available yet.');
 		}
-		return this.serverUrl + this.apiPath + path;
+		return this.serverUrl + this.apiPath + endpoint;
 	},
 
 	getServerUrl() {
@@ -63,8 +63,8 @@ const Utils = {
 	},
 
 	encodeQueryParams(data) {
-		let ret = [];
-		for (let d in data) {
+		const ret = [];
+		for (const d in data) {
 			ret.push(encodeURIComponent(d) + '=' + encodeURIComponent(data[d]));
 		}
 		return ret.join('&');
@@ -132,7 +132,7 @@ const Utils = {
 	},
 
 	bboxToGeoJson(bbox) {
-		var geom = {
+		const geom = {
 			geodesic: false,
 			type: 'Polygon',
 			coordinates:
@@ -154,7 +154,7 @@ const Utils = {
 	},
 
 	geoJsonBbox(geojson) {
-		var getCoordinatesDump = function(gj) {
+		const getCoordinatesDump = function(gj) {
 			switch(gj.type) {
 				case 'Point':
 					return [gj.coordinates];
@@ -186,8 +186,8 @@ const Utils = {
 					throw new Error("Invalid GeoJSON type.");
 			}
 		};
-		var coords = getCoordinatesDump(geojson);
-		var bbox = coords.reduce(function(prev,coord) {
+		const coords = getCoordinatesDump(geojson);
+		const bbox = coords.reduce(function(prev,coord) {
 			return [
 				Math.min(coord[0], prev[0]),
 				Math.min(coord[1], prev[1]),
@@ -208,15 +208,16 @@ const Utils = {
 		switch(geojson.type) {
 			case 'Feature':
 				return ee.Geometry(geojson.geometry);
-			case 'FeatureCollection':
-				var geometries = {
+			case 'FeatureCollection': {
+				const geometries = {
 					type: "GeometryCollection",
 					geometries: []
 				};
-				for(var i in geojson.features) {
+				for(const i in geojson.features) {
 					geometries.geometries.push(geojson.features[i].geometry);
 				}
 				return ee.Geometry(geometries);
+			}
 			case 'Point':
 			case 'MultiPoint':
 			case 'LineString':
@@ -242,12 +243,13 @@ const Utils = {
 			case 'GeometryCollection':
 			case 'Feature':
 				return ee.FeatureCollection(ee.Feature(geojson));
-			case 'FeatureCollection':
-				var features = [];
-				for(var i in geojson.features) {
+			case 'FeatureCollection': {
+				const features = [];
+				for(const i in geojson.features) {
 					features.push(ee.Feature(geojson.features[i]));
 				}
 				return ee.FeatureCollection(features);
+			}
 			default:
 				return null;
 		}
@@ -298,13 +300,13 @@ const Utils = {
 	},
 
 	timeId() {
-		let t = process.hrtime();
+		const t = process.hrtime();
 		return String(t[0] * 1e9 + t[1]).padStart(27, '0');
 	},
 
 	proj(from, to, coords) {
-		var fromCrs = this.crsToString(from);
-		var toCrs = this.crsToString(to);
+		const fromCrs = this.crsToString(from);
+		const toCrs = this.crsToString(to);
 		if (fromCrs === toCrs) {
 			return coords;
 		}
@@ -312,7 +314,7 @@ const Utils = {
 		this.loadCrsDef(fromCrs);
 		this.loadCrsDef(toCrs);
 
-		let newCoords = proj4(fromCrs, toCrs, coords);
+		const newCoords = proj4(fromCrs, toCrs, coords);
 		if (newCoords.filter(n => !this.isNumeric(n)).length > 0) {
 			throw new Error("CRS conversion from " + fromCrs + " to " + toCrs + " failed.");
 		}
@@ -321,8 +323,8 @@ const Utils = {
 
 	projExtent(extent, targetCrs) {
 		extent.crs = extent.crs > 0 ? extent.crs : 4326;
-		var p1 = this.proj(extent.crs, targetCrs, [extent.west, extent.south]);
-		var p2 = this.proj(extent.crs, targetCrs, [extent.east, extent.north]);
+		const p1 = this.proj(extent.crs, targetCrs, [extent.west, extent.south]);
+		const p2 = this.proj(extent.crs, targetCrs, [extent.east, extent.north]);
 		return {
 			west: p1[0],
 			south: p1[1],
@@ -350,7 +352,7 @@ const Utils = {
 		}
 
 		try {
-			let epsgCode = this.crsToNumber(crs);
+			const epsgCode = this.crsToNumber(crs);
 			const def = Utils.require('epsg-index/s/' + epsgCode + '.json');
 			proj4.defs(crs, def.proj4);
 			this.crsBboxes[crs] = def.bbox;
