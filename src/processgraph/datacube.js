@@ -1,8 +1,8 @@
-const Dimension = require('./dimension');
-const Utils = require('../utils/utils');
-const Errors = require('../utils/errors');
+import Dimension from './dimension.js';
+import Utils from '../utils/utils.js';
+import Errors from '../utils/errors.js';
 
-module.exports = class DataCube {
+export default class DataCube {
 
 	constructor(sourceDataCube = null, data = undefined) {
 		// Don't set this data directly, always use setData() to reset the type cache!
@@ -135,7 +135,7 @@ module.exports = class DataCube {
 		}
 		return this.data;
 	}
-	
+
 	imageCollection(callback = null, ...args) {
 		if (this.isImageCollection()){
 			// no operation
@@ -154,7 +154,7 @@ module.exports = class DataCube {
 		}
 		return this.data;
 	}
-	
+
 	array(callback = null, ...args) {
 		if (this.isEarthEngineArray()) {
 			// no operation
@@ -488,7 +488,7 @@ module.exports = class DataCube {
 	}
 
 	// ToDO processes: add code for overlap resolver and inplace
-	merge(otherDataCube, overlapResolver=null, inplace=true, context=null){
+	merge(otherDataCube){
 		if (otherDataCube instanceof DataCube) {
 			if (this.isImageCollection() && otherDataCube.isImageCollection()) {
 				this.setData(this.stackCollection(this.data.merge(otherDataCube.data)));
@@ -537,4 +537,4 @@ module.exports = class DataCube {
 
 		return this
 	}
-};
+}

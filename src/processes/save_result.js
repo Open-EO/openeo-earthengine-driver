@@ -1,6 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Errors from '../utils/errors.js';
 
-module.exports = class save_result extends BaseProcess {
+export default class save_result extends BaseProcess {
 
 	async validate(node) {
 		await super.validate(node);
@@ -9,7 +10,7 @@ module.exports = class save_result extends BaseProcess {
 		if (!node.getServerContext().isValidOutputFormat(format)) {
 			throw new Errors.FormatUnsupported();
 		}
-		var options = node.getArgument("options");
+		// var options = node.getArgument("options");
 		// ToDo processes: Validate the options
 	}
 
@@ -22,4 +23,4 @@ module.exports = class save_result extends BaseProcess {
 		return data;
 	}
 
-};
+}

@@ -1,13 +1,13 @@
-const Utils = require('../utils/utils');
-const Errors = require('../utils/errors');
+import Utils from '../utils/utils.js';
+import Errors from '../utils/errors.js';
 
-module.exports = class Data {
+export default class Data {
 
 	constructor(context) {
 		this.catalog = context.collections();
 
 		this.geeSourceCatalogLink = {
-			href: 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json', 
+			href: 'https://earthengine-stac.storage.googleapis.com/catalog/catalog.json',
 			rel: 'alternate',
 			type: 'application/json',
 			title: 'Machine-readable Earth Engine Data Catalog'
@@ -65,7 +65,7 @@ module.exports = class Data {
 			]
 		});
 	}
-	
+
 	async getCollectionById(req, res) {
 		const id = req.params['*'];
 		if (id.length === 0) {
@@ -92,7 +92,7 @@ module.exports = class Data {
 		if (req.params['*'] && !req.params.collection_id) {
 			id = req.params['*'].replace(/\/queryables$/, '');
 		}
-		
+
 		const collection = this.catalog.getData(id);
 		if (collection === null) {
 			throw new Errors.CollectionNotFound();
@@ -108,4 +108,4 @@ module.exports = class Data {
 		});
 	}
 
-};
+}

@@ -1,0 +1,17 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+[*.{js,json,yml}]
+charset = utf-8
+end_of_line = crlf
+indent_style = tabs
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{yaml,yml}]
+charset = utf-8
+end_of_line = crlf
+indent_style = spaces
+indent_size = 2
+insert_final_newline = true
+trim_trailing_whitespace = true

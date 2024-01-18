@@ -1,16 +1,16 @@
-const Config = require('./config');
-const GeeProcessRegistry = require('../processgraph/registry');
-const ProcessingContext = require('../processgraph/context');
-const Utils = require('./utils');
+import Config from './config.js';
+import GeeProcessRegistry from '../processgraph/registry.js';
+import ProcessingContext from '../processgraph/context.js';
+import Utils from './utils.js';
 
-const DataCatalog = require('../models/catalog');
-const ProcessGraphStore = require('../models/processgraphstore');
-const FileWorkspace = require('../models/workspace');
-const JobStore = require('../models/jobstore');
-const UserStore = require('../models/userstore');
-const ServiceStore = require('../models/servicestore');
+import DataCatalog from '../models/catalog.js';
+import ProcessGraphStore from '../models/processgraphstore.js';
+import FileWorkspace from '../models/workspace.js';
+import JobStore from '../models/jobstore.js';
+import UserStore from '../models/userstore.js';
+import ServiceStore from '../models/servicestore.js';
 
-module.exports = class ServerContext extends Config {
+export default class ServerContext extends Config {
 
 	constructor() {
 		super();
@@ -71,4 +71,4 @@ module.exports = class ServerContext extends Config {
 		return new ProcessingContext(this, req.user._id);
 	}
 
-};
+}

@@ -1,18 +1,20 @@
-const CapabilitiesAPI = require('./api/capabilities');
-const CollectionsAPI = require('./api/collections');
-const FilesAPI = require('./api/files');
-const JobsAPI = require('./api/jobs');
-const ProcessesAPI = require('./api/processes');
-const ProcessGraphsAPI = require('./api/storedprocessgraphs');
-const ServicesAPI = require('./api/services');
-const UsersAPI = require('./api/users');
+/*eslint n/no-process-exit: "off"*/
+import CapabilitiesAPI from './api/capabilities.js';
+import CollectionsAPI from './api/collections.js';
+import FilesAPI from './api/files.js';
+import JobsAPI from './api/jobs.js';
+import ProcessesAPI from './api/processes.js';
+import ProcessGraphsAPI from './api/storedprocessgraphs.js';
+import ServicesAPI from './api/services.js';
+import UsersAPI from './api/users.js';
 
-const Utils = require('./utils/utils');
-const ServerContext = require('./utils/servercontext');
+import Utils from './utils/utils.js';
+import ServerContext from './utils/servercontext.js';
 
-const fse = require('fs-extra');
-const restify = require('restify');
-global.ee = require('@google/earthengine');
+import fse from 'fs-extra';
+import restify from 'restify';
+
+global.ee = Utils.require('@google/earthengine');
 
 class Server {
 
@@ -42,7 +44,7 @@ class Server {
 
 		const privateKey = fse.readJsonSync(this.serverContext.serviceAccountCredentialsFile);
 		ee.data.authenticateViaPrivateKey(privateKey,
-			() => { 
+			() => {
 				console.info("GEE Authentication succeeded.");
 				ee.initialize();
 				this.startServer();
@@ -149,8 +151,8 @@ class Server {
 
 	}
 
-	startServerHttp() {
-		return new Promise((resolve, reject) => {
+	async startServerHttp() {
+		return new Promise((resolve) => {
 			const port = process.env.PORT || this.serverContext.port;
 			this.http_server.listen(port, () => {
 				var exposePortStr = this.serverContext.exposePort != 80 ? ":" + this.serverContext.exposePort : "";
@@ -163,7 +165,7 @@ class Server {
 	}
 
 	startServerHttps() {
-		return new Promise((resolve, reject) => {
+		return new Promise((resolve) => {
 			if (this.isHttpsEnabled()) {
 				var sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
 				this.https_server.listen(sslport, () => {
@@ -212,6 +214,6 @@ class Server {
 		// Don't call next, this ends execution, nothing more to send.
 	}
 
-};
+}
 
 global.server = new Server();

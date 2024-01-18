@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class linear_scale_range extends BaseProcess {
+export default class linear_scale_range extends BaseProcess {
 
     async execute(node) {
         var inputMin = node.getArgument('inputMin');
@@ -21,4 +21,4 @@ module.exports = class linear_scale_range extends BaseProcess {
         );
     }
 
-};
+}

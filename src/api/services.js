@@ -1,8 +1,9 @@
-const Utils = require('../utils/utils');
-const Errors = require('../utils/errors');
-const ProcessGraph = require('../processgraph/processgraph');
+import Utils from '../utils/utils.js';
+import Errors from '../utils/errors.js';
+import ProcessGraph from '../processgraph/processgraph.js';
+import Logs from '../models/logs.js';
 
-module.exports = class ServicesAPI {
+export default class ServicesAPI {
 
 	constructor(context) {
 		this.storage = context.webServices();
@@ -79,10 +80,10 @@ module.exports = class ServicesAPI {
 			links: []
 		});
 	}
-	  
+
 	async deleteService(req, res) {
 		this.init(req);
-		
+
 		const query = {
 			_id: req.params.service_id,
 			user_id: req.user._id
@@ -100,13 +101,13 @@ module.exports = class ServicesAPI {
 				console.error(e);
 			}
 		}
-		
+
 		res.send(204);
 	}
 
 	async patchService(req, res) {
 		this.init(req);
-		
+
 		if (!Utils.isObject(req.body)) {
 			throw new Errors.RequestBodyMissing();
 		}
@@ -155,12 +156,12 @@ module.exports = class ServicesAPI {
 		}
 
 		await Promise.all(promises);
-		
+
 		const { numAffected } = await db.updateAsync(query, { $set: data });
 		if (numAffected === 0) {
 			throw new Errors.Internal({message: 'Number of changed services was zero.'});
 		}
-	
+
 		res.send(204);
 
 		const logger = this.storage.getLogsById(req.params.service_id, data.log_level || service.log_level);
@@ -188,7 +189,7 @@ module.exports = class ServicesAPI {
 
 	async postService(req, res) {
 		this.init(req);
-		
+
 		if (!Utils.isObject(req.body)) {
 			throw new Errors.RequestBodyMissing();
 		}
@@ -220,7 +221,7 @@ module.exports = class ServicesAPI {
 		const db = this.storage.database();
 		const service = await db.insertAsync(data);
 
-		// Create logs at creation time to avoid issues described in #51 
+		// Create logs at creation time to avoid issues described in #51
 		await this.storage.getLogsById(service._id, service.log_level);
 
 		res.header('OpenEO-Identifier', service._id);
@@ -259,5 +260,5 @@ module.exports = class ServicesAPI {
 	makeServiceUrl(service) {
 		return Utils.getApiUrl('/' + service.type.toLowerCase() + '/' + service._id + "/{z}/{x}/{y}");
 	}
-	
-};
+
+}

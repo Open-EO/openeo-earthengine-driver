@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class anomaly extends BaseProcess {
+export default class anomaly extends BaseProcess {
 
 	async execute(node) {
 		var dc = node.getDataCube('data');
@@ -24,4 +24,4 @@ module.exports = class anomaly extends BaseProcess {
 		return dc;
 	}
 
-};
+}

@@ -1,11 +1,11 @@
-const openeo_errors = require('../../storage/errors/errors.json');
-const custom_errors = require('../../storage/errors/custom.json');
-const restify_errors = require('restify-errors');
-const { Utils: CommonUtils } = require('@openeo/js-commons');
-const { ErrorList } = require('@openeo/js-processgraphs');
-const util = require('util');
-const Utils = require('./utils');
+import restify_errors from 'restify-errors/lib/index.js';
+import { Utils as CommonUtils } from '@openeo/js-commons';
+import { ErrorList } from '@openeo/js-processgraphs';
+import util from 'util';
+import Utils from './utils.js';
 
+const openeo_errors = Utils.require('../../storage/errors/errors.json');
+const custom_errors = Utils.require('../../storage/errors/custom.json');
 const errors = Object.assign(openeo_errors, custom_errors);
 
 const ABOUT_URL = "https://openeo.org/documentation/1.0/developers/api/errors.html";
@@ -71,8 +71,8 @@ restify_errors.wrap = function(e, callback) {
 		return e; // An openEO error
 	}
 	else {
-		return callback ? callback(e) : new restify_errors.Internal(e); // Probably an internal error
+		return callback ? callback(e) : new restify_errors.Internal({message: e.message}); // Probably an internal error
 	}
 };
 
-module.exports = restify_errors;
+export default restify_errors;

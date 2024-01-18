@@ -1,10 +1,10 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class arccos extends BaseProcess {
+export default class arccos extends BaseProcess {
 
     async execute(node) {
         return Commons.applyInCallback(node, image => image.acos(), x => Math.acos(x));
     }
 
-};
+}

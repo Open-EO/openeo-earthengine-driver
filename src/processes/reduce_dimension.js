@@ -1,7 +1,7 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class reduce_dimension extends BaseProcess {
+export default class reduce_dimension extends BaseProcess {
 
 	async execute(node) {
 		var dc = node.getDataCube("data");
@@ -12,4 +12,4 @@ module.exports = class reduce_dimension extends BaseProcess {
 		return dc;
 	}
 
-};
+}

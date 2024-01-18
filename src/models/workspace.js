@@ -1,8 +1,9 @@
-const Utils = require('../utils/utils');
-const HttpUtils = require('../utils/http');
-const path = require('path');
+import HttpUtils from '../utils/http.js';
+import Errors from '../utils/errors.js';
+import path from 'path';
+import fse from 'fs-extra';
 
-module.exports = class FileWorkspace {
+export default class FileWorkspace {
 
 	constructor(folder = './storage/user_files') {
 		this.folder = folder;
@@ -38,13 +39,13 @@ module.exports = class FileWorkspace {
 		if (!user_id) {
 			throw new Errors.FilePathInvalid();
 		}
-		var p = this.getPath(user_id, p);
-		if (!p) {
+		const path = this.getPath(user_id, p);
+		if (!path) {
 			throw new Errors.FilePathInvalid();
 		}
-		
-		await HttpUtils.isFile(p);
-		return await fse.readFile(p);
+
+		await HttpUtils.isFile(path);
+		return await fse.readFile(path);
 	}
 
 }

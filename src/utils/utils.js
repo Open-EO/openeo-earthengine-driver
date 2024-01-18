@@ -1,15 +1,20 @@
+import crypto from "crypto";
+import fse from 'fs-extra';
+import path from 'path';
+import { Utils as CommonUtils } from '@openeo/js-commons';
+import proj4 from 'proj4';
+import { createRequire } from "module";
 
-const crypto = require("crypto");
-const fse = require('fs-extra');
-const path = require('path');
-const { Utils: CommonUtils } = require('@openeo/js-commons');
-const proj4 = require('proj4');
-
-var Utils = {
+const Utils = {
 
 	crsBboxes: {},
 	serverUrl: null,
 	apiPath: null,
+
+	require(file) {
+		const require = createRequire(import.meta.url);
+		return require(file);
+	},
 
 	noop(x) {
 		return x;
@@ -56,7 +61,7 @@ var Utils = {
 	toISODate(timestamp) {
 		return (new Date(timestamp)).toISOString();
 	},
-	
+
 	encodeQueryParams(data) {
 		let ret = [];
 		for (let d in data) {
@@ -72,15 +77,15 @@ var Utils = {
 	isObject(obj) {
 		return CommonUtils.isObject(obj);
 	},
-	
+
 	size(obj) {
 		return CommonUtils.size(obj);
 	},
-	
+
 	omitFromObject(obj, omit) {
 		return CommonUtils.omitFromObject(obj, omit);
 	},
-	
+
 	pickFromObject(obj, pick) {
 		return CommonUtils.pickFromObject(obj, pick);
 	},
@@ -346,7 +351,7 @@ var Utils = {
 
 		try {
 			let epsgCode = this.crsToNumber(crs);
-			const def = require('epsg-index/s/' + epsgCode + '.json');
+			const def = Utils.require('epsg-index/s/' + epsgCode + '.json');
 			proj4.defs(crs, def.proj4);
 			this.crsBboxes[crs] = def.bbox;
 		} catch (error) {
@@ -356,4 +361,4 @@ var Utils = {
 
 };
 
-module.exports = Utils;
+export default Utils;

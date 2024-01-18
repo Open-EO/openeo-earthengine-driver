@@ -1,30 +1,30 @@
 {
-  "debug": true,
-  "hostname": "127.0.0.1",
-  "port": 8080,
-  "exposePort": null,
-  "apiPath": "/v1",
-  "ssl": {
-    "port": 443,
-    "exposePort": null,
-    "key": null,
-    "certificate": null 
-  },
-  "serviceAccountCredentialsFile": "privatekey.json",
-  "googleProjectId": "",
-  "id": "openeo-earthengine-driver",
-  "title": "Google Earth Engine Proxy for openEO",
-  "description": "This is the Google Earth Engine Driver for openEO.\n\nGoogle Earth Engine is a planetary-scale platform for Earth science data & analysis. It is powered by Google's cloud infrastructure and combines a multi-petabyte catalog of satellite imagery and geospatial datasets with planetary-scale analysis capabilities. Google makes it available for scientists, researchers, and developers to detect changes, map trends, and quantify differences on the Earth's surface. Google Earth Engine is free for research, education, and nonprofit use.",
-  "currency": "USD",
-  "plans": {
-    "default": "free",
-    "options": [
-      {
-        "name": "free",
-        "description": "Earth Engine is free for research, education, and nonprofit use. For commercial applications, Google offers paid commercial licenses. Please contact earthengine-commercial@google.com for details.",
-        "paid": false
-      }
-    ]
-  },
-  "otherVersions": []
+	"debug": true,
+	"hostname": "127.0.0.1",
+	"port": 8080,
+	"exposePort": null,
+	"apiPath": "/v1",
+	"ssl": {
+		"port": 443,
+		"exposePort": null,
+		"key": null,
+		"certificate": null
+	},
+	"serviceAccountCredentialsFile": "privatekey.json",
+	"googleProjectId": "",
+	"id": "openeo-earthengine-driver",
+	"title": "Google Earth Engine Proxy for openEO",
+	"description": "This is the Google Earth Engine Driver for openEO.\n\nGoogle Earth Engine is a planetary-scale platform for Earth science data & analysis. It is powered by Google's cloud infrastructure and combines a multi-petabyte catalog of satellite imagery and geospatial datasets with planetary-scale analysis capabilities. Google makes it available for scientists, researchers, and developers to detect changes, map trends, and quantify differences on the Earth's surface. Google Earth Engine is free for research, education, and nonprofit use.",
+	"currency": "USD",
+	"plans": {
+		"default": "free",
+		"options": [
+			{
+				"name": "free",
+				"description": "Earth Engine is free for research, education, and nonprofit use. For commercial applications, Google offers paid commercial licenses. Please contact earthengine-commercial@google.com for details.",
+				"paid": false
+			}
+		]
+	},
+	"otherVersions": []
 }

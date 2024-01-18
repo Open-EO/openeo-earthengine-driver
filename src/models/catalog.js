@@ -1,7 +1,7 @@
-const Utils = require('../utils/utils');
-const fse = require('fs-extra');
-const path = require('path');
-const { Storage } = require('@google-cloud/storage');
+import Utils from '../utils/utils.js';
+import fse from 'fs-extra';
+import path from 'path';
+import { Storage } from '@google-cloud/storage';
 
 // Rough auto mapping for common band names until GEE lists them.
 // Optimized for Copernicus S2 data
@@ -24,7 +24,7 @@ const commonNames = {
 	lwir12: [11.5, 12.5]
 };
 
-module.exports = class DataCatalog {
+export default class DataCatalog {
 
 	constructor(context) {
 		this.dataFolder = 'storage/collections/';
@@ -237,4 +237,4 @@ module.exports = class DataCatalog {
 		return c;
 	}
 
-};
+}

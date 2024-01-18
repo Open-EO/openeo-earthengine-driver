@@ -1,6 +1,5 @@
-const Errors = require('../utils/errors');
-const Utils = require('../utils/utils');
-const DB = require('../utils/db');
+import Errors from '../utils/errors.js';
+import DB from '../utils/db.js';
 
 class ProcessGraphStore {
 
@@ -43,7 +42,7 @@ class ProcessGraphStore {
 		return pg;
 	}
 
-};
+}
 
 ProcessGraphStore.FIELDS = [
 	'id',
@@ -60,4 +59,4 @@ ProcessGraphStore.FIELDS = [
 	'process_graph'
 ];
 
-module.exports = ProcessGraphStore;
+export default ProcessGraphStore;

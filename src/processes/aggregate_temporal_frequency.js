@@ -1,15 +1,14 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess, ProcessGraph } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
+import Errors from '../utils/errors.js';
 
-module.exports = class aggregate_temporal_frequency extends BaseProcess {
+export default class aggregate_temporal_frequency extends BaseProcess {
 
 	/*async*/ reduce(node, imageCollection) {
 		// ToDo processes: Execute reducer, see also #36
 		// Use ... await Commons.reduce(...);
 
-		var callback = node.getArgument('reducer');
-		var context = node.getArgument('context');
-
+		let callback = node.getArgument('reducer');
 		if (!(callback instanceof ProcessGraph)) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: this.id,
@@ -76,4 +75,4 @@ module.exports = class aggregate_temporal_frequency extends BaseProcess {
 		return dc;
 	}
 
-};
+}

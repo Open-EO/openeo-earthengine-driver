@@ -1,11 +1,11 @@
-const { ProcessGraph } = require('@openeo/js-processgraphs');
-const GeeJsonSchemaValidator = require('./jsonschema');
-const GeeProcessGraphNode = require('./node');
-const Errors = require('../utils/errors');
-const Utils = require('../utils/utils');
-const epsg = require('epsg-index/all.json');
+import { ProcessGraph } from '@openeo/js-processgraphs';
+import GeeJsonSchemaValidator from './jsonschema.js';
+import GeeProcessGraphNode from './node.js';
+import Errors from '../utils/errors.js';
+import Utils from '../utils/utils.js';
+const epsg = Utils.require('../../package.json');
 
-module.exports = class GeeProcessGraph extends ProcessGraph {
+export default class GeeProcessGraph extends ProcessGraph {
 
 	constructor(process, context, jsonSchemaValidator = null) {
 		super(process, context.server().processes(), jsonSchemaValidator);
@@ -48,7 +48,7 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 	}
 
 	createProcessInstance(process) {
-		var impl = require('../processes/' + process.id + '.js');
+		const impl = this.processRegistry.getImplementation(process.id);
 		return new impl(process);
 	}
 
@@ -72,4 +72,4 @@ module.exports = class GeeProcessGraph extends ProcessGraph {
 		this.errors.add(Errors.wrap(error));
 	}
 
-};
+}

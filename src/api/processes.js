@@ -1,4 +1,4 @@
-module.exports = class Processes {
+export default class Processes {
 
 	constructor(context) {
 		this.registry = context.processes();
@@ -18,5 +18,5 @@ module.exports = class Processes {
 			links: []
 		});
 	}
-	
-};
+
+}

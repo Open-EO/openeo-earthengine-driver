@@ -1,0 +1,17 @@
+{
+	"testEnvironment": "node",
+	"collectCoverage": true,
+	"coverageDirectory": "coverage",
+	"errorOnDeprecated": true,
+	"reporters": [
+		"default",
+		[
+			"./node_modules/jest-html-reporter",
+			{ "pageTitle": "Test Report for openeo-earthengine-driver" }
+		]
+	],
+	"transform": {},
+	"fakeTimers": {
+		"enableGlobally": true
+	}
+}

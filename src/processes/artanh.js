@@ -1,11 +1,11 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
+import Commons from '../processgraph/commons.js';
 
-module.exports = class artanh extends BaseProcess {
+export default class artanh extends BaseProcess {
 
     async execute(node) {
         return Commons.applyInCallback(
-            node, 
+            node,
             image => {
                 // Using artanh formula for calculation (see wikipedia ;)
                 var img_p1 = image.add(1);
@@ -19,4 +19,4 @@ module.exports = class artanh extends BaseProcess {
         );
     }
 
-};
+}

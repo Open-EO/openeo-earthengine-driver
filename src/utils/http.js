@@ -1,6 +1,6 @@
-const axios = require('axios');
-const Errors = require('./errors');
-const fse = require('fs-extra');
+import axios from 'axios';
+import Errors from './errors.js';
+import fse from 'fs-extra';
 
 var HttpUtils = {
 
@@ -39,5 +39,4 @@ var HttpUtils = {
 	},
 };
 
-module.exports = HttpUtils;
-	
+export default HttpUtils;

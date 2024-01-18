@@ -1,11 +1,11 @@
-const Errors = require('../utils/errors');
-const checkDiskSpace = require('check-disk-space');
+import Errors from '../utils/errors.js';
+import checkDiskSpace from 'check-disk-space';
 
-module.exports = class UsersAPI {
+export default class UsersAPI {
 
 	constructor(context) {
 		this.storage = context.users();
-		this.context = context; 
+		this.context = context;
 	}
 
 	beforeServerStart(server) {
@@ -95,4 +95,4 @@ module.exports = class UsersAPI {
 		res.json(data);
 	}
 
-};
+}

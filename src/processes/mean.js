@@ -1,14 +1,13 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
-const Commons = require('../processgraph/commons');
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class mean extends BaseProcess {
+export default class mean extends BaseProcess {
 
     geeReducer() {
         return 'mean';
     }
 
-	async execute(node) {
+	async execute() {
 		throw "Not implemented yet.";
 	}
 
-};
+}

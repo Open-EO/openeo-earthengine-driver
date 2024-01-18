@@ -1,6 +1,6 @@
-const { BaseProcess } = require('@openeo/js-processgraphs');
+import { BaseProcess } from '@openeo/js-processgraphs';
 
-module.exports = class text_merge extends BaseProcess {
+export default class text_merge extends BaseProcess {
 
     async execute(node) {
         var data = node.getArgument('data');
@@ -13,4 +13,4 @@ module.exports = class text_merge extends BaseProcess {
         return data.join(separator);
     }
 
-};
+}

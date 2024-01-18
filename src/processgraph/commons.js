@@ -1,10 +1,10 @@
-const Errors = require('../utils/errors');
-const Utils = require('../utils/utils');
-const DataCube = require('./datacube');
-const ProcessGraph = require('./processgraph');
+import Errors from '../utils/errors.js';
+import Utils from '../utils/utils.js';
+import DataCube from './datacube.js';
+import ProcessGraph from './processgraph.js';
 
 
-module.exports = class Commons {
+export default class Commons {
 
 	// ToDo processes: Also implement ee.Array.* instead only ee.Image.* #35
 
@@ -80,7 +80,7 @@ module.exports = class Commons {
 		if (!dc.isImageCollection() && !dc.isImage()) {
 			throw new Error("Calculating " + reducerName + " not supported for given data type: " + dc.objectType());
 		}
-	
+
 		dc.imageCollection(data => data.reduce(reducerFunc));
 
 		// revert renaming of the bands following to the GEE convention
@@ -92,7 +92,7 @@ module.exports = class Commons {
 				let geeBandName = bandName + "_" + reducerName;
 				rename[geeBandName] = bandName;
 			}
-			
+
 			dc.imageCollection(data => data.map(
 				img => {
 					// Create a GEE list with expected band names
@@ -100,7 +100,7 @@ module.exports = class Commons {
 					for(var geeBandName in rename) {
 						geeBands = geeBands.replace(geeBandName, rename[geeBandName]);
 					}
-			
+
 					// Rename bands
 					return img.rename(geeBands);
 				}
@@ -150,11 +150,15 @@ module.exports = class Commons {
 
 	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB, dataArg = "data") {
 		let result;
-		var dataCubeA = new DataCube(null, valA);
-        dataCubeA.setLogger(node.getLogger());
-		var dataCubeB = new DataCube(null, valB);
-        dataCubeA.setLogger(node.getLogger());
-		var imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
+
+		let dataCubeA = new DataCube(null, valA);
+		dataCubeA.setLogger(node.getLogger());
+
+		let dataCubeB = new DataCube(null, valB);
+		dataCubeA.setLogger(node.getLogger());
+
+		let imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
+
 		if (typeof valA === 'undefined' && typeof valB === 'undefined') {
 			// Should be caught by reduce(Binary)InCallback already...
 			throw new Errors.UndefinedElements({
@@ -168,7 +172,7 @@ module.exports = class Commons {
 			return valA;
 		}
 		else if (typeof valA === 'number') {
-			var imgA = ee.Image(valA);
+			let imgA = ee.Image(valA);
 			if (typeof valB === 'number') {
 				result = jsReducer(valA, valB);
 			}
@@ -188,17 +192,17 @@ module.exports = class Commons {
 		}
 		else if (dataCubeA.isImageCollection()) {
 			if (typeof valB === 'number' || dataCubeB.isImage()) {
-				var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+				let imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
 				result = dataCubeA.imageCollection().map(imgA => imgReducer(imgA, imgB));
 			}
 			else if (dataCubeB.isImageCollection()) {
-				var collA = dataCubeA.imageCollection();
-				var collB = dataCubeB.imageCollection();
-				var listA = collA.toList(collA.size());
-				var listB = collB.toList(collB.size());
+				let collA = dataCubeA.imageCollection();
+				let collB = dataCubeB.imageCollection();
+				let listA = collA.toList(collA.size());
+				let listB = collB.toList(collB.size());
 				result = collA.map(imgA => {
-					var index = listA.indexOf(imgA);
-					var imgB = listB.get(index);
+					let index = listA.indexOf(imgA);
+					let imgB = listB.get(index);
 					return imgReducer(imgA, imgB);
 				});
 			}
@@ -212,7 +216,7 @@ module.exports = class Commons {
 		}
 		else if (dataCubeA.isImage()) {
 			if (typeof valB === 'number' || dataCubeB.isImage()) {
-				var imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
+				let imgB = typeof valB === 'number' ? ee.Image(valB) : dataCubeB.image();
 				result = imgReducer(dataCubeA.image(), imgB);
 			}
 			else if (dataCubeB.isImageCollection()) {
@@ -237,10 +241,10 @@ module.exports = class Commons {
 	}
 
 	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
-		var data = node.getArgument(dataArg);
-		var dc = new DataCube(null, data);
-        dc.setLogger(node.getLogger());
-		var imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
+		let data = node.getArgument(dataArg);
+		let dc = new DataCube(null, data);
+		dc.setLogger(node.getLogger());
+		let imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {
 			return null;
 		}
@@ -259,8 +263,8 @@ module.exports = class Commons {
 	}
 
 	static restrictToSpatialExtent(dc) {
-		var bbox = dc.getSpatialExtent();
-		var geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs, 4326));
+		const bbox = dc.getSpatialExtent();
+		const geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs, 4326));
 		dc.imageCollection(ic => ic.filterBounds(geom));
 		return dc;
 	}
@@ -377,7 +381,7 @@ module.exports = class Commons {
 		}
 
 		// prepare image collection with aggregation labels
-		var images = images.sort('system:time_start');
+		images = images.sort('system:time_start');
 		switch (frequency) {
 			case 'hourly':
 			case 'daily':
@@ -393,7 +397,7 @@ module.exports = class Commons {
 				// This is are lists with relative months, e.g. 0 is december of the prev. year, -1 is november etc.
 				seasons = ee.Dictionary(seasons);
 				// Convert the relative months like -1 to their absolute values like 11.
-				var realSeasons = seasons.map(label, months => {
+				var realSeasons = seasons.map((label, months) => {
 					return ee.List(months).map(m => {
 						var num = ee.Number(m);
 						return ee.Algorithms.If(num.lt(1), num.add(12), num);
@@ -421,4 +425,4 @@ module.exports = class Commons {
 		}
 	}
 
-};
+}
