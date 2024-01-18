@@ -1,15 +1,26 @@
 const fse = require('fs-extra');
 const path = require('path');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 const Datastore = require('@seald-io/nedb');
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
 
 const LOG_LEVELS = ['error', 'warning', 'info', 'debug'];
 var LOG_CACHE = {};
 
 module.exports = class Logs {
 
-	static async loadLogsFromCache(file, url) {
+	static checkLevel(level, defaulValue = null) {
+		if (typeof level === 'string') {
+			level = level.toLowerCase();
+		}
+		return LOG_LEVELS.includes(level) ? level : defaulValue;
+	}
+
+	static getApplicableLevels(level) {
+		return LOG_LEVELS.slice(0, LOG_LEVELS.indexOf(level) + 1);
+	}
+
+	static async loadLogsFromCache(file, url, log_level) {
 		let now = Date.now();
 		// Free up memory
 		for(let file in LOG_CACHE) {
@@ -25,7 +36,7 @@ module.exports = class Logs {
 		}
 		// Read db from fs
 		else {
-			let logs = new Logs(file, url);
+			let logs = new Logs(file, url, log_level);
 			await logs.init();
 			LOG_CACHE[file] = {
 				lastAccess: now,
@@ -35,27 +46,22 @@ module.exports = class Logs {
 		}
 	}
 
-	constructor(file, baseUrl, requestId = null) {
+	constructor(file, baseUrl, level = null) {
 		this.file = file;
 		this.url = baseUrl;
-		this.requestId = requestId;
+		this.level = level;
 	}
 
-	init() {
-		return new Promise((resolve, reject) => {
-			fse.ensureDir(path.dirname(this.file)).then(() => {
-				this.db = new Datastore({ filename: this.file });
-				this.db.persistence.stopAutocompaction();
-				this.db.loadDatabase(function (err) {
-					if (err) {
-						reject(Errors.wrap(err));
-					}
-					else {
-						resolve();
-					}
-				});
-			}).catch(err => reject(Errors.wrap(err)));
-		});
+	async init() {
+		await fse.ensureDir(path.dirname(this.file));
+		
+		this.db = new Datastore({ filename: this.file });
+		this.db.stopAutocompaction();
+		await this.db.loadDatabaseAsync();
+	}
+
+	shouldLog(level) {
+		return !this.level || LOG_LEVELS.indexOf(level) <= LOG_LEVELS.indexOf(this.level);
 	}
 
 	debug(message, data = null, trace = undefined) {
@@ -96,9 +102,6 @@ module.exports = class Logs {
 	add(message, level = "debug", data = null, trace = undefined, code = undefined, links = undefined, id = undefined) {
 		id = id || Utils.timeId();
 		message = String(message);
-		if (this.requestId) {
-			message = this.requestId + ' | ' + message;
-		}
 		level = LOG_LEVELS.includes(level) ? level : 'debug';
 		let log = {
 			_id: id,
@@ -108,65 +111,63 @@ module.exports = class Logs {
 			path: trace,
 			code: code,
 			links: links,
-			data: data
+			data: data,
+			time: Utils.getISODateTime()
 		};
 		if (global.server.serverContext.debug) {
 			console.log(log);
 		}
-		this.db.insert(log, err => {
-			if (err) {
-				console.warn(err);
-			}
-		});
-	}
-
-	clear() {
-		return new Promise((resolve, reject) => {
-			this.db.remove({}, { multi: true }, err => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else {
-					this.db.persistence.compactDatafile();
-					resolve();
+		if (this.shouldLog(level)) {
+			this.db.insert(log, err => {
+				if (err && global.server.serverContext.debug) {
+					console.warn(err);
 				}
 			});
-		});
+		}
 	}
 
-	get(offset = null, limit = 0) {
+	async clear() {
+		await this.db.remove({}, { multi: true });
+		this.db.compactDatafile();
+	}
+
+	async get(offset = null, limit = 0, level = null) {
 		limit = parseInt(limit);
 		offset = typeof offset === 'string' ? offset : null;
+		level = Logs.checkLevel(level, this.level);
 
-		return new Promise((resolve, reject) => {
-			let query = {};
-			if (offset) {
-				query._id = { $gt: offset };
-			}
-			let cur = this.db.find(query, {_id: 0});
+		let query = {};
+		if (offset) {
+			query._id = { $gt: offset };
+		}
+		if (level !== 'debug') {
+			query.level = { $in: Logs.getApplicableLevels(level) };
+		} // else: debug is the lowest level, so all levels will be included anyway
+
+		let cur = this.db.find(query, {_id: 0});
+		if (limit >= 1) {
+			cur = cur.limit(limit + 1); // +1 to check for more elements
+		}
+		const logs = await cur.execAsync();
+		let links = [];
+		// Are there more elements?
+		if (limit >= 1 && logs.length === limit + 1) {
+			logs.pop();
+			let last = logs[logs.length - 1];
+			let url = new URL(this.url);
+			url.searchParams.set('offset', last.id);
 			if (limit >= 1) {
-				cur = cur.limit(limit + 1); // +1 to check for more elements
+				url.searchParams.set('limit', limit);
 			}
-			cur.exec((err, logs) => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else {
-					let links = [];
-					// Are there more elements?
-					if (limit >= 1 && logs.length === limit + 1) {
-						logs.pop();
-						let last = logs[logs.length - 1];
-						let url = this.url + '?offset=' + last.id + (limit >= 1 ? '&limit=' + limit : '')
-						links.push({
-							rel: 'next',
-							href: url
-						});
-					}
-					resolve({logs, links});
-				}
+			if (level) {
+				url.searchParams.set('level', level);
+			}
+			links.push({
+				rel: 'next',
+				href: url.toString()
 			});
-		});
+		}
+		return {level, logs, links};
 	}
 
 };

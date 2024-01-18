@@ -1,4 +1,4 @@
-const Datastore = require('@seald-io/nedb');
+
 const crypto = require("crypto");
 const fse = require('fs-extra');
 const path = require('path');
@@ -10,6 +10,10 @@ var Utils = {
 	crsBboxes: {},
 	serverUrl: null,
 	apiPath: null,
+
+	noop(x) {
+		return x;
+	},
 
 	tropicalSeasons() {
 		return {
@@ -79,12 +83,6 @@ var Utils = {
 	
 	pickFromObject(obj, pick) {
 		return CommonUtils.pickFromObject(obj, pick);
-	},
-
-	loadDB(name, folder = './storage/database/') {
-		var db = new Datastore({ filename: folder + name + '.db', autoload: true });
-		db.persistence.setAutocompactionInterval(60 * 60 * 1000); // Once every hour
-		return db;
 	},
 
 	generateHash(length = 16) {

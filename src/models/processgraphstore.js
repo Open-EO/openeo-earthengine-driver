@@ -1,10 +1,11 @@
-const Errors = require('../errors');
-const Utils = require('../utils');
+const Errors = require('../utils/errors');
+const Utils = require('../utils/utils');
+const DB = require('../utils/db');
 
 class ProcessGraphStore {
 
 	constructor() {
-		this.db = Utils.loadDB('process_graphs');
+		this.db = DB.load('process_graphs');
 	}
 
 	database() {
@@ -19,24 +20,27 @@ class ProcessGraphStore {
 		return ProcessGraphStore.FIELDS.includes(name);
 	}
 
-	getById(id, user_id) {
-		return new Promise((resolve, reject) => {
-			let query = {
-				id: id,
-				user_id: user_id
-			};
-			this.db.findOne(query, {}, (err, pg) => {
-				if (err) {
-					reject(Errors.wrap(err));
-				}
-				else if (pg === null) {
-					reject(new Errors.ProcessGraphNotFound());
-				}
-				else {
-					resolve(pg);
-				}
-			});
-		});
+	async getById(id, user_id) {
+		const query = {
+			id: id,
+			user_id: user_id
+		};
+		const pg = await this.db.findOneAsync(query);
+		if (pg === null) {
+			throw new Errors.ProcessGraphNotFound();
+		}
+		return pg;
+	}
+
+	async getByToken(token) {
+		const query = {
+			token: token
+		};
+		const pg = await this.db.findOneAsync(query);
+		if (pg === null) {
+			throw new Errors.ProcessGraphNotFound();
+		}
+		return pg;
 	}
 
 };

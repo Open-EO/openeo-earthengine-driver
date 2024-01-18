@@ -4,18 +4,19 @@ module.exports = class Processes {
 		this.registry = context.processes();
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		server.addEndpoint('get', '/processes', this.getProcesses.bind(this));
 
-		return this.registry.addFromFolder('./src/processes/');
+		const num = await this.registry.addFromFolder('./src/processes/');
+		console.log(`Loaded ${num} processes.`);
+		return num;
 	}
 
-	getProcesses(req, res, next) {
+	async getProcesses(req, res) {
 		res.json({
 			processes: this.registry.namespace('backend'),
 			links: []
 		});
-		return next();
 	}
 	
 };

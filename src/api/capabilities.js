@@ -1,4 +1,4 @@
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
 const packageInfo = require('../../package.json');
 
 module.exports = class CapabilitiesAPI {
@@ -8,15 +8,13 @@ module.exports = class CapabilitiesAPI {
 		this.context = context;
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		server.addEndpoint('get', '/', this.getRoot.bind(this), false, true);
 		server.addEndpoint('get', '/.well-known/openeo', this.getVersions.bind(this), false, true);
 		server.addEndpoint('get', '/', this.getCapabilities.bind(this));
 		server.addEndpoint('get', '/conformance', this.getConformance.bind(this));
 		server.addEndpoint('get', '/service_types', this.getServices.bind(this));
 		server.addEndpoint('get', '/file_formats', this.getFileFormats.bind(this));
-
-		return Promise.resolve();
 	}
 
 	addEndpoint(method, path) {
@@ -33,11 +31,11 @@ module.exports = class CapabilitiesAPI {
 		});
 	}
 
-	getRoot(req, res, next) {
-		res.redirect('/.well-known/openeo', next);
+	async getRoot(req, res) {
+		return res.redirect('/.well-known/openeo', Utils.noop);
 	}
 
-	getVersions(req, res, next) {
+	async getVersions(req, res) {
 		var versions = this.context.otherVersions.slice(0); // Make sure to clone it
 		versions.push({
 			url: Utils.getApiUrl(),
@@ -47,10 +45,9 @@ module.exports = class CapabilitiesAPI {
 		res.json({
 			versions: versions
 		});
-		return next();
 	}
 
-	getCapabilities(req, res, next) {
+	async getCapabilities(req, res) {
 		res.json({
 			api_version: this.context.apiVersion,
 			backend_version: packageInfo.version,
@@ -71,6 +68,12 @@ module.exports = class CapabilitiesAPI {
 					rel: 'about',
 					href: 'https://earthengine.google.com/',
 					title: 'Google Earth Engine Homepage'
+				},
+				{
+					rel: 'create-form',
+					href: 'https://earthengine.google.com/signup/',
+					type: 'text/html',
+					title: 'Sign Up for Google Earth Engine'
 				},
 				{
 					rel: 'terms-of-service',
@@ -109,28 +112,26 @@ module.exports = class CapabilitiesAPI {
 				}
 			]
 		});
-		return next();
 	}
 
-	getConformance(req, res, next) {
+	async getConformance(req, res) {
 		res.json({
 			"conformsTo": [
-				"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core"
+				"https://api.openeo.org/1.2.0",
+				"https://api.stacspec.org/v1.0.0/core",
+				"https://api.stacspec.org/v1.0.0/collections"
 			]
 		});
-		return next();
 	}
 
-	getServices(req, res, next) {
+	async getServices(req, res) {
 		res.json(this.context.services);
-		return next();
 	}
 
-	getFileFormats(req, res, next) {
+	async getFileFormats(req, res) {
 		res.json({
 			input: this.context.inputFormats,
 			output: this.context.outputFormats
 		});
-		return next();
 	}
 };

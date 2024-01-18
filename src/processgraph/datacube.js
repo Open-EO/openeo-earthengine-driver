@@ -1,6 +1,6 @@
 const Dimension = require('./dimension');
-const Utils = require('../utils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const Errors = require('../utils/errors');
 
 module.exports = class DataCube {
 
@@ -63,7 +63,7 @@ module.exports = class DataCube {
 			if (logger) {
 				logger.warn("Calling slow function getInfo(); Try to avoid this.");
 			}
-			// ToDo: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
+			// ToDo perf: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
 			var info = data.getInfo();
 			// Only works for Image and ImageCollection and maybe some other types, but not for Array for example.
 			// Arrays, numbers and all other scalars should be handled with the native JS code below.
@@ -80,7 +80,7 @@ module.exports = class DataCube {
 			return "null";
 		}
 		else if (typeof data === 'object' && data.constructor && typeof data.constructor.name === 'string') {
-			return data.constructor.name; // ToDo: This may conflict with other types, e.g. Image or ImageCollection
+			return data.constructor.name; // ToDo processes: This may conflict with other types, e.g. Image or ImageCollection
 		}
 		else {
 			return typeof data;
@@ -476,7 +476,7 @@ module.exports = class DataCube {
 		return this.output.parameters;
 	}
 
-	// ToDO: revise this functions for other/more complex use cases
+	// ToDo processes: revise this functions for other/more complex use cases #64
 	stackCollection(collection) {
 		// create an initial image.
 		var first = ee.Image(collection.first()).select([]);
@@ -487,7 +487,7 @@ module.exports = class DataCube {
 		return ee.ImageCollection([collection.iterate(appendBands, first)]);
 	}
 
-	// ToDO: add code for overlap resolver and inplace
+	// ToDO processes: add code for overlap resolver and inplace
 	merge(otherDataCube, overlapResolver=null, inplace=true, context=null){
 		if (otherDataCube instanceof DataCube) {
 			if (this.isImageCollection() && otherDataCube.isImageCollection()) {
@@ -521,7 +521,7 @@ module.exports = class DataCube {
 							// if (!(overlapResolver instanceof ProcessGraph)) {
 							// 	throw new Errors.OverlapResolverMissing();
 							// }
-							//TODO: implement overlap resolver
+							//ToDo processes: implement overlap resolver
 						}
 					});
 

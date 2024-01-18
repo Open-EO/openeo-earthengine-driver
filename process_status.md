@@ -2,6 +2,7 @@
 ## General TODOs:
 - Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
 - Properly read the default values from the JSON files
+- Migrate to v1.2.0 or v2.0.0 (incl. datacube subtype)
 ## Aggregate & Resample
 - [ ] aggregate_spatial
     * convert GeoJson geometry to GEE geometry

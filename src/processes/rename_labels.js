@@ -1,5 +1,5 @@
 const { BaseProcess } = require('@openeo/js-processgraphs');
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 
 module.exports = class rename_labels extends BaseProcess {
 
@@ -24,7 +24,7 @@ module.exports = class rename_labels extends BaseProcess {
             });
         }
 
-        // ToDo: only bands is currently supported
+        // ToDo processes: only bands is currently supported
         var dimension = dc.getDimension(dimensionName);
         if (dimension.type !== "bands") {
             throw new Errors.ProcessArgumentInvalid({
@@ -33,7 +33,7 @@ module.exports = class rename_labels extends BaseProcess {
                 reason: 'Only dimension "bands" is currently supported.'
             });
         }
-        // TODO Number values for the labels arguments causes problems
+        // ToDo processes: Number values for the labels arguments causes problems
         dc.renameLabels(dimension, target, source);
 
         return dc;

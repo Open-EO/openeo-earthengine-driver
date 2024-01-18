@@ -4,18 +4,18 @@ const fse = require('fs-extra');
 
 var HttpUtils = {
 
-	isFile(path) {
-		return fse.stat(path).then(stat => {
+	async isFile(path) {
+		try {
+			const stat = await fse.stat(path);
 			if (stat.isFile()) {
-				return Promise.resolve();
+				return true;
 			}
 			else {
-				return Promise.reject(new Errors.FileOperationUnsupported());
+				throw new Errors.FileOperationUnsupported();
 			}
-		})
-		.catch(err => {
-			return Promise.reject(new Errors.FileNotFound());
-		});
+		} catch (err) {
+			throw new Errors.FileNotFound();
+		}
 	},
 
 	stream(opts) {

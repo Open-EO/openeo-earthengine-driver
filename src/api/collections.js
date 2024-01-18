@@ -1,5 +1,5 @@
-const Utils = require('../utils');
-const Errors = require('../errors');
+const Utils = require('../utils/utils');
+const Errors = require('../utils/errors');
 
 module.exports = class Data {
 
@@ -18,18 +18,21 @@ module.exports = class Data {
 			type: 'text/html',
 			title: 'Human-readable Earth Engine Data Catalog'
 		};
-
 	}
 
-	beforeServerStart(server) {
+	async beforeServerStart(server) {
 		server.addEndpoint('get', '/collections', this.getCollections.bind(this));
 		server.addEndpoint('get', ['/collections/{collection_id}', '/collections/*'], this.getCollectionById.bind(this));
+		server.addEndpoint('get', '/collections/{collection_id}/queryables', this.getCollectionQueryables.bind(this));
+		// Some queryables may be routed through the /collections/{collection_id} endpoint due to the wildcard
 
-		return this.catalog.loadCatalog();
+		const num = await this.catalog.loadCatalog();
+		console.log(`Loaded ${num} collections.`);
+		return num;
 	}
 
-	getCollections(req, res, next) {
-		var data = this.catalog.getData().map(c => {
+	async getCollections(req, res) {
+		const data = this.catalog.getData().map(c => {
 			return {
 				stac_version: c.stac_version,
 				stac_extensions: [],
@@ -61,24 +64,48 @@ module.exports = class Data {
 				this.geeSourceCatalogLink
 			]
 		});
-		return next();
 	}
 	
-	getCollectionById(req, res, next) {
-		var id = req.params['*'];
+	async getCollectionById(req, res) {
+		const id = req.params['*'];
 		if (id.length === 0) {
 			// Redirect to correct route
-			return this.getCollections(req, res, next);
+			return await this.getCollections(req, res);
+		}
+		// Some queryables may be routed through the /collections/{collection_id} endpoint due to the wildcard
+		else if (id.endsWith('/queryables')) {
+			return await this.getCollectionQueryables(req, res);
 		}
 
-		var collection = this.catalog.getData(id);
-		if (collection !== null) {
-			res.json(collection);
-			return next();
+		const collection = this.catalog.getData(id);
+		if (collection === null) {
+			throw new Errors.CollectionNotFound();
 		}
-		else {
-			return next(new Errors.CollectionNotFound());
+
+		res.json(collection);
+	}
+
+	async getCollectionQueryables(req, res) {
+		// Get the ID from the normal parameter
+		let id = req.params.collection_id;
+		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
+		if (req.params['*'] && !req.params.collection_id) {
+			id = req.params['*'].replace(/\/queryables$/, '');
 		}
+		
+		const collection = this.catalog.getData(id);
+		if (collection === null) {
+			throw new Errors.CollectionNotFound();
+		}
+		// ToDo metadata/processes: Implement queryables #71
+		res.json({
+			"$schema" : "https://json-schema.org/draft/2019-09/schema",
+			"$id" : Utils.getApiUrl(`/collections/${id}/queryables`),
+			"title" : "Queryables",
+			"type" : "object",
+			"properties" : {},
+			"additionalProperties": false
+		});
 	}
 
 };

@@ -23,6 +23,14 @@
 			"General"
 		]
 	},
+	"QueryParameterUnsupported": {
+		"description": "The back-end responds with this error whenever a parameter is specified in the openEO API, but is not supported.",
+		"message": "The query parameter '{name}' is not supported.",
+		"http": 501,
+		"tags": [
+			"General"
+		]
+	},
 	"InfrastructureMaintenance": {
 		"description": "Service is currently not available, but the infrastructure is currently undergoing maintenance work.",
 		"message": "Service is not available at the moment due to maintenance work. Please try again later.",

@@ -1,4 +1,4 @@
-const Errors = require('../errors');
+const Errors = require('../utils/errors');
 const checkDiskSpace = require('check-disk-space');
 
 module.exports = class UsersAPI {
@@ -10,59 +10,56 @@ module.exports = class UsersAPI {
 
 	beforeServerStart(server) {
 		server.addEndpoint('get', '/credentials/basic', this.getCredentialsBasic.bind(this));
-//		server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
+//	server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
 		server.addEndpoint('get', '/me', this.getUserInfo.bind(this));
 
 		return Promise.resolve();
 	}
 
-	checkRequestAuthToken(req, res, next) {
+	async checkRequestAuthToken(req, res) {
 		var token = null;
 		if (req.authorization.scheme === 'Bearer') {
 			token = req.authorization.credentials;
 		}
 		else {
-			return next();
+			return;
 		}
 
-		this.storage.checkAuthToken(token).then(user => {
+		try {
+			const user = await this.storage.checkAuthToken(token);
 			req.user = user;
-			next();
-		})
-		.catch(err => {
-			res.send(err);
-		});
+		} catch(err) {
+			res.send(Error.wrap(err));
+		}
 	}
 
 //	getCredentialsOidc(req, res, next) {
 //		res.redirect('https://accounts.google.com/.well-known/openid-configuration', next);
 //	}
 
-	getCredentialsBasic(req, res, next) {
+	async getCredentialsBasic(req, res) {
 		if (!req.authorization.scheme) {
-			return next(new Errors.AuthenticationRequired());
+			throw new Errors.AuthenticationRequired();
 		}
 		else if (req.authorization.scheme != 'Basic') {
-			return next(new Errors.AuthenticationSchemeInvalid());
+			throw new Errors.AuthenticationSchemeInvalid();
 		}
 
-		this.storage.login(req.authorization.basic.username, req.authorization.basic.password)
-			.then(user => {
-				req.user = user;
-				res.json({
-					access_token: user.token,
-					access_token_valid_until: user.token_valid_until
-				});
-				return next();
-			}).catch(e => next(e));
+		const user = await this.storage.login(req.authorization.basic.username, req.authorization.basic.password);
+		req.user = user;
+		res.json({
+			access_token: user.token,
+			access_token_valid_until: user.token_valid_until
+		});
 	}
 
 	async getUserInfo(req, res) {
 		if (!req.user._id) {
-			return next(new Errors.AuthenticationRequired());
+			throw new Errors.AuthenticationRequired();
 		}
 		var data = {
 			user_id: req.user._id,
+			name: req.user.name,
 			budget: null,
 			links: [
 				{
@@ -90,11 +87,12 @@ module.exports = class UsersAPI {
 					quota: info.size
 				};
 			} catch (e) {
-				console.warn(e);
+				if (this.context.debug) {
+					console.warn(e);
+				}
 			}
 		}
 		res.json(data);
-		return;
 	}
 
 };

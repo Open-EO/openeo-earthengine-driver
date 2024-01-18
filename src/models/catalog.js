@@ -1,7 +1,7 @@
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
 const fse = require('fs-extra');
 const path = require('path');
-const {Storage} = require('@google-cloud/storage');
+const { Storage } = require('@google-cloud/storage');
 
 // Rough auto mapping for common band names until GEE lists them.
 // Optimized for Copernicus S2 data
@@ -33,14 +33,15 @@ module.exports = class DataCatalog {
 		this.serverContext = context;
 	}
 
-	readLocalCatalog() {
+	async readLocalCatalog() {
 		this.collections = {};
-		var files = fse.readdirSync(this.dataFolder, {withFileTypes: true});
-		for(var i in files) {
-			let file = files[i];
-			if (file.isFile() && file.name !== 'catalog.json') {
+		const files = await fse.readdir(this.dataFolder, { withFileTypes: true });
+		const promises = files.map(async (file) => {
+			const name = path.basename(file.name);
+			if (file.isFile() && name.endsWith('.json') && name !== 'catalog.json') {
 				try {
-					let collection = this.fixData(fse.readJsonSync(this.dataFolder + file.name));
+					let collection = await fse.readJson(this.dataFolder + name);
+					collection = this.fixData(collection);
 					if (this.supportedGeeTypes.includes(collection['gee:type'])) {
 						this.collections[collection.id] = collection;
 					}
@@ -48,51 +49,50 @@ module.exports = class DataCatalog {
 					console.error(error);
 				}
 			}
-		}
+		});
+		await Promise.all(promises);
+		return Utils.size(this.collections);
 	}
 
-	updateCatalog() {
-		// To refresh the catalog manually, delete the catalog.json.
-		let catalogFile = this.dataFolder + 'catalog.json';
-		if (fse.existsSync(catalogFile)) {
-			let fileTime = new Date(fse.statSync(catalogFile).ctime).getTime();
-			let expiryTime = new Date().getTime() - 24 * 60 * 60 * 1000; // Expiry time: A day
+	async updateCatalog(force = false) {
+		// To refresh the catalog manually, delete the catalog.json or set force to true
+		const catalogFile = this.dataFolder + 'catalog.json';
+		if (!force && await fse.exists(catalogFile)) {
+			const stat = await fse.stat(catalogFile);
+			const fileTime = new Date(stat.ctime).getTime();
+			const expiryTime = new Date().getTime() - 24 * 60 * 60 * 1000; // Expiry time: A day
 			if (fileTime > expiryTime) {
-				return Promise.resolve();
+				return;
 			}
 		}
 
-		console.info('Refreshing GEE catalog...');
 		const storage = new Storage({
 			keyFile: './privatekey.json',
 			projectId: this.serverContext.googleProjectId
 		});
 		const bucket = storage.bucket('earthengine-stac');
 		const prefix = 'catalog/';
-		return bucket.getFiles({
-			prefix: prefix
-		})
-		.then(data => {
-			let promises = [];
-			for(var i in data[0]) {
-				let file = data[0][i];
-				let name = path.basename(file.name);
-				if (name.endsWith('.json')) {
-					promises.push(file.download({
-						destination: this.dataFolder + name
-					}));
-				}
-			};
-			return Promise.all(promises);
+		const data = await bucket.getFiles({ prefix });
+
+		await fse.emptyDir(this.dataFolder);
+		const promises = data[0].map(async file => {
+			if (!file.name.endsWith('.json')) {
+				return;
+			}
+			const destination = this.dataFolder + path.basename(file.name);
+			await file.download({ destination, validation: 'md5' });
+			try {
+				await fse.readJSON(destination);
+			} catch (e) {
+				await file.download({ destination, validation: 'crc32cs' });
+			}
 		});
+		return await Promise.all(promises);
 	}
 
-	loadCatalog() {
-		return this.updateCatalog().then(() => {
-			this.readLocalCatalog();
-			console.info("Loaded catalog with " + Utils.size(this.collections) + " collections.");
-			return Promise.resolve();
-		});
+	async loadCatalog() {
+		await this.updateCatalog();
+		return await this.readLocalCatalog();
 	}
 
 	getData(id = null) {
@@ -123,6 +123,12 @@ module.exports = class DataCatalog {
 					break;
 			}
 			return l;
+		});
+		c.links.push({
+			rel: 'http://www.opengis.net/def/rel/ogc/1.0/queryables',
+			href: Utils.getApiUrl(`/collections/${c.id}/queryables`),
+			title: "Queryables",
+			type: "application/schema+json"
 		});
 		return c;
 	}
@@ -172,8 +178,6 @@ module.exports = class DataCatalog {
 			}
 		}
 
-		// ToDo: This assumes Google never exposes more than one extent per dimension
-		// Add default dimensions
 		var x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
 		var y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
 		c.stac_extensions = ["datacube"];
@@ -188,6 +192,7 @@ module.exports = class DataCatalog {
 				axis: "y",
 				extent: [c.extent.spatial.bbox[0][1], c.extent.spatial.bbox[0][y2]]
 			},
+			// ToDo metadata: Dimension t should not apply for ee.Image (applies only for ee.ImageCollection) #80
 			t: {
 				type: "temporal",
 				extent: c.extent.temporal.interval[0]
@@ -214,7 +219,6 @@ module.exports = class DataCatalog {
 		}
 
 		if (!Utils.isObject(c.assets)) {
-			c.stac_extensions = ["collection-assets"];
 			c.assets = {};
 		}
 

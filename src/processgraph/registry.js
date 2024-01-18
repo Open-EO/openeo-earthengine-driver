@@ -1,7 +1,7 @@
-const Utils = require('../utils');
+const Utils = require('../utils/utils');
 const fse = require('fs-extra');
 const path = require('path');
-const { ProcessRegistry } = require('@openeo/js-processgraphs');
+const ProcessRegistry = require('@openeo/js-commons/src/processRegistry');
 
 module.exports = class GeeProcessRegistry extends ProcessRegistry {
 
@@ -10,20 +10,17 @@ module.exports = class GeeProcessRegistry extends ProcessRegistry {
 		this.serverContext = serverContext;
 	}
 
-	addFromFolder(folder) {
-		fse.readdirSync(folder).forEach(file => {
-			if (file.endsWith('.js')) {
-				var id = path.basename(file, '.js');
-				this.addFromFile(id);
-			}
-		});
-		var num = Utils.size(this.namespace('backend'));
-		console.info("Loaded " + num + " processes.");
-		return Promise.resolve(num);
+	async addFromFolder(folder) {
+		const promises = (await fse.readdir(folder))
+			.filter(file => file.endsWith('.js'))
+			.map(file => this.addFromFile(path.basename(file, '.js')));
+		
+		await Promise.all(promises);
+		return Utils.size(this.namespace('backend'));
 	}
 
-	addFromFile(id) {
-		var spec = require('../processes/' + id + '.json');
+	async addFromFile(id) {
+		let spec = await fse.readJSON('src/processes/' + id + '.json');
 		delete spec.process_graph;
 		this.add(spec, 'backend');
 	}

@@ -1,5 +1,5 @@
-const Utils = require('../utils');
-const HttpUtils = require('../httpUtils');
+const Utils = require('../utils/utils');
+const HttpUtils = require('../utils/http');
 const path = require('path');
 
 module.exports = class FileWorkspace {
@@ -34,16 +34,17 @@ module.exports = class FileWorkspace {
 		return path.relative(this.getUserFolder(user_id), p).replace(/\\/g, '/');
 	}
 
-	getFileContents(user_id, p) {
+	async getFileContents(user_id, p) {
 		if (!user_id) {
-			return Promise.reject(new Errors.FilePathInvalid());
+			throw new Errors.FilePathInvalid();
 		}
 		var p = this.getPath(user_id, p);
 		if (!p) {
-			return Promise.reject(new Errors.FilePathInvalid());
+			throw new Errors.FilePathInvalid();
 		}
 		
-		return HttpUtils.isFile(p).then(() => fse.readFile(p));
+		await HttpUtils.isFile(p);
+		return await fse.readFile(p);
 	}
 
 }
