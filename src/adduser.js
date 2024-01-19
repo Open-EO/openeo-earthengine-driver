@@ -31,8 +31,13 @@ if (password && password.length < 4) {
 	stop(1);
 }
 
+let email = await rl.question('Enter an email address (optional): ');
+if (!email || email.length < 6) {
+	email = null;
+}
+
 try {
-	await users.register(username, password);
+	await users.register(username, password, email);
 	console.log('User created!');
 	stop(0);
 } catch (err) {

@@ -20,7 +20,7 @@ export default class ServerContext extends Config {
 		this.processGraphStore = new ProcessGraphStore();
 		this.fileWorkspace = new FileWorkspace();
 		this.jobStore = new JobStore();
-		this.userStore = new UserStore();
+		this.userStore = new UserStore(this);
 		this.serviceStore = new ServiceStore();
 		this.tempFolder = './storage/temp_files';
 		if (this.serviceAccountCredentialsFile) {

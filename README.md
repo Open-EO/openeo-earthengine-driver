@@ -48,7 +48,7 @@ openEO clients refresh the tokens automatically. User workspaces also don't work
 Alternatively, you can configure the driver to let users authenticatie with their User Accounts via OAuth2 / OpenID Connect.
 For this you need to configure the property `googleAuthClients` in the file [config.json](config.json).
 
-You want to have at least client IDs for (1) "Web Application" and (2) "TVs & limited-input devices" from the 
+You want to have at least client IDs for "Web Application" from the 
 [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 
 For example:
@@ -63,12 +63,6 @@ For example:
     "redirect_urls": [
       "https://editor.openeo.org/",
       "http://localhost/"
-    ]
-  },
-  {
-    "id": "0123456789-abcdefghijklmnop.apps.googleusercontent.com",
-    "grant_types": [
-      "urn:ietf:params:oauth:grant-type:device_code+pkce"
     ]
   }
 ]

@@ -2,13 +2,27 @@ import Utils from '../utils/utils.js';
 import DB from '../utils/db.js';
 import Errors from '../utils/errors.js';
 import crypto from "crypto";
+import HttpUtils from '../utils/http.js';
 
 export default class UserStore {
 
-	constructor() {
+	constructor(context) {
+		this.serverContext = context;
+
 		this.db = DB.load('users');
+
 		this.tokenDb = DB.load('token');
 		this.tokenValidity = 24*60*60;
+
+		this.oidcUserInfoEndpoint = null;
+		this.oidcIssuer = 'https://accounts.google.com';
+		this.oidcScopes = [
+			"openid",
+			"email",
+			"https://www.googleapis.com/auth/earthengine",
+			// "https://www.googleapis.com/auth/cloud-platform",
+			// "https://www.googleapis.com/auth/devstorage.full_control"
+		];
 	}
 
 	database() {
@@ -35,6 +49,7 @@ export default class UserStore {
 	emptyUser(withId = true) {
 		const user = {
 			name: null,
+			email: null,
 			password: null,
 			passwordSalt: null
 		};
@@ -92,10 +107,11 @@ export default class UserStore {
 		return user !== null;
 	}
 
-	async register(name, password) {
+	async register(name, password, email = null) {
 		const userData = this.emptyUser(false);
 		const pw = this.encryptPassword(password);
 		userData.name = name;
+		userData.email = email;
 		userData.password = pw.passwordHash;
 		userData.passwordSalt = pw.salt;
 		return await this.db.insertAsync(userData);
@@ -124,11 +140,15 @@ export default class UserStore {
 	}
 
 	async authenticateGoogle(token) {
+		const userInfo = await this.getOidcUserInfo(token);
 		const userData = this.emptyUser(false);
-		userData._id = "google-" + Utils.generateHash(8);
+		userData._id = "google_" + userInfo.sub;
+		userData.name = userInfo.name || userInfo.email || null;
+		userData.email = userInfo.email || null;
 		userData.token = token;
 		// Googles tokens are valid for roughly an hour, so we set it slightly lower
 		userData.token_valid_until = Utils.getTimestamp() + 59 * 60;
+		// todo: database handling for less OIDC userInfo requests
 		return userData;
 	}
 
@@ -157,6 +177,33 @@ export default class UserStore {
 		else {
 			throw new Errors.AuthenticationRequired({
 				reason: 'Authentication method not supported.'
+			});
+		}
+	}
+
+	async getOidcUserInfoEndpoint() {
+		if (this.oidcUserInfoEndpoint === null) {
+			try {
+				const url = this.oidcIssuer + '/.well-known/openid-configuration';
+				const doc = await HttpUtils.get(url);
+				this.oidcUserInfoEndpoint = doc.userinfo_endpoint || null;
+			} catch (err) {
+				throw new Errors.Internal({
+					message: 'Can not retrieve OIDC well-known document: ' + err.message
+				});
+			}
+		}
+		return this.oidcUserInfoEndpoint;
+	}
+
+	async getOidcUserInfo(token) {
+		const endpoint = await this.getOidcUserInfoEndpoint();
+		if (endpoint) {
+			return HttpUtils.get(endpoint, {Authorization: `Bearer ${token}`});
+		}
+		else {
+			throw new Errors.Internal({
+				message: 'Can not retrieve user information from Google.'
 			});
 		}
 	}

@@ -4,6 +4,13 @@ import fse from 'fs-extra';
 
 const HttpUtils = {
 
+	async get(url, headers = {}) {
+		const response = await axios.get(url, {
+			headers
+		});
+		return response.data;
+	},
+
 	async isFile(path) {
 		try {
 			const stat = await fse.stat(path);

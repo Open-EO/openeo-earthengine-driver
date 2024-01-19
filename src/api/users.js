@@ -9,7 +9,9 @@ export default class UsersAPI {
 	}
 
 	beforeServerStart(server) {
-		server.addEndpoint('get', '/credentials/basic', this.getCredentialsBasic.bind(this));
+		if (this.context.serviceAccountCredentialsFile) {
+			server.addEndpoint('get', '/credentials/basic', this.getCredentialsBasic.bind(this));
+		}
 		if (this.context.googleAuthClients) {
 			server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
 		}
@@ -43,16 +45,10 @@ export default class UsersAPI {
 			"providers": [
 				{
 					id: "google",
-					issuer: "https://accounts.google.com",
+					issuer: this.storage.oidcIssuer,
 					title: "Google",
 					description: "Login with your Google Earth Engine account.",
-					scopes: [
-						"openid",
-						"email",
-						"https://www.googleapis.com/auth/earthengine",
-						// "https://www.googleapis.com/auth/cloud-platform",
-						// "https://www.googleapis.com/auth/devstorage.full_control"
-					],
+					scopes: this.storage.oidcScopes,
 					default_clients: this.context.googleAuthClients
 				}
 			]
@@ -60,7 +56,10 @@ export default class UsersAPI {
 	}
 
 	async getCredentialsBasic(req, res) {
-		if (!req.authorization.scheme) {
+		if (!this.context.serviceAccountCredentialsFile) {
+			throw new Errors.FeatureUnsupported();
+		}
+		else if (!req.authorization.scheme) {
 			throw new Errors.AuthenticationRequired();
 		}
 		else if (req.authorization.scheme !== 'Basic') {
@@ -82,6 +81,7 @@ export default class UsersAPI {
 		const data = {
 			user_id: req.user._id,
 			name: req.user.name,
+			email: req.user.email || null,
 			budget: null,
 			links: [
 				{
