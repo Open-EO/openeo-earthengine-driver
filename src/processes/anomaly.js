@@ -6,12 +6,12 @@ export default class anomaly extends BaseProcess {
 	async execute(node) {
 		const dc = node.getDataCube('data');
 		const normalsDataCube = node.getDataCube('normals');
-		const normalsLabels = ee.List(normalsDataCube.dimT().getValues());
+		const normalsLabels = node.ee.List(normalsDataCube.dimT().getValues());
 		const normalsCollection = normalsDataCube.imageCollection();
 		const normals = normalsCollection.toList(normalsCollection.size());
 		const frequency = node.getArgument('frequency');
 
-		let images = Commons.setAggregationLabels(dc.imageCollection(), frequency);
+		let images = Commons.setAggregationLabels(node, dc.imageCollection(), frequency);
 		images = images.map(image => {
 			const label = image.get('label');
 			const normal = normals.get(normalsLabels.indexOf(label));

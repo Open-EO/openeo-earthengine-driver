@@ -12,7 +12,7 @@ export default class log extends BaseProcess {
           case 10:
             return image.log10();
           default:
-            return image.log().divide(ee.Image(base).log());
+            return image.log().divide(node.ee.Image(base).log());
         }
       },
       x => {

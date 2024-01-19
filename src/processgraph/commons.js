@@ -2,6 +2,7 @@ import Errors from '../utils/errors.js';
 import Utils from '../utils/utils.js';
 import DataCube from './datacube.js';
 import ProcessGraph from './processgraph.js';
+import GeeUtils from '../processgraph/utils.js';
 
 
 export default class Commons {
@@ -149,12 +150,13 @@ export default class Commons {
 	}
 
 	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB, dataArg = "data") {
+		const ee = node.ee;
 		let result;
 
-		const dataCubeA = new DataCube(null, valA);
+		const dataCubeA = new DataCube(node.ee, null, valA);
 		dataCubeA.setLogger(node.getLogger());
 
-		const dataCubeB = new DataCube(null, valB);
+		const dataCubeB = new DataCube(node.ee, null, valB);
 		dataCubeA.setLogger(node.getLogger());
 
 		const imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
@@ -242,7 +244,7 @@ export default class Commons {
 
 	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
 		const data = node.getArgument(dataArg);
-		const dc = new DataCube(null, data);
+		const dc = new DataCube(node.ee, null, data);
 		dc.setLogger(node.getLogger());
 		const imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {
@@ -262,17 +264,17 @@ export default class Commons {
 		}
 	}
 
-	static restrictToSpatialExtent(dc) {
+	static restrictToSpatialExtent(node, dc) {
 		const bbox = dc.getSpatialExtent();
-		const geom = ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs, 4326));
+		const geom = node.ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs, 4326));
 		dc.imageCollection(ic => ic.filterBounds(geom));
 		return dc;
 	}
 
-	static filterBbox(dc, bbox, process_id, paramName) {
+	static filterBbox(node, dc, bbox, process_id, paramName) {
 		try {
 			dc.setSpatialExtent(bbox);
-			return Commons.restrictToSpatialExtent(dc);
+			return Commons.restrictToSpatialExtent(node, dc);
 		} catch (e) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: process_id,
@@ -305,11 +307,11 @@ export default class Commons {
 		return dc;
 	}
 
-	static filterGeoJSON(dc, geometries, process_id, paramName) {
+	static filterGeoJSON(node, dc, geometries, process_id, paramName) {
 		try {
-			const geom = Utils.geoJsonToGeometry(geometries);
+			const geom = GeeUtils.geoJsonToGeometry(node, geometries);
 			dc.setSpatialExtentFromGeometry(geometries);
-			dc = Commons.restrictToSpatialExtent(dc);
+			dc = Commons.restrictToSpatialExtent(node, dc);
 			dc.imageCollection(ic => ic.map(img => img.clip(geom)));
 			return dc;
 		} catch (e) {
@@ -347,7 +349,8 @@ export default class Commons {
 		return dc;
 	}
 
-	static setAggregationLabels(images, frequency) {
+	static setAggregationLabels(node, images, frequency) {
+		const ee = node.ee;
 		let aggregationFormat = null;
 		let temporalFormat = null;
 		let seasons = {};
@@ -373,10 +376,10 @@ export default class Commons {
 				temporalFormat = "yyyy";
 				break;
 			case 'seasons':
-				seasons = Utils.seasons();
+				seasons = GeeUtils.seasons(node);
 				break;
 			case 'tropical_seasons':
-				seasons = Utils.tropicalSeasons();
+				seasons = GeeUtils.tropicalSeasons(node);
 				break;
 		}
 

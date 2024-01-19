@@ -7,6 +7,10 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		super(json, id, parent);
 	}
 
+	get ee() {
+		return this.processGraph.getContext().ee;
+	}
+
 	getLogger() {
 		return this.processGraph.getLogger() || console; // If no logger is set, use console.xxx
 	}
@@ -50,7 +54,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 	}
 
 	getDataCube(name) {
-		return new DataCube(this.getArgument(name));
+		return new DataCube(this.ee, this.getArgument(name));
 	}
 
 }

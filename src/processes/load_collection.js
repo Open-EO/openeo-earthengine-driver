@@ -5,14 +5,15 @@ import Commons from '../processgraph/commons.js';
 export default class load_collection extends BaseProcess {
 
 	async execute(node) {
+		const ee = node.ee;
 		// Load data
 		const id = node.getArgument('id');
 		const collection = node.getContext().getCollection(id);
-		let dc = new DataCube();
+		let dc = new DataCube(ee);
 		dc.setLogger(node.getLogger());
 		let eeData;
 		if (collection['gee:type'] === 'image') {
-			eeData = ee.ImageCollection(ee.Image(id));
+			eeData = ee.Image(id);
 		}
 		else {
 			eeData = ee.ImageCollection(id);
@@ -32,10 +33,10 @@ export default class load_collection extends BaseProcess {
 		const spatial_extent = node.getArgument("spatial_extent");
 		if (spatial_extent !== null) {
 			if (spatial_extent.type) { // GeoJSON - has been validated before so `type` should be a safe indicator for GeoJSON
-				dc = Commons.filterGeoJSON(dc, spatial_extent, this.id, 'spatial_extent');
+				dc = Commons.filterGeoJSON(node, dc, spatial_extent, this.id, 'spatial_extent');
 			}
 			else { // Bounding box
-				dc = Commons.filterBbox(dc, spatial_extent, this.id, 'spatial_extent');
+				dc = Commons.filterBbox(node, dc, spatial_extent, this.id, 'spatial_extent');
 			}
 		}
 

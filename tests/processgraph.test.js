@@ -36,7 +36,10 @@ describe('Process Graph Registry', () => {
 	});
 
 	test('Validate', async () => {
-		const p = new GeeProcessGraph(json, new ProcessingContext(serverContext));
+		const req = {
+			user: serverContext.users().emptyUser()
+		};
+		const p = new GeeProcessGraph(json, new ProcessingContext(serverContext, req));
 		const errors = await p.validate(false);
 		if (errors.count() > 0) {
 			console.log(errors.getMessage());

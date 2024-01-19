@@ -7,7 +7,7 @@ export default class If extends BaseProcess {
     const accept = node.getArgument('accept');
     const reject = node.getArgument('reject');
 
-    return ee.Algorithms.If(value, accept, reject);
+    return node.ee.Algorithms.If(value, accept, reject);
     //if (value === true) {
     //    return accept;
     //}

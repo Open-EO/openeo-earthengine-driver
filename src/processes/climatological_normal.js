@@ -1,10 +1,12 @@
 import { BaseProcess } from '@openeo/js-processgraphs';
 import Commons from '../processgraph/commons.js';
 import Utils from '../utils/utils.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class climatological_normal extends BaseProcess {
 
 	async execute(node) {
+		const ee = node.ee;
 		const dc = node.getDataCube('data');
 		const frequency = node.getArgument('frequency');
 
@@ -25,7 +27,7 @@ export default class climatological_normal extends BaseProcess {
 				break;
 			case 'seasons':
 				// Define seasons + labels
-				seasons = Utils.seasons();
+				seasons = GeeUtils.seasons(node);
 				geeSeasons = ee.Dictionary(seasons);
 				labels = Object.keys(seasons);
 				range = geeSeasons.values();
@@ -41,7 +43,7 @@ export default class climatological_normal extends BaseProcess {
 				break;
 			case 'tropical_seasons':
 				// Define seasons + labels
-				seasons = Utils.tropicalSeasons();
+				seasons = GeeUtils.tropicalSeasons(node);
 				geeSeasons = ee.Dictionary(seasons);
 				labels = Object.keys(seasons);
 				range = geeSeasons.values();

@@ -24,7 +24,8 @@ export default class Config {
 			certificate: null
 		};
 
-		this.serviceAccountCredentialsFile = "privatekey.json";
+		this.serviceAccountCredentialsFile = null;
+		this.googleAuthClients = [];
 
 		this.currency = null;
 		this.plans = {

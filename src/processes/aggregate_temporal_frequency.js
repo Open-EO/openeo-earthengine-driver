@@ -41,12 +41,13 @@ export default class aggregate_temporal_frequency extends BaseProcess {
 	}
 
 	async execute(node) {
+		const ee = node.ee;
 		// STEP 1: Get parameters and set some variables
 		const dc = node.getDataCube('data');
 		const frequency = node.getArgument('frequency');
 
 		// STEP 2: prepare image collection with aggregation label
-		const images = Commons.setAggregationLabels(dc.imageCollection(), frequency);
+		const images = Commons.setAggregationLabels(node, dc.imageCollection(), frequency);
 
 		// STEP 3: aggregate based on aggregation label
 
