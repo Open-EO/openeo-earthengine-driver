@@ -68,8 +68,7 @@ export default class DataCatalog {
 		}
 
 		const storage = new Storage({
-			keyFile: './privatekey.json',
-			projectId: this.serverContext.googleProjectId
+			keyFile: this.serverContext.serviceAccountCredentialsFile || null
 		});
 		const bucket = storage.bucket('earthengine-stac');
 		const prefix = 'catalog/';

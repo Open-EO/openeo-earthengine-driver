@@ -10,7 +10,9 @@ export default class UsersAPI {
 
 	beforeServerStart(server) {
 		server.addEndpoint('get', '/credentials/basic', this.getCredentialsBasic.bind(this));
-//	server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
+		if (this.context.googleAuthClients) {
+			server.addEndpoint('get', '/credentials/oidc', this.getCredentialsOidc.bind(this));
+		}
 		server.addEndpoint('get', '/me', this.getUserInfo.bind(this));
 
 		return Promise.resolve();
@@ -28,13 +30,34 @@ export default class UsersAPI {
 		try {
 			req.user = await this.storage.checkAuthToken(token);
 		} catch(err) {
-			res.send(Error.wrap(err));
+			res.send(Errors.wrap(err));
 		}
 	}
 
-//	getCredentialsOidc(req, res, next) {
-//		res.redirect('https://accounts.google.com/.well-known/openid-configuration', next);
-//	}
+	async getCredentialsOidc(req, res) {
+		if (!this.context.googleAuthClients) {
+			throw new Errors.FeatureUnsupported();
+		}
+
+		res.send({
+			"providers": [
+				{
+					id: "google",
+					issuer: "https://accounts.google.com",
+					title: "Google",
+					description: "Login with your Google Earth Engine account.",
+					scopes: [
+						"openid",
+						"email",
+						"https://www.googleapis.com/auth/earthengine",
+						// "https://www.googleapis.com/auth/cloud-platform",
+						// "https://www.googleapis.com/auth/devstorage.full_control"
+					],
+					default_clients: this.context.googleAuthClients
+				}
+			]
+		});
+	}
 
 	async getCredentialsBasic(req, res) {
 		if (!req.authorization.scheme) {

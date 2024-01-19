@@ -4,7 +4,8 @@ import Errors from '../utils/errors.js';
 
 export default class DataCube {
 
-	constructor(sourceDataCube = null, data = undefined) {
+	constructor(ee, sourceDataCube = null, data = undefined) {
+		this.ee = ee;
 		// Don't set this data directly, always use setData() to reset the type cache!
 		this.data = data;
 		// Cache the data type for less overhead, especially for ee.ComputedObject
@@ -48,23 +49,24 @@ export default class DataCube {
 		this.type = null;
 	}
 
-	static getDataType(data, logger = null) {
-		if (data instanceof ee.Image) {
+	getDataType() {
+		const ee = this.ee;
+		if (this.data instanceof ee.Image) {
 			return "eeImage";
 		}
-		else if (data instanceof ee.ImageCollection) {
+		else if (this.data instanceof ee.ImageCollection) {
 			return "eeImageCollection";
 		}
-		else if(data instanceof ee.Array) {
+		else if(this.data instanceof ee.Array) {
 			return "eeArray";
 		}
 		// Check for ComputedObject only after checking all the other EE types above
-		else if (data instanceof ee.ComputedObject) {
-			if (logger) {
-				logger.warn("Calling slow function getInfo(); Try to avoid this.");
+		else if (this.data instanceof ee.ComputedObject) {
+			if (this.logger) {
+				this.logger.warn("Calling slow function getInfo(); Try to avoid this.");
 			}
 			// ToDo perf: This is slow and needs to be replaced so that it uses a callback as parameter for getInfo() and the method will be async.
-			const info = data.getInfo();
+			const info = this.data.getInfo();
 			// Only works for Image and ImageCollection and maybe some other types, but not for Array for example.
 			// Arrays, numbers and all other scalars should be handled with the native JS code below.
 			if (Utils.isObject(info) && typeof info.type === 'string') {
@@ -73,14 +75,14 @@ export default class DataCube {
 		}
 
 		// Check for native JS types
-		if (Array.isArray(data)) {
+		if (Array.isArray(this.data)) {
 			return "array";
 		}
-		else if (data === null) {
+		else if (this.data === null) {
 			return "null";
 		}
-		else if (typeof data === 'object' && data.constructor && typeof data.constructor.name === 'string') {
-			return data.constructor.name; // ToDo processes: This may conflict with other types, e.g. Image or ImageCollection
+		else if (typeof data === 'object' && this.data.constructor && typeof this.data.constructor.name === 'string') {
+			return this.data.constructor.name; // ToDo processes: This may conflict with other types, e.g. Image or ImageCollection
 		}
 		else {
 			return typeof data;
@@ -89,7 +91,7 @@ export default class DataCube {
 
 	objectType() {
 		if (this.type === null) {
-			this.type = DataCube.getDataType(this.data, this.logger);
+			this.type = this.getDataType();
 		}
 		return this.type;
 	}
@@ -115,6 +117,7 @@ export default class DataCube {
 	}
 
 	image(callback = null, ...args) {
+		const ee = this.ee;
 		if (this.isImage()){
 			// no operation
 		}
@@ -137,6 +140,7 @@ export default class DataCube {
 	}
 
 	imageCollection(callback = null, ...args) {
+		const ee = this.ee;
 		if (this.isImageCollection()){
 			// no operation
 		}
@@ -478,6 +482,7 @@ export default class DataCube {
 
 	// ToDo processes: revise this functions for other/more complex use cases #64
 	stackCollection(collection) {
+		const ee = this.ee;
 		// create an initial image.
 		const first = ee.Image(collection.first()).select([]);
 		// write a function that appends a band to an image.

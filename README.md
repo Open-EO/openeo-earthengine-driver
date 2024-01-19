@@ -33,9 +33,46 @@ There are several important configuration options in the file [config.json](conf
 
 #### Setting up GEE authentication
 
+Generally, information about authentication with Google Earth Engine can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
+
+##### Service Account
+
+If you want to run all processing through a single account you can use service accounts. That's the most reliable way right now.
 The server needs to authenticate with a [service accounts](https://developers.google.com/earth-engine/service_account) using a private key. The account need to have access rights for earth engine. You need to drop your private key file into a secure place specify the file path of the private key in the property `serviceAccountCredentialsFile` in the file [config.json](config.json).
 
-More information about authentication can be found in the [Earth Engine documentation](https://developers.google.com/earth-engine/app_engine_intro).
+##### Google User Accounts
+
+**EXPERIMENTAL:** *This authentication method currently requires you to login every 60 minutes unless the
+openEO clients refresh the tokens automatically. User workspaces also don't work reliably as of now.*
+
+Alternatively, you can configure the driver to let users authenticatie with their User Accounts via OAuth2 / OpenID Connect.
+For this you need to configure the property `googleAuthClients` in the file [config.json](config.json).
+
+You want to have at least client IDs for (1) "Web Application" and (2) "TVs & limited-input devices" from the 
+[Google Cloud Console](https://console.cloud.google.com/apis/credentials).
+
+For example:
+
+```json
+[
+  {
+    "id": "1234567890-abcdefghijklmnop.apps.googleusercontent.com",
+    "grant_types": [
+      "implicit"
+    ],
+    "redirect_urls": [
+      "https://editor.openeo.org/",
+      "http://localhost/"
+    ]
+  },
+  {
+    "id": "0123456789-abcdefghijklmnop.apps.googleusercontent.com",
+    "grant_types": [
+      "urn:ietf:params:oauth:grant-type:device_code+pkce"
+    ]
+  }
+]
+```
 
 ### Starting up the server
 

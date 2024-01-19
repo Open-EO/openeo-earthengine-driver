@@ -6,9 +6,33 @@ import fse from 'fs-extra';
 
 export default class ProcessingContext {
 
-	constructor(serverContext, userId = null) {
+	constructor(serverContext, user) {
 		this.serverContext = serverContext;
-		this.userId = userId;
+		this.user = user;
+		this.userId = user._id;
+		this.ee = Utils.require('@google/earthengine');
+	}
+
+	async connectGee() {
+		const user = this.getUser();
+		const ee = this.ee;
+		if (user._id.startsWith("google-")) {
+			console.log("Authenticate via user token");
+			const expires = 59 * 60;
+			// todo: get expiration from token and set more parameters
+			ee.apiclient.setAuthToken(null, 'Bearer', user.token, expires, [], null, false, false);
+		}
+		else {
+			console.log("Authenticate via private key");
+			await new Promise((resolve, reject) => {
+				ee.data.authenticateViaPrivateKey(
+					this.serverContext.geePrivateKey,
+					() => resolve(),
+					error => reject("ERROR: GEE Authentication failed: " + error.message)
+				);
+			});
+		}
+		await ee.initialize();
 	}
 
 	server() {
@@ -49,6 +73,10 @@ export default class ProcessingContext {
 
 	getUserId() {
 		return this.userId;
+	}
+
+	getUser() {
+		return this.user;
 	}
 
 	// ToDo processes: the selection of formats and bands is really strict at the moment, maybe some of them are too strict

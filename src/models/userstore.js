@@ -101,9 +101,9 @@ export default class UserStore {
 		return await this.db.insertAsync(userData);
 	}
 
-	async checkAuthToken(token) {
+	async authenticateBasic(token) {
 		const query = {
-			token: token.replace(/^basic\/\//, ''), // remove token prefix for basic
+			token,
 			validity: { $gt: Utils.getTimestamp() }
 		};
 
@@ -120,8 +120,45 @@ export default class UserStore {
 				reason: 'User account has been removed.'
 			});
 		}
-
 		return user;
+	}
+
+	async authenticateGoogle(token) {
+		const userData = this.emptyUser(false);
+		userData._id = "google-" + Utils.generateHash(8);
+		userData.token = token;
+		// Googles tokens are valid for roughly an hour, so we set it slightly lower
+		userData.token_valid_until = Utils.getTimestamp() + 59 * 60;
+		return userData;
+	}
+
+	async checkAuthToken(apiToken) {
+		const parts = apiToken.split('/', 3);
+		if (parts.length !== 3) {
+			throw new Errors.AuthenticationRequired({
+				reason: 'Token format invalid.'
+			});
+		}
+		const [type, provider, token] = parts;
+
+		if (type === 'basic') {
+			return this.authenticateBasic(token);
+		}
+		else if (type === 'oidc') {
+			if (provider === 'google') {
+				return this.authenticateGoogle(token);
+			}
+			else {
+				throw new Errors.AuthenticationRequired({
+					reason: 'Identity provider not supported.'
+				});
+			}
+		}
+		else {
+			throw new Errors.AuthenticationRequired({
+				reason: 'Authentication method not supported.'
+			});
+		}
 	}
 
 }

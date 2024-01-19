@@ -63,6 +63,11 @@ export default class GeeProcessGraph extends ProcessGraph {
 		return await process.execute(node, this.context);
 	}
 
+	async execute(args = null) {
+		await this.context.connectGee();
+		return await super.execute(args);
+	}
+
 
 	optimizeLoadCollectionRect(rect) {
 		this.loadCollectionRect = rect;

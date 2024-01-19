@@ -14,8 +14,6 @@ import ServerContext from './utils/servercontext.js';
 import fse from 'fs-extra';
 import restify from 'restify';
 
-global.ee = Utils.require('@google/earthengine');
-
 class Server {
 
 	constructor() {
@@ -42,18 +40,7 @@ class Server {
 		this.api.users = new UsersAPI(this.serverContext);
 		this.api.processGraphs = new ProcessGraphsAPI(this.serverContext);
 
-		const privateKey = fse.readJsonSync(this.serverContext.serviceAccountCredentialsFile);
-		ee.data.authenticateViaPrivateKey(privateKey,
-			() => {
-				console.info("GEE Authentication succeeded.");
-				ee.initialize();
-				this.startServer();
-			},
-			(error) => {
-				console.error("ERROR: GEE Authentication failed: " + error);
-				process.exit(1);
-			}
-		);
+		this.startServer();
 	}
 
 	addEndpoint(method, path, callback, expose = true, root = false) {

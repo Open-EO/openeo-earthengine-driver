@@ -9,6 +9,7 @@ import FileWorkspace from '../models/workspace.js';
 import JobStore from '../models/jobstore.js';
 import UserStore from '../models/userstore.js';
 import ServiceStore from '../models/servicestore.js';
+import fse from 'fs-extra';
 
 export default class ServerContext extends Config {
 
@@ -22,6 +23,12 @@ export default class ServerContext extends Config {
 		this.userStore = new UserStore();
 		this.serviceStore = new ServiceStore();
 		this.tempFolder = './storage/temp_files';
+		if (this.serviceAccountCredentialsFile) {
+			this.geePrivateKey = fse.readJsonSync(this.serviceAccountCredentialsFile);
+		}
+		else {
+			this.geePrivateKey = null;
+		}
 	}
 
 	jobs() {
@@ -68,7 +75,7 @@ export default class ServerContext extends Config {
 	}
 
 	processingContext(req) {
-		return new ProcessingContext(this, req.user._id);
+		return new ProcessingContext(this, req.user);
 	}
 
 }
