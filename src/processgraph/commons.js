@@ -307,30 +307,30 @@ export default class Commons {
 		let temporalFormat = null;
 		let seasons = {};
 		switch (frequency) {
-			case 'hourly':
+			case 'hour':
 				aggregationFormat = "yyyy-MM-DD-HH";
 				temporalFormat = "HH";
 				break;
-			case 'daily':
+			case 'day':
 				aggregationFormat = "yyyy-DDD";
 				temporalFormat = "DDD";
 				break;
-			case 'weekly':
+			case 'week':
 				aggregationFormat = "yyyy-ww";
 				temporalFormat = "ww";
 				break;
-			case 'monthly':
+			case 'month':
 				aggregationFormat = "yyyy-MM";
 				temporalFormat = "MM";
 				break;
-			case 'yearly':
+			case 'year':
 				aggregationFormat = "yyyy";
 				temporalFormat = "yyyy";
 				break;
-			case 'seasons':
+			case 'season':
 				seasons = GeeUtils.seasons(node);
 				break;
-			case 'tropical_seasons':
+			case 'tropical-season':
 				seasons = GeeUtils.tropicalSeasons(node);
 				break;
 		}
@@ -338,17 +338,17 @@ export default class Commons {
 		// prepare image collection with aggregation labels
 		images = images.sort('system:time_start');
 		switch (frequency) {
-			case 'hourly':
-			case 'daily':
-			case 'weekly':
-			case 'monthly':
-			case 'yearly':
+			case 'hour':
+			case 'day':
+			case 'week':
+			case 'month':
+			case 'year':
 				return images.map(img => {
 					const date = img.date();
 					return img.set('aggregationLabel', date.format(aggregationFormat)).set("label", date.format(temporalFormat));
 				});
-			case 'seasons':
-			case 'tropical_seasons': {
+			case 'season':
+			case 'tropical-season': {
 				// This is are lists with relative months, e.g. 0 is december of the prev. year, -1 is november etc.
 				seasons = ee.Dictionary(seasons);
 				// Convert the relative months like -1 to their absolute values like 11.

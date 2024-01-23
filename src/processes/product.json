@@ -6,7 +6,6 @@
         "math",
         "reducer"
     ],
-    "gee:custom": true,
     "parameters": [
         {
             "name": "data",

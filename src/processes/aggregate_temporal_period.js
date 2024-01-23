@@ -1,7 +1,7 @@
 import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class aggregate_temporal_frequency extends GeeProcess {
+export default class aggregate_temporal_period extends GeeProcess {
 
 	reduce(node, imageCollection) {
 		const callback = node.getCallback('reducer');
@@ -25,10 +25,10 @@ export default class aggregate_temporal_frequency extends GeeProcess {
 		const ee = node.ee;
 		// STEP 1: Get parameters and set some variables
 		const dc = node.getDataCube('data');
-		const frequency = node.getArgument('frequency');
+		const period = node.getArgument('period');
 
 		// STEP 2: prepare image collection with aggregation label
-		const images = Commons.setAggregationLabels(node, dc.imageCollection(), frequency);
+		const images = Commons.setAggregationLabels(node, dc.imageCollection(), period);
 
 		// STEP 3: aggregate based on aggregation label
 

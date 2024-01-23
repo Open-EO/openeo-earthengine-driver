@@ -8,7 +8,7 @@ export default class climatological_normal extends GeeProcess {
 	executeSync(node) {
 		const ee = node.ee;
 		const dc = node.getDataCube('data');
-		const frequency = node.getArgument('frequency');
+		const period = node.getArgument('period');
 
 		// Get a data cube restricted to the climatological period (default: from 1981 to 2010)
 		const climatologyPeriod = node.getArgument('climatology_period', ["1981", "2010"]).map(x => parseInt(x, 10));
@@ -16,16 +16,16 @@ export default class climatological_normal extends GeeProcess {
 		let end = ee.Date(climatologyPeriod[1] + "-12-31");
 
 		let labels, range, geeFrequencyName, seasons, geeSeasons, earlyStart;
-		switch (frequency) {
-			case 'daily':
+		switch (period) {
+			case 'day':
 				labels = range = Utils.sequence(1, 365);
 				geeFrequencyName = "day_of_year";
 				break;
-			case 'monthly':
+			case 'month':
 				labels = range = Utils.sequence(1, 12);
 				geeFrequencyName = "month";
 				break;
-			case 'seasons':
+			case 'season':
 				// Define seasons + labels
 				seasons = GeeUtils.seasons(node);
 				geeSeasons = ee.Dictionary(seasons);
@@ -41,7 +41,7 @@ export default class climatological_normal extends GeeProcess {
 				);
 				end = end.advance(-2, 'month');
 				break;
-			case 'tropical_seasons':
+			case 'tropical-season':
 				// Define seasons + labels
 				seasons = GeeUtils.tropicalSeasons(node);
 				geeSeasons = ee.Dictionary(seasons);
@@ -57,11 +57,11 @@ export default class climatological_normal extends GeeProcess {
 				);
 				end = end.advance(-4, 'month');
 				break;
-			case 'climatology_period':
-			case 'yearly': // alias for climatology_period
+			case 'climatology-period':
+			case 'year': // alias for climatology-period
 				range = [ee.List(climatologyPeriod)];
 				geeFrequencyName = "year";
-				labels = ["climatology_period"];
+				labels = ["climatology-period"];
 				break;
 		}
 
@@ -69,18 +69,18 @@ export default class climatological_normal extends GeeProcess {
 
 		const normals = ee.List(range).map(x => {
 			let calFilter = null;
-			switch (frequency) {
-				case 'climatology_period':
-				case 'yearly': // alias for climatology_period
-				case 'seasons':
-				case 'tropical_seasons':
+			switch (period) {
+				case 'climatology-period':
+				case 'year': // alias for climatology-period
+				case 'season':
+				case 'tropical-season':
 					x = ee.List(x);
 					calFilter = ee.Filter.calendarRange(x.get(0), x.get(-1), geeFrequencyName);
 					break;
 			}
-			switch (frequency) {
-				case 'seasons':
-				case 'tropical_seasons':
+			switch (period) {
+				case 'season':
+				case 'tropical-season':
 					calFilter = ee.Filter(ee.Algorithms.If(
 						ee.Number(x.reduce('min')).lt(1),
 						ee.Filter.or(ee.Filter.calendarRange(ee.Number(x.get(0)).add(12), 12, 'month'), ee.Filter.calendarRange(1, x.get(-1), 'month')),

@@ -135,5 +135,13 @@
 		"tags": [
 			"Processes"
 		]
+	},
+	"DataCubeEmpty": {
+		"description": null,
+		"message": "The file format doesn't support storing empty data cubes.",
+		"http": 400,
+		"tags": [
+			"Processes"
+		]
 	}
 }

@@ -1,6 +1,6 @@
 import GeeProcess from '../processgraph/process.js';
 
-export default class text_merge extends GeeProcess {
+export default class text_concat extends GeeProcess {
 
   executeSync(node) {
     const data = node.getArgument('data');

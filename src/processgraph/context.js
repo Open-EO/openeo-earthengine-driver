@@ -192,7 +192,7 @@ export default class ProcessingContext {
 			case 'json': {
 				const data = dataCube.getData();
 				if (typeof data === 'undefined') {
-					throw new Errors.Internal({message: 'Computation did not lead to any results'});
+					throw new Errors.DataCubeEmpty();
 				}
 				const json = JSON.stringify(data);
 				const stream = new StringStream(json);

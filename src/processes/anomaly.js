@@ -9,9 +9,9 @@ export default class anomaly extends GeeProcess {
 		const normalsLabels = node.ee.List(normalsDataCube.dimT().getValues());
 		const normalsCollection = normalsDataCube.imageCollection();
 		const normals = normalsCollection.toList(normalsCollection.size());
-		const frequency = node.getArgument('frequency');
+		const period = node.getArgument('period');
 
-		let images = Commons.setAggregationLabels(node, dc.imageCollection(), frequency);
+		let images = Commons.setAggregationLabels(node, dc.imageCollection(), period);
 		images = images.map(image => {
 			const label = image.get('label');
 			const normal = normals.get(normalsLabels.indexOf(label));

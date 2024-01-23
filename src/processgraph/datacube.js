@@ -31,6 +31,16 @@ export default class DataCube {
 		}
 	}
 
+	toJSON() {
+		const dimensions = {};
+		for(const name in this.dimensions) {
+			dimensions[name] = this.dimensions[name].toSTAC();
+		}
+		return {
+			"cube:dimensions": dimensions
+		}
+	}
+
 	getLogger() {
 		return this.logger;
 	}
