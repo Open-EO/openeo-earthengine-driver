@@ -70,7 +70,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 	invalidArgument(argument, reason) {
 		return new Errors.ProcessArgumentInvalid({
 			process: this.process_id,
-			namespace: this.namespace,
+			namespace: this.namespace || 'n/a',
 			argument,
 			reason
 		});

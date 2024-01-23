@@ -4,6 +4,17 @@ import fse from 'fs-extra';
 
 const HttpUtils = {
 
+	createResponse(data, headers = {}) {
+		return {
+			data,
+			status: 200,
+			statusText: "OK",
+			headers,
+			config: {},
+			request: {}
+		};
+	},
+
 	async get(url, headers = {}) {
 		const response = await axios.get(url, {
 			headers
@@ -26,6 +37,13 @@ const HttpUtils = {
 	},
 
 	stream(opts) {
+		if (typeof opts === 'string') {
+			opts = {
+				method: 'get',
+				url: opts,
+				responseType: 'stream'
+			};
+		}
 		return axios(opts).catch(error => {
 			if (opts.responseType === 'stream' && error.response !== null && typeof error.response === 'object' && error.response.data !== null) {
 				// JSON error responses are Blobs and streams if responseType is set as such, so convert to JSON if required.

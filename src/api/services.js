@@ -54,13 +54,25 @@ export default class ServicesAPI {
 
 			pg.optimizeLoadCollectionRect(rect);
 			const resultNode = await pg.execute();
-			const dataCube = resultNode.getResult();
-			dataCube.setOutputFormatParameter('size', '256x256');
-			dataCube.setSpatialExtent(rect);
-			dataCube.setCrs(3857);
-			const url = await context.retrieveResults(dataCube);
-			logger.debug(`Serving ${url} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
-			return res.redirect(url, Utils.noop);
+			const cube = resultNode.getResult();
+			cube.setOutputFormatParameter('size', '256x256');
+			cube.setSpatialExtent(rect);
+			cube.setCrs(3857);
+
+			const response = await context.retrieveResults(cube);
+			if (typeof response === 'string') {
+				logger.debug(`Serving ${response} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
+				return res.redirect(response, Utils.noop);
+			}
+			else {
+				logger.debug(`Streaming to tile ${req.params.x}/${req.params.y}/${req.params.z}`);
+				let contentType = 'application/octet-stream';
+				if (typeof response.headers['content-type'] !== 'undefined') {
+					contentType = response.headers['content-type'];
+				}
+				res.header('Content-Type', contentType);
+				response.data.pipe(res);
+			}
 		} catch(e) {
 			logger.error(e);
 			throw e;

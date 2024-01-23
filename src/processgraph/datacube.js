@@ -4,10 +4,8 @@ import Errors from '../utils/errors.js';
 
 export default class DataCube {
 
-	constructor(ee, sourceDataCube = null, data = undefined) {
+	constructor(ee, data = undefined) {
 		this.ee = ee;
-		// Don't set this data directly, always use setData() to reset the type cache!
-		this.data = data;
 		// Cache the data type for less overhead, especially for ee.ComputedObject
 		this.type = null;
 		this.dimensions = {};
@@ -18,16 +16,18 @@ export default class DataCube {
 		this.col_id = null;
 		this.logger = null;
 
-		if (sourceDataCube instanceof DataCube) {
-			if (data === undefined) {
-				this.data = sourceDataCube.data;
-				this.type = sourceDataCube.type;
+		// Don't set this data directly, always use setData() to reset the type cache!
+		if (data instanceof DataCube) {
+			this.data = data.data;
+			this.type = data.type;
+			this.logger = data.logger;
+			this.output = Object.assign({}, data.output);
+			for(const i in data.dimensions) {
+				this.dimensions[i] = new Dimension(this, data.dimensions[i]);
 			}
-			this.logger = sourceDataCube.logger;
-			this.output = Object.assign({}, sourceDataCube.output);
-			for(const i in sourceDataCube.dimensions) {
-				this.dimensions[i] = new Dimension(this, sourceDataCube.dimensions[i]);
-			}
+		}
+		else {
+			this.data = data;
 		}
 	}
 
@@ -193,6 +193,11 @@ export default class DataCube {
 			throw new Error("No dimension of "+label+" found.");
 		}
 		return dims[0];
+	}
+
+	hasDimensionsXY() {
+		const spatialDimensions = Object.values(this.dimensions).filter(dim => dim.type === 'spatial' && ['x', 'y'].includes(dim.axis));
+		return spatialDimensions.length >= 2;
 	}
 
 	dimX() {

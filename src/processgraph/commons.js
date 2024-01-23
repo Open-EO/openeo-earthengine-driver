@@ -126,10 +126,10 @@ export default class Commons {
 		const ee = node.ee;
 		let result;
 
-		const dataCubeA = new DataCube(node.ee, null, valA);
+		const dataCubeA = new DataCube(node.ee, valA);
 		dataCubeA.setLogger(node.getLogger());
 
-		const dataCubeB = new DataCube(node.ee, null, valB);
+		const dataCubeB = new DataCube(node.ee, valB);
 		dataCubeA.setLogger(node.getLogger());
 
 		const imgReducer = (a,b) => eeImgReducer(a,b).copyProperties({source: a, properties: a.propertyNames()});
@@ -201,7 +201,7 @@ export default class Commons {
 
 	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
 		const data = node.getArgument(dataArg);
-		const dc = new DataCube(node.ee, null, data);
+		const dc = new DataCube(node.ee, data);
 		dc.setLogger(node.getLogger());
 		const imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {

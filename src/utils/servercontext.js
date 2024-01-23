@@ -22,7 +22,6 @@ export default class ServerContext extends Config {
 		this.jobStore = new JobStore();
 		this.userStore = new UserStore(this);
 		this.serviceStore = new ServiceStore();
-		this.tempFolder = './storage/temp_files';
 		if (this.serviceAccountCredentialsFile) {
 			this.geePrivateKey = fse.readJsonSync(this.serviceAccountCredentialsFile);
 		}
@@ -56,10 +55,6 @@ export default class ServerContext extends Config {
 
 	webServices() {
 		return this.serviceStore;
-	}
-
-	getTempFolder() {
-		return this.tempFolder;
 	}
 
 	isValidOutputFormat(format) {

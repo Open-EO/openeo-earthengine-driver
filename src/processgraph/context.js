@@ -1,8 +1,7 @@
 import Utils from '../utils/utils.js';
 import HttpUtils from '../utils/http.js';
 import Errors from '../utils/errors.js';
-import path from 'path';
-import fse from 'fs-extra';
+import StringStream from '../utils/stringstream.js';
 
 export default class ProcessingContext {
 
@@ -16,7 +15,7 @@ export default class ProcessingContext {
 	async connectGee() {
 		const user = this.getUser();
 		const ee = this.ee;
-		if (user._id.startsWith("google-")) {
+		if (this.userId.startsWith("google-")) {
 			console.log("Authenticate via user token");
 			const expires = 59 * 60;
 			// todo: get expiration from token and set more parameters
@@ -79,7 +78,7 @@ export default class ProcessingContext {
 		return this.user;
 	}
 
-	// ToDo processes: the selection of formats and bands is really strict at the moment, maybe some of them are too strict
+	// Returns AxiosResponse (object) or URL (string)
 	async retrieveResults(dataCube) {
 		const logger = dataCube.getLogger();
 		const parameters = dataCube.getOutputFormatParameters();
@@ -90,15 +89,20 @@ export default class ProcessingContext {
 		else {
 			format = 'png';
 		}
-		// Handle CRS + bbox settings
-		if (!parameters.epsgCode && (format === 'jpeg' || format === 'png')) {
-			dataCube.setCrs(4326);
+
+		let region = null;
+		let crs = null;
+		if (dataCube.hasDimensionsXY()) {
+			// Handle CRS + bbox settings
+			if (!parameters.epsgCode && (format === 'jpeg' || format === 'png')) {
+				dataCube.setCrs(4326);
+			}
+			else if (parameters.epsgCode > 0) {
+				dataCube.setCrs(parameters.epsgCode);
+			}
+			region = Utils.bboxToGeoJson(dataCube.getSpatialExtent());
+			crs = Utils.crsToString(dataCube.getCrs());
 		}
-		else if (parameters.epsgCode > 0) {
-			dataCube.setCrs(parameters.epsgCode);
-		}
-		const region = Utils.bboxToGeoJson(dataCube.getSpatialExtent());
-		const crs = Utils.crsToString(dataCube.getCrs());
 
 		switch(format) {
 			case 'jpeg':
@@ -186,12 +190,13 @@ export default class ProcessingContext {
 					});
 				});
 			case 'json': {
-				const fileName = Utils.generateHash() + "/result-" + Date.now() + "." + this.getExtension(format);
-				const p = path.normalize(path.join(this.serverContext.getTempFolder(), fileName));
-				const parent = path.dirname(p);
-				await fse.ensureDir(parent);
-				await fse.writeJson(p, dataCube.getData());
-				return Utils.getApiUrl("/temp/" + fileName);
+				const data = dataCube.getData();
+				if (typeof data === 'undefined') {
+					throw new Errors.Internal({message: 'Computation did not lead to any results'});
+				}
+				const json = JSON.stringify(data);
+				const stream = new StringStream(json);
+				return HttpUtils.createResponse(stream, {'content-type': 'application/json'});
 			}
 			default:
 				throw new Error('File format not supported.');

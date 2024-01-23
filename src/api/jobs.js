@@ -31,17 +31,7 @@ export default class JobsAPI {
 		// We could use https://github.com/axios/axios#cancellation in the future. #76
 
 		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
-		// todo: What do we need the temp endpoint for? #75
-		server.addEndpoint('get', '/temp/{token}/{file}', this.getTempFile.bind(this), false);
 		server.addEndpoint('get', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
-	}
-
-	async getTempFile(req, res) {
-		const p = this.storage.makeFolder(this.context.getTempFolder(), [req.params.token, req.params.file]);
-		if (!p) {
-			throw new Errors.NotFound();
-		}
-		await this.deliverFile(res, p);
 	}
 
 	async getStorageFile(req, res) {
@@ -179,16 +169,13 @@ export default class JobsAPI {
 			const pg = new ProcessGraph(job.process, context);
 			pg.setLogger(logger);
 			const resultNode = await pg.execute();
-
 			const cube = resultNode.getResult();
-			const url = await context.retrieveResults(cube);
 
-			logger.debug("Downloading data from Google: " + url);
-			const stream = await HttpUtils.stream({
-				method: 'get',
-				url: url,
-				responseType: 'stream'
-			});
+			let response = await context.retrieveResults(cube);
+			if (typeof response === 'string') {
+				logger.debug("Downloading data from Google: " + response);
+				response = await HttpUtils.stream(response);
+			}
 
 			const extension = context.getExtension(cube.getOutputFormat());
 			const filePath = this.storage.getJobFile(job._id, Utils.generateHash() + "." + extension);
@@ -196,7 +183,7 @@ export default class JobsAPI {
 			await fse.ensureDir(path.dirname(filePath));
 			await new Promise((resolve, reject) => {
 				const writer = fse.createWriteStream(filePath);
-				stream.data.pipe(writer);
+				response.data.pipe(writer);
 				writer.on('error', reject);
 				writer.on('close', resolve);
 			});
@@ -427,21 +414,23 @@ export default class JobsAPI {
 
 		logger.debug("Executing processes");
 		const resultNode = await pg.execute();
-		const url = await context.retrieveResults(resultNode.getResult());
+		const cube = resultNode.getResult();
 
-		logger.debug("Downloading data from Google: " + url);
-		const stream = await HttpUtils.stream({
-			method: 'get',
-			url: url,
-			responseType: 'stream'
-		});
+		let response = await context.retrieveResults(cube);
+		if (typeof response === 'string') {
+			logger.debug("Downloading data from Google: " + response);
+			response = await HttpUtils.stream(response);
+		}
 
-		const contentType = typeof stream.headers['content-type'] !== 'undefined' ? stream.headers['content-type'] : 'application/octet-stream';
+		let contentType = 'application/octet-stream';
+		if (Utils.isObject(response.headers) && typeof response.headers['content-type'] !== 'undefined') {
+			contentType = response.headers['content-type'];
+		}
 		res.header('Content-Type', contentType);
 		res.header('OpenEO-Costs', 0);
 		const monitorUrl = Utils.getApiUrl('/result/logs/' + id) + '?log_level=' + log_level;
 		res.header('Link', `<${monitorUrl}>; rel="monitor"`);
-		stream.data.pipe(res);
+		response.data.pipe(res);
 	}
 
 	makeJobResponse(job, full = true) {

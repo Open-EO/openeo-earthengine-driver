@@ -10,16 +10,7 @@
         {
             "name": "data",
             "description": "The data to save.",
-            "schema": [
-                {
-                    "type": "object",
-                    "subtype": "raster-cube"
-                },
-                {
-                    "type": "object",
-                    "subtype": "vector-cube"
-                }
-            ]
+            "schema": {}
         },
         {
             "name": "format",

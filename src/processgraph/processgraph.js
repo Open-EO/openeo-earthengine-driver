@@ -3,7 +3,7 @@ import GeeJsonSchemaValidator from './jsonschema.js';
 import GeeProcessGraphNode from './node.js';
 import Errors from '../utils/errors.js';
 import Utils from '../utils/utils.js';
-const epsg = Utils.require('../../package.json');
+const epsg = Utils.require('epsg-index/all.json');
 
 export default class GeeProcessGraph extends ProcessGraph {
 
@@ -54,7 +54,9 @@ export default class GeeProcessGraph extends ProcessGraph {
 
 	async validateNode(node) {
 		const process = this.getProcess(node);
-		return await process.validate(node, this.context);
+		if (process) {
+			return await process.validate(node, this.context);
+		}
 	}
 
 	async execute(args = null) {
