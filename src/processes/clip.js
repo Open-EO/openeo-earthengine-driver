@@ -8,8 +8,7 @@ export default class clip extends GeeProcess {
     const max = node.getArgument('max');
     return Commons.applyInCallback(
       node,
-      image => image.clamp(min, max),
-      x => Math.min(Math.max(min, x), max)
+      image => image.clamp(min, max)
     );
   }
 

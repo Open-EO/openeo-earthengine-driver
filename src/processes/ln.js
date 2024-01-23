@@ -4,7 +4,7 @@ import Commons from '../processgraph/commons.js';
 export default class ln extends GeeProcess {
 
   executeSync(node) {
-    return Commons.applyInCallback(node, image => image.log(), x => Math.log(x));
+    return Commons.applyInCallback(node, image => image.log());
   }
 
 }

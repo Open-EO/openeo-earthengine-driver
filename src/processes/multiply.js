@@ -6,8 +6,7 @@ export default class multiply extends GeeProcess {
 	executeSync(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a, b) => a.multiply(b),
-			(a, b) => a * b
+			(a, b) => a.multiply(b)
 		);
 	}
 

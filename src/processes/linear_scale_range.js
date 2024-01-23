@@ -16,8 +16,7 @@ export default class linear_scale_range extends GeeProcess {
         const ratio = numerator.divide(denominator);
         const scaleFactor = outputMax - outputMin;
         return ratio.multiply(scaleFactor).add(outputMin);
-      },
-      x => ((x - inputMin) / (inputMax - inputMin)) * (outputMax - outputMin) + outputMin
+      }
     );
   }
 

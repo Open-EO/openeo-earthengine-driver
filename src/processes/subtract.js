@@ -6,8 +6,7 @@ export default class subtract extends GeeProcess {
 	executeSync(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a, b) => a.subtract(b),
-			(a, b) => a - b
+			(a, b) => a.subtract(b)
 		);
 	}
 

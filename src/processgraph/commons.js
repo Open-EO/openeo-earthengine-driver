@@ -96,7 +96,7 @@ export default class Commons {
 		return dc;
 	}
 
-	static reduceBinaryInCallback(node, imgReducer, jsReducer, arg1Name = "x", arg2Name = "y") {
+	static reduceBinaryInCallback(node, imgReducer, arg1Name = "x", arg2Name = "y") {
 		const arg1 = node.getArgument(arg1Name);
 		const arg2 = node.getArgument(arg2Name);
 		if (typeof arg1 === 'undefined') {
@@ -106,10 +106,10 @@ export default class Commons {
 			throw node.argumentInvalid(arg2Name, "Argument is undefined.");
 		}
 
-		return this._reduceBinary(node, imgReducer, jsReducer, arg1, arg2, arg1Name + "/" + arg2Name);
+		return this._reduceBinary(node, imgReducer, arg1, arg2, arg1Name + "/" + arg2Name);
 	}
 
-	static reduceInCallback(node, imgReducer, jsReducer, dataArg = "data") {
+	static reduceInCallback(node, imgReducer, dataArg = "data") {
 		const list = node.getArgument(dataArg);
 		if (!Array.isArray(list) || list.length <= 1) {
 			throw node.invalidArgument(dataArg, "Argument must be an array with at least two elements.");
@@ -117,12 +117,12 @@ export default class Commons {
 
 		let result;
 		for(let i = 1; i < list.length; i++) {
-			result = this._reduceBinary(node, imgReducer, jsReducer, list[i-1], list[i], dataArg);
+			result = this._reduceBinary(node, imgReducer, list[i-1], list[i], dataArg);
 		}
 		return result;
 	}
 
-	static _reduceBinary(node, eeImgReducer, jsReducer, valA, valB, dataArg = "data") {
+	static _reduceBinary(node, eeImgReducer, valA, valB, dataArg = "data") {
 		const ee = node.ee;
 		let result;
 
@@ -149,7 +149,7 @@ export default class Commons {
 		else if (typeof valA === 'number') {
 			const imgA = ee.Image(valA);
 			if (typeof valB === 'number') {
-				result = jsReducer(valA, valB);
+				result = ee.Number(valA, valB);
 			}
 			else if (dataCubeB.isImage()) {
 				result = imgReducer(imgA, dataCubeB.image());
@@ -199,16 +199,17 @@ export default class Commons {
 		return result;
 	}
 
-	static applyInCallback(node, eeImgProcess, jsProcess = null, dataArg = "x") {
+	static applyInCallback(node, eeImgProcess, dataArg = "x") {
+		const ee = node.ee;
 		const data = node.getArgument(dataArg);
-		const dc = new DataCube(node.ee, data);
+		const dc = new DataCube(ee, data);
 		dc.setLogger(node.getLogger());
 		const imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
 		if (dc.isNull()) {
 			return null;
 		}
-		else if (dc.isNumber() && typeof jsProcess === 'function') {
-			return jsProcess(data);
+		else if (dc.isNumber()) {
+			return ee.Number(data);
 		}
 		else if (dc.isImage()) {
 			return dc.image(imgProcess);

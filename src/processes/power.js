@@ -8,7 +8,6 @@ export default class power extends GeeProcess {
     return Commons.applyInCallback(
       node,
       image => image.pow(p),
-      x => Math.pow(x, p),
       "base"
     );
   }

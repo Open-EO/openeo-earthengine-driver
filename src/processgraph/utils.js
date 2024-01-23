@@ -1,5 +1,56 @@
 const GeeUtils = {
 
+	toList(ee, data, converter = null) {
+		if (Array.isArray(data)) {
+			if (typeof converter === 'function') {
+				data = data.map(converter);
+			}
+			return ee.List(data);
+		}
+		else if (data instanceof ee.Array) {
+			return data.toList();
+		}
+		else if (data instanceof ee.List) {
+			return data;
+		}
+		else if (data instanceof ee.Dictionary) {
+			return data.values();
+		}
+
+		return null;
+	},
+
+	toString(ee, data) {
+		if (typeof data === 'boolean' || typeof data === 'number' || typeof data === 'string') {
+			return ee.String(String(data));
+		}
+		else if (data instanceof ee.String) {
+			return data;
+		}
+		else if (this.isEarthEngineType(data)) {
+			return ee.String(data);
+		}
+
+		return null;
+	},
+
+	isEarthEngineType(ee, obj) {
+		return obj instanceof ee.ComputedObject ||
+			obj instanceof ee.Array ||
+			obj instanceof ee.Blob ||
+			obj instanceof ee.Date ||
+			obj instanceof ee.DateRange ||
+			obj instanceof ee.Dictionary ||
+			obj instanceof ee.Feature ||
+			obj instanceof ee.FeatureCollection ||
+			obj instanceof ee.Geometry ||
+			obj instanceof ee.Image ||
+			obj instanceof ee.ImageCollection ||
+			obj instanceof ee.List ||
+			obj instanceof ee.Number ||
+			obj instanceof ee.String;
+	},
+
 	tropicalSeasons(node) {
 		const ee = node.ee;
 		return {
@@ -69,7 +120,7 @@ const GeeUtils = {
 			default:
 				return null;
 		}
-	},
+	}
 
 };
 

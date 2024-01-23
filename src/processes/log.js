@@ -14,16 +14,6 @@ export default class log extends GeeProcess {
           default:
             return image.log().divide(node.ee.Image(base).log());
         }
-      },
-      x => {
-        switch (base) {
-          case 10:
-            return Math.log10(x);
-          case 2:
-            return Math.log2(x);
-          default:
-            return Math.log(x) / Math.log(base);
-        }
       }
     );
   }

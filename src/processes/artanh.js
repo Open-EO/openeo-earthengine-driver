@@ -14,8 +14,7 @@ export default class artanh extends GeeProcess {
         let result = img_p1.divide(img_p2);
         result = result.log();
         return result.multiply(0.5);
-      },
-      x => Math.atanh(x)
+      }
     );
   }
 

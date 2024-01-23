@@ -13,8 +13,7 @@ export default class arsinh extends GeeProcess {
         img_p2 = img_p2.sqrt();
         const result = image.add(img_p2);
         return result.log();
-      },
-      x => Math.asinh(x)
+      }
     );
   }
 

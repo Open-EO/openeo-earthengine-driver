@@ -39,7 +39,7 @@ export default class array_element extends GeeProcess {
     }
 
     if (Array.isArray(data) && typeof data[index] !== 'undefined') {
-      return data[index];
+      return data[index]; // todo processes: replace vanilla js with gee code #34 #35
     }
     else if (return_nodata) {
       return null;

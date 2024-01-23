@@ -1,8 +1,21 @@
-# openEO v1.0.0 process status
-## General TODOs:
+# Process implementation status
+
+The following processes have a fully GEE-based implementation:
+
+- [x] e
+- [x] nan
+- [x] pi
+- [x] text_begins
+- [x] text_concat
+- [x] text_contains
+- [x] text_ends
+
+
+
+# OUTDATED: openEO v1.0.0 process status
+
 - Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
 - Properly read the default values from the JSON files
-- Migrate to v1.2.0 or v2.0.0 (incl. datacube subtype)
 ## Aggregate & Resample
 - [ ] aggregate_spatial
     * convert GeoJson geometry to GEE geometry
@@ -82,14 +95,6 @@
     * process is missing in GEE
 - [X] if
     * usage of `ee.Algorithms.If()` missing, only JS supported atm
-# Texts
-- [X] text_begins
-- [X] text_contains
-- [X] text_ends
-- [X] text_merge
-
-All of them only work in JS only mode, may not work if used with GEE data.
-
 # Cubes
 - [X] add_dimension
 - [X] apply
@@ -182,8 +187,6 @@ All of them only work in JS only mode, may not work if used with GEE data.
 - [X] subtract
 - [X] sum
 - [X] variance
-- [X] e
-- [X] pi
 - [ ] cummax
     * process accum for arrays and reducer max
     * complex apply could do the main work

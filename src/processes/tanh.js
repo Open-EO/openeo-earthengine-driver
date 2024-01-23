@@ -4,7 +4,7 @@ import Commons from '../processgraph/commons.js';
 export default class tanh extends GeeProcess {
 
   executeSync(node) {
-    return Commons.applyInCallback(node, image => image.tanh(), x => Math.tanh(x));
+    return Commons.applyInCallback(node, image => image.tanh());
   }
 
 }

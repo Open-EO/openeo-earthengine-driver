@@ -7,8 +7,7 @@ export default class divide extends GeeProcess {
 	executeSync(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a, b) => a.divide(b),
-			(a, b) => a / b
+			(a, b) => a.divide(b)
 		);
 	}
 

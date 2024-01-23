@@ -4,7 +4,7 @@ import Commons from '../processgraph/commons.js';
 export default class cosh extends GeeProcess {
 
   executeSync(node) {
-    return Commons.applyInCallback(node, image => image.cosh(), x => Math.cosh(x));
+    return Commons.applyInCallback(node, image => image.cosh());
   }
 
 }

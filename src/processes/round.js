@@ -16,14 +16,6 @@ export default class round extends GeeProcess {
         else {
           return image.multiply(scaleFactor).round().divide(scaleFactor);
         }
-      },
-      x => {
-        if (p === null) {
-          return Math.round(x);
-        }
-        else {
-          return Math.round(x * scaleFactor) / scaleFactor;
-        }
       }
     );
   }

@@ -6,8 +6,7 @@ export default class add extends GeeProcess {
 	executeSync(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
-			(a, b) => a.add(b),
-			(a, b) => a + b
+			(a, b) => a.add(b)
 		);
 	}
 
