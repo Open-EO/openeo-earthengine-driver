@@ -1,28 +1,19 @@
 import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
-import Errors from '../utils/errors.js';
 
 export default class aggregate_temporal_frequency extends GeeProcess {
 
 	reduce(node, imageCollection) {
 		const callback = node.getCallback('reducer');
 		if (callback.getNodeCount() !== 1) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: this.id,
-				argument: 'reducer',
-				reason: "No complex reducer supported at the moment"
-			});
+			throw node.invalidArgument('reducer', 'No complex reducer supported at the moment');
 		}
 		else {
 			// This is a simple reducer with just one node
 			const childNode = callback.getResultNode();
 			const process = callback.getProcess(childNode);
 			if (typeof process.geeReducer !== 'function') {
-				throw new Errors.ProcessArgumentInvalid({
-					process: this.id,
-					argument: 'reducer',
-					reason: 'The specified reducer is invalid.'
-				});
+				throw node.invalidArgument('reducer', 'The specified reducer is invalid.');
 			}
 			node.debug("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
 			const reducerFunc = process.geeReducer(node);

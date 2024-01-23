@@ -62,13 +62,18 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 	getCallback(name) {
 		const callback = this.getArgument(name);
 		if (!(callback instanceof ProcessGraph)) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: this.process_id,
-				argument: 'process',
-				reason: 'No process specified.'
-			});
+			throw this.invalidArgument('process', 'No process specified.');
 		}
 		return callback;
+	}
+
+	invalidArgument(argument, reason) {
+		return new Errors.ProcessArgumentInvalid({
+			process: this.process_id,
+			namespace: this.namespace,
+			argument,
+			reason
+		});
 	}
 
 }

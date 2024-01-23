@@ -12,11 +12,7 @@ export default class Commons {
 		const dimensionName = node.getArgument(dimensionArgName);
 		const dimension = dc.getDimension(dimensionName);
 		if (!allowedDimensionTypes.includes(dimension.type)) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: process_id,
-				argument: dimensionArgName,
-				reason: 'Reducing dimension types other than ' + allowedDimensionTypes.join(' or ') + ' is currently not supported.'
-			});
+			throw node.invalidArgument(dimensionArgName, `Reducing dimension types other than ${allowedDimensionTypes.join(' or ')} is currently not supported.`);
 		}
 
 		const callback = node.getCallback(reducerArgName);
@@ -25,11 +21,7 @@ export default class Commons {
 			const childNode = callback.getResultNode();
 			const process = callback.getProcess(childNode);
 			if (typeof process.geeReducer !== 'function') {
-				throw new Errors.ProcessArgumentInvalid({
-					process: process_id,
-					argument: reducerArgName,
-					reason: 'The specified ' + reducerArgName + ' is invalid.'
-				});
+				throw node.invalidArgument(reducerArgName, 'The specified reducer is invalid.');
 			}
 			node.debug("Bypassing node " + childNode.id + "; Executing as native GEE reducer instead.");
 			dc = Commons.reduceSimple(dc, process.geeReducer(node));
@@ -108,18 +100,10 @@ export default class Commons {
 		const arg1 = node.getArgument(arg1Name);
 		const arg2 = node.getArgument(arg2Name);
 		if (typeof arg1 === 'undefined') {
-			throw new Errors.ProcessArgumentInvalid({
-				process: node.process_id,
-				argument: arg1Name,
-				reason: "Argument is undefined."
-			});
+			throw node.argumentInvalid(arg1Name, "Argument is undefined.");
 		}
 		if (typeof arg2 === 'undefined') {
-			throw new Errors.ProcessArgumentInvalid({
-				process: node.process_id,
-				argument: arg2Name,
-				reason: "Argument is undefined."
-			});
+			throw node.argumentInvalid(arg2Name, "Argument is undefined.");
 		}
 
 		return this._reduceBinary(node, imgReducer, jsReducer, arg1, arg2, arg1Name + "/" + arg2Name);
@@ -128,11 +112,7 @@ export default class Commons {
 	static reduceInCallback(node, imgReducer, jsReducer, dataArg = "data") {
 		const list = node.getArgument(dataArg);
 		if (!Array.isArray(list) || list.length <= 1) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: node.process_id,
-				argument: dataArg,
-				reason: "Not enough elements."
-			});
+			throw node.invalidArgument(dataArg, "Argument must be an array with at least two elements.");
 		}
 
 		let result;
@@ -178,11 +158,7 @@ export default class Commons {
 				result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(imgA, imgB)));
 			}
 			else {
-				throw new Errors.ProcessArgumentInvalid({
-					process: node.process_id,
-					argument: dataArg,
-					reason: "Reducing number with unknown type not supported"
-				});
+				throw node.invalidArgument(dataArg, "Reducing number with unknown type not supported");
 			}
 		}
 		else if (dataCubeA.isImageCollection()) {
@@ -202,11 +178,7 @@ export default class Commons {
 				});
 			}
 			else {
-				throw new Errors.ProcessArgumentInvalid({
-					process: node.process_id,
-					argument: dataArg,
-					reason: "Reducing image collection with unknown type not supported"
-				});
+				throw node.invalidArgument(dataArg, "Reducing image collection with unknown type not supported");
 			}
 		}
 		else if (dataCubeA.isImage()) {
@@ -218,19 +190,11 @@ export default class Commons {
 				result = dataCubeB.imageCollection(ic => ic.map(imgB => imgReducer(dataCubeA.image(), imgB)));
 			}
 			else {
-				throw new Errors.ProcessArgumentInvalid({
-					process: node.process_id,
-					argument: dataArg,
-					reason: "Reducing image with unknown type not supported"
-				});
+				throw node.invalidArgument(dataArg, "Reducing image with unknown type not supported");
 			}
 		}
 		else {
-			throw new Errors.ProcessArgumentInvalid({
-				process: node.process_id,
-				argument: dataArg,
-				reason: "Reducing an unknown type is not supported"
-			});
+			throw node.invalidArgument(dataArg, "Reducing unknown type not supported");
 		}
 		return result;
 	}
@@ -269,31 +233,30 @@ export default class Commons {
 			dc.setSpatialExtent(bbox);
 			return Commons.restrictToSpatialExtent(node, dc);
 		} catch (e) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: process_id,
-				argument: paramName,
-				reason: e.message
-			});
+			throw node.invalidArgument(paramName, e.message);
 		}
 	}
 
-	static filterBands(dc, bands, node) {
+	static filterBands(dc, bands, node, parameterName = 'bands') {
 		const dc_bands = dc.getBands();
 		const col_id = dc.getCollectionId();
 		const col_meta = node.getContext().getCollection(col_id);
+		const eo_bands = Array.isArray(col_meta.summaries["eo:bands"]) ? col_meta.summaries["eo:bands"] : [];
+
 		const band_list = [];
-		for(const b of bands) {
-			if (dc_bands.indexOf(b) > -1) {
-				band_list.push(b)
+		for(const name of bands) {
+			if (dc_bands.indexOf(name) > -1) {
+				band_list.push(name);
+				continue;
 			}
-			else {
-				for (const eob of col_meta.summaries["eo:bands"]){
-					if (b === eob["common_name"]) {
-						band_list.push(eob["name"]);
-						break;
-					}
-				}
+
+			const match = eo_bands.find(eob => name === eob.common_name && typeof eob.name === 'string');
+			if (match) {
+				band_list.push(match.name);
+				continue;
 			}
+
+			throw node.invalidArgument(parameterName, `Band with name or common name '${name}' not found in data cube.`);
 		}
 		dc.imageCollection(ic => ic.select(band_list));
 		dc.dimBands().setValues(band_list);
@@ -308,11 +271,7 @@ export default class Commons {
 			dc.imageCollection(ic => ic.map(img => img.clip(geom)));
 			return dc;
 		} catch (e) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: process_id,
-				argument: paramName,
-				reason: e.message
-			});
+			throw node.invalidArgument(paramName, e.message);
 		}
 	}
 

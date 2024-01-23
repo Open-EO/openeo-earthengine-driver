@@ -118,6 +118,7 @@ export default class ProcessingContext {
 					throw new Errors.ProcessArgumentInvalid({
 						argument: "options",
 						process: "save_result",
+						namespace: "backend",
 						reason: "The output band definitions are not properly given."
 					});
 				}

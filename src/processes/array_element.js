@@ -30,11 +30,7 @@ export default class array_element extends GeeProcess {
       else {
         // ToDo processes: only bands is currently supported
         if (dimension.type !== "bands") {
-          throw new Errors.ProcessArgumentInvalid({
-            process: this.id,
-            argument: 'dimension',
-            reason: 'Only dimension "bands" is currently supported.'
-          });
+          throw node.invalidArgument('dimension', 'Only dimension "bands" is currently supported.');
         }
         else {
           index = labels.indexOf(label);

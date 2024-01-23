@@ -1,5 +1,4 @@
 import GeeProcess from '../processgraph/process.js';
-import Errors from '../utils/errors.js';
 
 export default class last extends GeeProcess {
 
@@ -23,7 +22,7 @@ export default class last extends GeeProcess {
 			return data.toList(data.size()).get(-1);
 		}
 		else {
-			throw new Errors.ProcessArgumentInvalid();
+			throw node.invalidArgument('data', 'Unsupported datatype');
 		}
 	}
 

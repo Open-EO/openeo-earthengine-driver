@@ -1,5 +1,4 @@
 import GeeProcess from '../processgraph/process.js';
-import Errors from '../utils/errors.js';
 
 export default class rename_labels extends GeeProcess {
 
@@ -17,21 +16,13 @@ export default class rename_labels extends GeeProcess {
     const source = node.getArgument("source");
 
     if (!dc.hasDimension(dimensionName)) {
-      throw new Errors.ProcessArgumentInvalid({
-        process: this.id,
-        argument: 'dimension',
-        reason: 'Dimension "' + dimensionName + '" does not exist.'
-      });
+			throw node.invalidArgument('dimension', `Dimension '${dimensionName}' does not exist.`);
     }
 
     // ToDo processes: only bands is currently supported
     const dimension = dc.getDimension(dimensionName);
     if (dimension.type !== "bands") {
-      throw new Errors.ProcessArgumentInvalid({
-        process: this.id,
-        argument: 'dimension',
-        reason: 'Only dimension "bands" is currently supported.'
-      });
+			throw node.invalidArgument('dimension', `Only dimension "bands" is currently supported.`);
     }
     // ToDo processes: Number values for the labels arguments causes problems
     dc.renameLabels(dimension, target, source);
