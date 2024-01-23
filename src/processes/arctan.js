@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class arctan extends BaseProcess {
+export default class arctan extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     return Commons.applyInCallback(node, image => image.atan(), x => Math.atan(x));
   }
 

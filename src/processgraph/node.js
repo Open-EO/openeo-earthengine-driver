@@ -1,5 +1,7 @@
 import DataCube from './datacube.js';
 import { ProcessGraphNode } from '@openeo/js-processgraphs';
+import Errors from '../utils/errors.js';
+import ProcessGraph from '../processgraph/processgraph.js';
 
 export default class GeeProcessGraphNode extends ProcessGraphNode {
 
@@ -55,6 +57,18 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 
 	getDataCube(name) {
 		return new DataCube(this.ee, this.getArgument(name));
+	}
+
+	getCallback(name) {
+		const callback = this.getArgument(name);
+		if (!(callback instanceof ProcessGraph)) {
+			throw new Errors.ProcessArgumentInvalid({
+				process: this.process_id,
+				argument: 'process',
+				reason: 'No process specified.'
+			});
+		}
+		return callback;
 	}
 
 }

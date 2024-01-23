@@ -1,8 +1,8 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class If extends BaseProcess {
+export default class If extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const value = node.getArgument('value');
     const accept = node.getArgument('accept');
     const reject = node.getArgument('reject');

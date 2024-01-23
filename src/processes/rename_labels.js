@@ -1,7 +1,7 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Errors from '../utils/errors.js';
 
-export default class rename_labels extends BaseProcess {
+export default class rename_labels extends GeeProcess {
 
 
   process(oldLabels, newLabels) {
@@ -10,7 +10,7 @@ export default class rename_labels extends BaseProcess {
     };
   }
 
-  async execute(node) {
+  executeSync(node) {
     const dc = node.getArgument("data");
     const dimensionName = node.getArgument("dimension");
     const target = node.getArgument("target");

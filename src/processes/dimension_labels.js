@@ -1,8 +1,8 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class dimension_labels extends BaseProcess {
+export default class dimension_labels extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const dc = node.getArgument('data');
     const dimensionName = node.getArgument('dimension');
     const dimension = dc.getDimension(dimensionName);

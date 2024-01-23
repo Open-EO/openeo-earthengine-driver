@@ -1,8 +1,8 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class debug extends BaseProcess {
+export default class debug extends GeeProcess {
 
-	async execute(node) {
+	executeSync(node) {
 		const data = node.getArgument('data');
 		const code = node.getArgument('data');
 		const level = node.getArgument('data', 'info');

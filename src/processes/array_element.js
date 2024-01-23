@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Errors from '../utils/errors.js';
 
-export default class array_element extends BaseProcess {
+export default class array_element extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const data = node.getArgument("data");
     let index = node.getArgument("index", null);
     const label = node.getArgument("label", null);

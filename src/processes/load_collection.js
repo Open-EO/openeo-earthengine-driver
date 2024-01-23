@@ -1,10 +1,10 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import DataCube from '../processgraph/datacube.js';
 import Commons from '../processgraph/commons.js';
 
-export default class load_collection extends BaseProcess {
+export default class load_collection extends GeeProcess {
 
-	async execute(node) {
+	executeSync(node) {
 		const ee = node.ee;
 		// Load data
 		const id = node.getArgument('id');

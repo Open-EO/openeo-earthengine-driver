@@ -1,8 +1,8 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class text_ends extends BaseProcess {
+export default class text_ends extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     let data = node.getArgument('data');
     let pattern = node.getArgument('pattern');
     const case_sensitive = node.getArgument('case_sensitive');

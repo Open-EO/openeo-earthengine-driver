@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class clip extends BaseProcess {
+export default class clip extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const min = node.getArgument('min');
     const max = node.getArgument('max');
     return Commons.applyInCallback(

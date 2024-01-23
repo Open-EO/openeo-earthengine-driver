@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class linear_scale_range extends BaseProcess {
+export default class linear_scale_range extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const inputMin = node.getArgument('inputMin');
     const inputMax = node.getArgument('inputMax');
     const outputMin = node.getArgument('outputMin', 0);

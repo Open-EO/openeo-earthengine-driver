@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class multiply extends BaseProcess {
+export default class multiply extends GeeProcess {
 
-	async execute(node) {
+	executeSync(node) {
 		return Commons.reduceBinaryInCallback(
 			node,
 			(a, b) => a.multiply(b),

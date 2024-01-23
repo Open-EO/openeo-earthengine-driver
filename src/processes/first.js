@@ -1,13 +1,13 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Errors from '../utils/errors.js';
 
-export default class first extends BaseProcess {
+export default class first extends GeeProcess {
 
 	geeReducer(node) {
 		return node.getArgument('ignore_nodata', true) ? 'firstNonNull' : 'first';
 	}
 
-	async execute(node) {
+	executeSync(node) {
 		const ee = node.ee;
 		const data = node.getArgument('data');
 

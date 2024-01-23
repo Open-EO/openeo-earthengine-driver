@@ -1,6 +1,6 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class mean extends BaseProcess {
+export default class mean extends GeeProcess {
 
   geeReducer() {
     return 'mean';

@@ -1,6 +1,6 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class variance extends BaseProcess {
+export default class variance extends GeeProcess {
 
 	geeReducer() {
 		return 'variance';

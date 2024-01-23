@@ -1,7 +1,7 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class reduce_dimension extends BaseProcess {
+export default class reduce_dimension extends GeeProcess {
 
 	async execute(node) {
 		let dc = node.getDataCube("data");

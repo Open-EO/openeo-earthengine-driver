@@ -1,22 +1,12 @@
-import { BaseProcess, ProcessGraph } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 import Errors from '../utils/errors.js';
 
-export default class aggregate_temporal_frequency extends BaseProcess {
+export default class aggregate_temporal_frequency extends GeeProcess {
 
-	/*async*/ reduce(node, imageCollection) {
-		// ToDo processes: Execute reducer, see also #36
-		// Use ... await Commons.reduce(...);
-
-		const callback = node.getArgument('reducer');
-		if (!(callback instanceof ProcessGraph)) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: this.id,
-				argument: 'reducer',
-				reason: 'No reducer specified.'
-			});
-		}
-		else if (callback.getNodeCount() !== 1) {
+	reduce(node, imageCollection) {
+		const callback = node.getCallback('reducer');
+		if (callback.getNodeCount() !== 1) {
 			throw new Errors.ProcessArgumentInvalid({
 				process: this.id,
 				argument: 'reducer',
@@ -40,7 +30,7 @@ export default class aggregate_temporal_frequency extends BaseProcess {
 		}
 	}
 
-	async execute(node) {
+	executeSync(node) {
 		const ee = node.ee;
 		// STEP 1: Get parameters and set some variables
 		const dc = node.getDataCube('data');
@@ -55,10 +45,10 @@ export default class aggregate_temporal_frequency extends BaseProcess {
 		const newLabels = ee.List(images.aggregate_array('aggregationLabel')).distinct();
 
 		// Aggregation for each year/season label
-		const aggregatedImages = newLabels.map(/*async*/(label) => {
+		const aggregatedImages = newLabels.map(label => {
 			const collection = images.filterMetadata('aggregationLabel', 'equals', label);
 			const firstImg = collection.first();
-			const image = /*await*/ this.reduce(node, collection);
+			const image = this.reduce(node, collection);
 			return image.copyProperties({ source: firstImg, properties: firstImg.propertyNames() });
 		});
 

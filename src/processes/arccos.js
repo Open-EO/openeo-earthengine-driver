@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class arccos extends BaseProcess {
+export default class arccos extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     return Commons.applyInCallback(node, image => image.acos(), x => Math.acos(x));
   }
 

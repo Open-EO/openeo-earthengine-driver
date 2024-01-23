@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Errors from '../utils/errors.js';
 
-export default class drop_dimension extends BaseProcess {
+export default class drop_dimension extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const dc = node.getArgument('data');
     let dimensionName = node.getArgument('name');
     let dimension;

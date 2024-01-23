@@ -178,7 +178,6 @@ export default class JobsAPI {
 			const context = this.context.processingContext(req);
 			const pg = new ProcessGraph(job.process, context);
 			pg.setLogger(logger);
-
 			const resultNode = await pg.execute();
 
 			const cube = resultNode.getResult();

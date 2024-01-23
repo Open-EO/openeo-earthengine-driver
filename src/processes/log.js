@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class log extends BaseProcess {
+export default class log extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const base = node.getArgument('base');
     return Commons.applyInCallback(
       node,
@@ -22,7 +22,7 @@ export default class log extends BaseProcess {
           case 2:
             return Math.log2(x);
           default:
-            return Math.log(x) / Math.log(base)
+            return Math.log(x) / Math.log(base);
         }
       }
     );

@@ -1,8 +1,8 @@
 import Errors from '../utils/errors.js';
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class rename_dimension extends BaseProcess {
-	async execute(node) {
+export default class rename_dimension extends GeeProcess {
+	executeSync(node) {
 		const dc = node.getDataCube("data");
 		const srcName = node.getArgument('source');
 		const trgName = node.getArgument('target');

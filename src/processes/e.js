@@ -1,8 +1,8 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class e extends BaseProcess {
+export default class e extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const dc = node.getDataCube('data');
     dc.setData(Math.E);
     return dc;

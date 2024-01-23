@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class exp extends BaseProcess {
+export default class exp extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     return Commons.applyInCallback(node, image => image.exp(), x => Math.exp(x));
   }
 

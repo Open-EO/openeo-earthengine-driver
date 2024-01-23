@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class filter_bbox extends BaseProcess {
+export default class filter_bbox extends GeeProcess {
 
-	async execute(node) {
+	executeSync(node) {
 		return Commons.filterBbox(node, node.getDataCube("data"), node.getArgument("extent"), this.id, 'extent');
 	}
 

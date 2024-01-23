@@ -1,11 +1,11 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 import Utils from '../utils/utils.js';
 import GeeUtils from '../processgraph/utils.js';
 
-export default class climatological_normal extends BaseProcess {
+export default class climatological_normal extends GeeProcess {
 
-	async execute(node) {
+	executeSync(node) {
 		const ee = node.ee;
 		const dc = node.getDataCube('data');
 		const frequency = node.getArgument('frequency');

@@ -1,13 +1,13 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class min extends BaseProcess {
+export default class min extends GeeProcess {
 
 	geeReducer() {
 		return 'min';
 	}
 
-	async execute(node) {
+	executeSync(node) {
 		return Commons.reduceInCallback(
 			node,
 			(a, b) => a.min(b),

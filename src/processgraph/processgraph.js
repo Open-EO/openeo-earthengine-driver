@@ -57,17 +57,45 @@ export default class GeeProcessGraph extends ProcessGraph {
 		return await process.validate(node, this.context);
 	}
 
-	async executeNode(node) {
-		const process = this.getProcess(node);
-		node.debug("Executing node " + node.id);
-		return await process.execute(node, this.context);
-	}
-
 	async execute(args = null) {
 		await this.context.connectGee();
 		return await super.execute(args);
 	}
 
+	async executeNode(node) {
+		node.debug(`Executing node ${node.id}`);
+		const process = this.getProcess(node);
+		return await process.execute(node, this.context);
+	}
+
+	// For callbacks, if needed
+	// Doesn't validate, should be run explicitly before execute.
+	// Also, setArguments should be called before.
+	executeSync() {
+		this.reset();
+		this.executeNodesSync(this.getStartNodes());
+		return this.getResultNode();
+	}
+
+	executeNodesSync(nodes, previousNode = null) {
+		if (nodes.length === 0) {
+			return;
+		}
+
+		nodes.forEach(node => {
+			if (!node.solveDependency(previousNode)) {
+				return;
+			}
+			node.setResult(this.executeNodeSync(node));
+			this.executeNodesSync(node.getNextNodes(), node);
+		});
+	}
+
+	executeNodeSync(node) {
+		node.debug(`Executing node ${node.id} (sync)`);
+		const process = this.getProcess(node);
+		return process.executeSync(node);
+	}
 
 	optimizeLoadCollectionRect(rect) {
 		this.loadCollectionRect = rect;

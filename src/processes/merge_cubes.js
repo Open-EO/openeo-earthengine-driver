@@ -1,13 +1,12 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class merge_cubes extends BaseProcess {
+export default class merge_cubes extends GeeProcess {
 
-  async execute(node) {
-    const dc1 = node.getArgument("cube1");
-    const dc2 = node.getArgument("cube2");
-    //var overlap_res = node.getArgument("overlap_resolver");
-
-    //var context = node.getArgument("context");
+  executeSync(node) {
+    const dc1 = node.getDataCube("cube1");
+    const dc2 = node.getDataCube("cube2");
+    //const resolver = node.getCallback("overlap_resolver");
+    //const context = node.getArgument("context");
 
     return dc1.merge(dc2);
   }

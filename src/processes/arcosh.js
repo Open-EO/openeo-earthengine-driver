@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class arcosh extends BaseProcess {
+export default class arcosh extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     return Commons.applyInCallback(
       node,
       image => {

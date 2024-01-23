@@ -1,8 +1,8 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class mask extends BaseProcess {
+export default class mask extends GeeProcess {
 
-  async execute(node) {
+  executeSync(node) {
     const data = node.getArgument("data");
     const maskCude = node.getArgument("mask");
     const replacement = node.getArgument("replacement", null);

@@ -1,7 +1,6 @@
 import Errors from '../utils/errors.js';
 import Utils from '../utils/utils.js';
 import DataCube from './datacube.js';
-import ProcessGraph from './processgraph.js';
 import GeeUtils from '../processgraph/utils.js';
 
 
@@ -9,7 +8,7 @@ export default class Commons {
 
 	// ToDo processes: Also implement ee.Array.* instead only ee.Image.* #35
 
-	static async reduce(node, dc, process_id, allowedDimensionTypes = ["temporal", "bands"], reducerArgName = "reducer", dimensionArgName = "dimension", contextArgName = "context") {
+	static reduce(node, dc, process_id, allowedDimensionTypes = ["temporal", "bands"], reducerArgName = "reducer", dimensionArgName = "dimension", contextArgName = "context") {
 		const dimensionName = node.getArgument(dimensionArgName);
 		const dimension = dc.getDimension(dimensionName);
 		if (!allowedDimensionTypes.includes(dimension.type)) {
@@ -20,15 +19,8 @@ export default class Commons {
 			});
 		}
 
-		const callback = node.getArgument(reducerArgName);
-		if (!(callback instanceof ProcessGraph)) {
-			throw new Errors.ProcessArgumentInvalid({
-				process: process_id,
-				argument: reducerArgName,
-				reason: 'No ' + reducerArgName + ' specified.'
-			});
-		}
-		else if (callback.getNodeCount() === 1) {
+		const callback = node.getCallback(reducerArgName);
+		if (callback.getNodeCount() === 1) {
 			// This is a simple reducer with just one node
 			const childNode = callback.getResultNode();
 			const process = callback.getProcess(childNode);
@@ -52,10 +44,11 @@ export default class Commons {
 			else if (dimension.type === 'bands') {
 				values = dimension.getValues().map(band => ic.select(band));
 			}
-			const resultNode = await callback.execute({
+			callback.setArguments({
 				data: values,
 				context: node.getArgument(contextArgName)
 			});
+			const resultNode = callback.executeSync();
 			dc.setData(resultNode.getResult());
 
 			// If we are reducing over bands we need to set the band name in GEE to a default one, e.g., "#"

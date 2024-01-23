@@ -1,6 +1,6 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 
-export default class sd extends BaseProcess {
+export default class sd extends GeeProcess {
 	// ToDo processes: ignore_nodata parameter
 	geeReducer() {
 		return 'stdDev';

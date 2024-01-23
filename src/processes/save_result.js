@@ -1,7 +1,7 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Errors from '../utils/errors.js';
 
-export default class save_result extends BaseProcess {
+export default class save_result extends GeeProcess {
 
 	async validate(node) {
 		await super.validate(node);
@@ -14,7 +14,7 @@ export default class save_result extends BaseProcess {
 		// ToDo processes: Validate the options
 	}
 
-	async execute(node) {
+	executeSync(node) {
 		const data = node.getDataCube("data");
 		data.setOutputFormat(
 			node.getArgument("format"),

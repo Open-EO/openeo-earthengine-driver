@@ -1,9 +1,9 @@
-import { BaseProcess } from '@openeo/js-processgraphs';
+import GeeProcess from '../processgraph/process.js';
 import Commons from '../processgraph/commons.js';
 
-export default class anomaly extends BaseProcess {
+export default class anomaly extends GeeProcess {
 
-	async execute(node) {
+	executeSync(node) {
 		const dc = node.getDataCube('data');
 		const normalsDataCube = node.getDataCube('normals');
 		const normalsLabels = node.ee.List(normalsDataCube.dimT().getValues());
