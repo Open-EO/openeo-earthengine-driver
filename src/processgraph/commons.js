@@ -199,29 +199,6 @@ export default class Commons {
 		return result;
 	}
 
-	static applyInCallback(node, eeImgProcess, dataArg = "x") {
-		const ee = node.ee;
-		const data = node.getArgument(dataArg);
-		const dc = new DataCube(ee, data);
-		dc.setLogger(node.getLogger());
-		const imgProcess = a => eeImgProcess(a).copyProperties({source: a, properties: a.propertyNames()});
-		if (dc.isNull()) {
-			return null;
-		}
-		else if (dc.isNumber()) {
-			return ee.Number(data);
-		}
-		else if (dc.isImage()) {
-			return dc.image(imgProcess);
-		}
-		else if (dc.isImageCollection()) {
-			return dc.imageCollection(img => img.map(imgProcess));
-		}
-		else {
-			throw new Error("Applying " + node.process_id + " not supported for given data type: " + dc.objectType());
-		}
-	}
-
 	static restrictToSpatialExtent(node, dc) {
 		const bbox = dc.getSpatialExtent();
 		const geom = node.ee.Geometry.Rectangle([bbox.west, bbox.south, bbox.east, bbox.north], Utils.crsToString(bbox.crs, 4326));

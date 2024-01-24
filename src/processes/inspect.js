@@ -25,6 +25,7 @@ export default class inspect extends GeeProcess {
 			data instanceof ee.Geometry ||
 			data instanceof ee.GeometryCollection ||
 			data instanceof ee.ComputedObject) {
+				node.warn('Inspecting GEE objects via getInfo() is slow. Do not use this in production.');
 				data = data.getInfo();
 		}
 

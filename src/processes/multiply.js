@@ -1,13 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class multiply extends GeeProcess {
 
 	executeSync(node) {
-		return Commons.reduceBinaryInCallback(
-			node,
-			(a, b) => a.multiply(b)
-		);
+		return GeeUtils.applyBinaryNumFunction(node, (x, y) => x.multiply(y));
 	}
 
 }

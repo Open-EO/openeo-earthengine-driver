@@ -96,7 +96,6 @@ export default class Data {
 		if (collection === null) {
 			throw new Errors.CollectionNotFound();
 		}
-		// ToDo metadata/processes: Implement queryables #71
 		res.json({
 			"$schema" : "https://json-schema.org/draft/2019-09/schema",
 			"$id" : Utils.getApiUrl(`/collections/${id}/queryables`),

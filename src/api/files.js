@@ -4,8 +4,6 @@ import Errors from '../utils/errors.js';
 import Utils from '../utils/utils.js';
 import HttpUtils from '../utils/http.js';
 
-// ToDo files: This is a mock and only uploads to the driver workspace, but not into the actual
-// Google cloud storage, which would be required to use it in processes. #11
 export default class FilesAPI {
 
 	constructor(context) {

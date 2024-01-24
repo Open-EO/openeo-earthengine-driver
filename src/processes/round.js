@@ -1,23 +1,33 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class round extends GeeProcess {
 
-  // ToDo processes: Check whether GEE and JS really follow IEEE 754 rounding behavior
-  executeSync(node) {
-    const p = node.getArgument("p");
-    const scaleFactor = p !== null ? 10 ** p : null;
-    return Commons.applyInCallback(
-      node,
-      image => {
-        if (p === null) {
-          return image.round();
-        }
-        else {
-          return image.multiply(scaleFactor).round().divide(scaleFactor);
-        }
-      }
+  static bankersRounding(ee, number) {
+    const rounded = number.round();
+    const diff = rounded.subtract(number).abs();
+
+    // Check if the number is halfway between two integers
+    return ee.Algorithms.If(
+      diff.eq(0.5),
+      // If the number is halfway, round it to the nearest even number
+      rounded.divide(2).floor().multiply(2),
+      // Otherwise, use the standard rounding
+      rounded
     );
+  }
+
+  executeSync(node) {
+    const ee = node.ee;
+    const p = node.getArgumentAsNumberEE("p", 0);
+    const scaleFactor = ee.Number(10).pow(p);
+    return GeeUtils.applyNumFunction(node, data => ee.Algorithms.If(
+      p.eq(0),
+      // Normal integer rounding
+      round.bankersRounding(ee, data),
+      // Rounding to decimal precision, ten, hundred, etc.
+      round.bankersRounding(ee, data.multiply(scaleFactor)).divide(scaleFactor)
+    ));
   }
 
 }

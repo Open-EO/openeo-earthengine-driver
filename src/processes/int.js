@@ -1,10 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class int extends GeeProcess {
 
   executeSync(node) {
-    return Commons.applyInCallback(node, image => image.int());
+		return GeeUtils.applyNumFunction(node, data => data.int());
   }
 
 }

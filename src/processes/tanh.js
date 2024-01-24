@@ -1,10 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class tanh extends GeeProcess {
 
   executeSync(node) {
-    return Commons.applyInCallback(node, image => image.tanh());
+		return GeeUtils.applyNumFunction(node, data => data.tanh());
   }
 
 }

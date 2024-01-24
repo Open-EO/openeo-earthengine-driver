@@ -82,8 +82,8 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return result;
 	}
 
-	getArgumentAsStringEE(name) {
-		const data = this.getArgument(name);
+	getArgumentAsStringEE(name, defaultValue = undefined) {
+		const data = this.getArgument(name, defaultValue);
 		const result = GeeUtils.toString(this.ee, data);
 		if (result === null) {
 			throw this.invalidArgument(name, 'Conversion to string not supported');
@@ -91,9 +91,45 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return result;
 	}
 
-	getArgumentAsEE(name) {
+	getArgumentAsNumberEE(name, defaultValue = undefined) {
+		const data = this.getArgument(name, defaultValue);
+		const result = GeeUtils.toNumber(this.ee, data);
+		if (result === null) {
+			throw this.invalidArgument(name, 'Conversion to number not supported');
+		}
+		return result;
+	}
+
+	getArgumentAsEE(name, defaultValue = undefined) {
 		const ee = this.ee;
-		const data = this.getArgument(name);
+		let data = this.getArgument(name, defaultValue);
+
+		if (data instanceof ee.ComputedObject) {
+			this.warn('Inspecting a ComputedObject via getInfo() is slow. Please report this issue.');
+			const info = data.getInfo();
+			if (typeof info === 'boolean' || typeof info === 'number' || typeof info === 'string') {
+				this.debug(`ComputedObject is a scalar value: ${info}`);
+				data = info;
+			}
+			else if (Array.isArray(info)) {
+				this.debug(`ComputedObject is an array of length ${info.length}`);
+				data = info;
+			}
+			else if (Utils.isObject(info)) {
+				if (typeof info.type === 'string' && typeof ee[info.type] !== 'undefined') {
+					this.debug(`Casting from ComputedObject to ${info.type}`);
+					return ee[info.type](data);
+				}
+				else {
+					this.debug(`ComputedObject is an object with the following keys: ${Object.keys(info)}`);
+					data = info;
+				}
+			}
+			else {
+				this.warn(`Can't cast ComputedObject to native GEE type.`, info);
+			}
+		}
+
 		if (typeof data === 'boolean') {
 			this.warn("Implicit conversion of a boolean value to an integer.");
 			return data ? ee.Number(1) : ee.Number(0);
@@ -105,7 +141,10 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 			return ee.String(data);
 		}
 		else if (typeof data === 'object') {
-			if (Array.isArray(data)) {
+			if (data === null && defaultValue === null) {
+				return null;
+			}
+			else if (Array.isArray(data)) {
 				if (data.length === 0) {
 					return ee.Array([], ee.PixelType.float());
 				}

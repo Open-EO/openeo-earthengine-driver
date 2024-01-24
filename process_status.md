@@ -1,21 +1,77 @@
 # Process implementation status
 
-The following processes have a fully GEE-based implementation:
+The following processes have a fully GEE-based implementation or are not relevant for GEE directly:
 
+- [x] absolute
+- [x] add
+- [x] add_dimension
+- [ ] aggregate_temporal_period
+- [ ] anomaly
+- [x] apply
+- [x] arccos
+- [x] arcosh
+- [ ] array_element
+- [x] arsinh
+- [x] arcsin
+- [x] artanh
+- [x] arctan
+- [x] ceil
+- [ ] climatological_normal
+- [x] clip
+- [x] cos
+- [x] cosh
+- [x] create_cube
+- [ ] dimension_labels
+- [x] divide
+- [ ] drop_dimension
 - [x] e
+- [x] exp
+- [ ] filter_bands
+- [ ] filter_bbox
+- [ ] filter_spatial
+- [ ] filter_temporal
+- [ ] first
+- [x] floor
+- [x] if
+- [x] inspect
+- [x] int
+- [x] linear_scale_range
+- [x] ln
+- [ ] load_collection
+- [x] log
+- [ ] mask
+- [ ] mean
+- [ ] median
+- [ ] merge_cubes
+- [ ] min
+- [x] multiply
 - [x] nan
+- [x] normalized_difference
 - [x] pi
+- [x] power
+- [ ] product
+- [ ] reduce_dimension
+- [x] rename_dimension
+- [ ] rename_labels
+- [x] round
+- [ ] save_result
+- [ ] sd
+- [x] sgn
+- [x] sin
+- [x] sinh
+- [x] sqrt
+- [x] subtract
+- [ ] sum
+- [x] tan
+- [x] tanh
 - [x] text_begins
 - [x] text_concat
 - [x] text_contains
 - [x] text_ends
-
-
+- [ ] variance
 
 # OUTDATED: openEO v1.0.0 process status
 
-- Mapping from an array to an image collection (preserve metadata) (important for e.g. sort)
-- Properly read the default values from the JSON files
 ## Aggregate & Resample
 - [ ] aggregate_spatial
     * convert GeoJson geometry to GEE geometry
@@ -48,10 +104,10 @@ The following processes have a fully GEE-based implementation:
     * process is missing in GEE
     * one could only do it for JS arrays
 - [ ] array_labels
-- [ ] count 
+- [ ] count
     * could be theoretically implemented with existing processes:
         * `ee.ImageCollection.count()` or `sum()` as a reducer (mask needed)
-        * `ee.Image.updateMask(mask)` 
+        * `ee.Image.updateMask(mask)`
 - [X] first
     * Only available as simple reducer
     * implementation for arrays needed
@@ -59,7 +115,7 @@ The following processes have a fully GEE-based implementation:
     * Only available as simple reducer
     * implementation for arrays needed
 - [ ] order
-    * process is missing in GEE 
+    * process is missing in GEE
     * maybe conversion to array?
     * one could only do it for JS arrays
 - [ ] rearrange
@@ -67,7 +123,7 @@ The following processes have a fully GEE-based implementation:
     * maybe conversion to array?
     * one could only do it for JS arrays
 - [ ] sort
-    * conversion to array necessary. 
+    * conversion to array necessary.
 ## Comparison
 - [ ] between
     * conversion to array necessary
@@ -75,15 +131,15 @@ The following processes have a fully GEE-based implementation:
 - [ ] eq
     * conversion to array necessary
 - [ ] neq
-    * conversion to array necessary. 
-- [ ] gt 
-    * conversion to array necessary. 
+    * conversion to array necessary.
+- [ ] gt
+    * conversion to array necessary.
 - [ ] lt
-    * conversion to array necessary. 
+    * conversion to array necessary.
 - [ ] gte
-    * conversion to array necessary. 
+    * conversion to array necessary.
 - [ ] lte
-    * conversion to array necessary. 
+    * conversion to array necessary.
 - [ ] is_nan
     * one could only do it for numbers
     * process is missing in GEE
@@ -93,15 +149,10 @@ The following processes have a fully GEE-based implementation:
 - [ ] is_valid
     * one could only do it for numbers
     * process is missing in GEE
-- [X] if
-    * usage of `ee.Algorithms.If()` missing, only JS supported atm
 # Cubes
-- [X] add_dimension
-- [X] apply
 - [ ] apply_dimension
 - [ ] apply_kernel
     * `ee.Image.convolve(kernel)` with `ee.Kernel..` could be used
-- [X] create_raster_cube
 - [X] dimension_labels
 - [X] drop_dimension
 - [ ] filter_labels
@@ -119,8 +170,6 @@ The following processes have a fully GEE-based implementation:
     * filter metadata by properties is missing
     * usage of common_bands metadata is missing
     * bbox WKT implementation missing
-- [ ] load_result
-- [ ] load_uploaded_files
 - [X] merge_cubes
     * overlap resolver is missing
 - [X] reduce_dimension
@@ -128,13 +177,6 @@ The following processes have a fully GEE-based implementation:
 - [X] rename_labels
 - [X] save_result
 - [ ] trim_cube
-    * is not possible to be implemented at the moment
-# Development
-- [ ] debug
-# Import
-- [ ] run_udf
-    * is not possible to be implemented at the moment
-- [ ] run_udf_externally
     * is not possible to be implemented at the moment
 # Logic
 - [ ] all
@@ -162,64 +204,21 @@ The following processes have a fully GEE-based implementation:
     * create `ee.Array` mask from the polygon in JS
     * then apply it in `ee.Image.arrayMask`
 # Math
-- [X] absolute
-- [X] add
-- [X] clip
-- [X] divide
 - [ ] extrema
     * multiple return values need to be handled
-- [X] int
-- [X] linear_scale_range
 - [X] max
 - [X] mean
 - [X] median
 - [X] min
 - [ ] mod
     * available for arrays and numbers
-- [X] multiply
-- [X] power
 - [X] product
 - [ ] quantiles
     * multiple return values need to be handled
 - [X] sd
-- [ ] sgn
-- [X] sqrt
-- [X] subtract
 - [X] sum
 - [X] variance
-- [ ] cummax
-    * process accum for arrays and reducer max
-    * complex apply could do the main work
-- [ ] cummin
-    * process accum for arrays and reducer min
-    * complex apply could do the main work
-- [ ] cumsum
-    * process accum for arrays and reducer sum (default)
-    * complex apply could do the main work
-- [ ] cumproduct
-    * process accum for arrays and reducer product
-    * complex apply could do the main work
-- [X] exp
-- [X] ln
-- [X] log
-- [X] normalized_difference
 - [ ] ndvi
-- [X] floor
-- [X] ceil
-- [X] int
-- [X] round
-- [X] cos
-- [X] sin
-- [X] tan
-- [X] cosh
-- [X] sinh
-- [X] tanh
-- [X] arccos
-- [X] arcsin
-- [X] arctan
-- [X] arcosh
-- [X] arsinh
-- [X] artanh
 - [ ] arctan2
     * needs 2 arrays, i.e. it needs a complex apply
 

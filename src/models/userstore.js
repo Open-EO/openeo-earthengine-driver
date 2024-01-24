@@ -148,7 +148,7 @@ export default class UserStore {
 		userData.token = token;
 		// Googles tokens are valid for roughly an hour, so we set it slightly lower
 		userData.token_valid_until = Utils.getTimestamp() + 59 * 60;
-		// todo: database handling for less OIDC userInfo requests
+		// todo auth: database handling for less OIDC userInfo requests #82
 		return userData;
 	}
 
