@@ -1,14 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class divide extends GeeProcess {
 
-	//TODO processes: Introducing DivisionByZero error
 	executeSync(node) {
-		return Commons.reduceBinaryInCallback(
-			node,
-			(a, b) => a.divide(b)
-		);
+		return GeeUtils.applyBinaryNumFunction(node, (x, y) => x.divide(y));
 	}
 
 }

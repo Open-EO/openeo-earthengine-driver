@@ -1,21 +1,16 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class log extends GeeProcess {
 
   executeSync(node) {
-    const base = node.getArgument('base');
-    return Commons.applyInCallback(
-      node,
-      image => {
-        switch (base) {
-          case 10:
-            return image.log10();
-          default:
-            return image.log().divide(node.ee.Image(base).log());
-        }
-      }
-    );
+    const ee = node.ee;
+    const base = node.getArgumentAsNumberEE('base');
+		return GeeUtils.applyNumFunction(node, data => ee.Algorithms.If(
+      base.eq(10),
+      data.log10(),
+      data.log().divide(base.log())
+    ));
   }
 
 }

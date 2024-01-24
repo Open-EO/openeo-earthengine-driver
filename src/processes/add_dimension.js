@@ -4,10 +4,10 @@ import GeeProcess from '../processgraph/process.js';
 export default class add_dimension extends GeeProcess {
 
 	executeSync(node) {
-		const dc = node.getDataCube("data");
+		const dc = node.getDataCube('data');
 		const name = node.getArgument('name');
 		const label = node.getArgument('label');
-		const type = node.getArgument("type");
+		const type = node.getArgument('type');
 
 		if (dc.hasDimension(name)) {
 			throw new Errors.DimensionExists({
@@ -16,13 +16,11 @@ export default class add_dimension extends GeeProcess {
 			});
 		}
 
-		const dimension = dc.addDimension(name, type);
+		// We can't add x and y spatial dimensions.
+		const axis = (type === 'spatial') ? 'z' : null;
+		const dimension = dc.addDimension(name, type, axis);
 		dimension.addValue(label);
 
-		// Todo processes: A Number value for label causes problems
-		if (!Number.isInteger(label)) {
-			dc.renameLabels(dimension, [label], ["#"]);
-		}
 		return dc;
 	}
 

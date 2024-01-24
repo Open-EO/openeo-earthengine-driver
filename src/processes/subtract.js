@@ -1,13 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeUtils from '../processgraph/utils.js';
 
 export default class subtract extends GeeProcess {
 
 	executeSync(node) {
-		return Commons.reduceBinaryInCallback(
-			node,
-			(a, b) => a.subtract(b)
-		);
+		return GeeUtils.applyBinaryNumFunction(node, (x, y) => x.subtract(y));
 	}
 
 }
