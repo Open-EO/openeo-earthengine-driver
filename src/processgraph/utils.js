@@ -1,6 +1,60 @@
 import Utils from "../utils/utils.js";
 
+// ComputedObject is returned by the following functions:
+// ee.Algorithms.If, ee.Directory.get, ee.List.get, ee.String.decodeJSON, ee.apply, aside, iterate
+// Potentially also ee.Algorithms.Describe, ee.List.reduce
+// https://issuetracker.google.com/issues/325444873
+
 const GeeUtils = {
+
+	getEarthEngineType(ee, obj, returnComputedObject = false) {
+		if (!Utils.isObject(obj)) {
+			return null;
+		}
+		if (obj instanceof ee.ComputedObject && returnComputedObject) {
+			return "ComputedObject";
+		}
+		else if (obj instanceof ee.Array) {
+			return "Array";
+		}
+		else if (obj instanceof ee.Blob) {
+			return "Blob";
+		}
+		else if (obj instanceof ee.Date) {
+			return "Date";
+		}
+		else if (obj instanceof ee.DateRange) {
+			return "DateRange";
+		}
+		else if (obj instanceof ee.Dictionary) {
+			return "Dictionary";
+		}
+		else if (obj instanceof ee.Feature) {
+			return "Feature";
+		}
+		else if (obj instanceof ee.FeatureCollection) {
+			return "FeatureCollection";
+		}
+		else if (obj instanceof ee.Geometry) {
+			return "Geometry";
+		}
+		else if (obj instanceof ee.Image) {
+			return "Image";
+		}
+		else if (obj instanceof ee.ImageCollection) {
+			return "ImageCollection";
+		}
+		else if (obj instanceof ee.List) {
+			return "List";
+		}
+		else if (obj instanceof ee.Number) {
+			return "Number";
+		}
+		else if (obj instanceof ee.String) {
+			return "String";
+		}
+		return null;
+	},
 
 	isEarthEngineType(ee, obj) {
 		return Utils.isObject(obj) && (
