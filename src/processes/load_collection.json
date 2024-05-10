@@ -47,35 +47,12 @@
                             "description": "North (upper right corner, coordinate axis 2).",
                             "type": "number"
                         },
-                        "base": {
-                            "description": "Base (optional, lower left corner, coordinate axis 3).",
-                            "type": [
-                                "number",
-                                "null"
-                            ],
-                            "default": null
-                        },
-                        "height": {
-                            "description": "Height (optional, upper right corner, coordinate axis 3).",
-                            "type": [
-                                "number",
-                                "null"
-                            ],
-                            "default": null
-                        },
                         "crs": {
-                            "description": "Coordinate reference system of the extent, specified as as [EPSG code](http://www.epsg-registry.org/) or [WKT2 CRS string](http://docs.opengeospatial.org/is/18-010r7/18-010r7.html). Defaults to `4326` (EPSG code 4326) unless the client explicitly requests a different coordinate reference system. If the bounding box is not provided in the coordinate reference system (CRS) of the data cube, the bounding box is reprojected to the CRS of the spatial data cube dimensions.",
-                            "anyOf": [
-                                {
-                                    "title": "EPSG Code",
-                                    "type": "integer",
-                                    "subtype": "epsg-code",
-                                    "minimum": 1000,
-                                    "examples": [
-                                        3857
-                                    ]
-                                }
-                            ],
+                            "description": "Coordinate reference system of the extent, specified as as [EPSG code](http://www.epsg-registry.org/). Defaults to `4326` (EPSG code 4326) unless the client explicitly requests a different coordinate reference system. If the bounding box is not provided in the coordinate reference system (CRS) of the data cube, the bounding box is reprojected to the CRS of the spatial data cube dimensions.",
+                            "title": "EPSG Code",
+                            "type": "integer",
+                            "subtype": "epsg-code",
+                            "minimum": 1000,
                             "default": 4326
                         }
                     }
@@ -190,39 +167,7 @@
                 "temporal_extent": [
                     "2018-01-01",
                     "2019-01-01"
-                ],
-                "properties": {
-                    "eo:cloud_cover": {
-                        "process_graph": {
-                            "cc": {
-                                "process_id": "between",
-                                "arguments": {
-                                    "x": {
-                                        "from_parameter": "value"
-                                    },
-                                    "min": 0,
-                                    "max": 50
-                                },
-                                "result": true
-                            }
-                        }
-                    },
-                    "platform": {
-                        "process_graph": {
-                            "pf": {
-                                "process_id": "eq",
-                                "arguments": {
-                                    "x": {
-                                        "from_parameter": "value"
-                                    },
-                                    "y": "Sentinel-2B",
-                                    "case_sensitive": false
-                                },
-                                "result": true
-                            }
-                        }
-                    }
-                }
+                ]
             }
         }
     ],

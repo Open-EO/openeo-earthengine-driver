@@ -1,24 +1,12 @@
 import GeeProcess from '../processgraph/process.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class first extends GeeProcess {
 
-	reducer(node) {
-		return node.getArgument('ignore_nodata', true) ? 'firstNonNull' : 'first';
-	}
-
 	executeSync(node) {
-		const ee = node.ee;
-		const data = node.getArgumentAsEE('data');
-
-		if (data instanceof ee.Array) {
-			return data.first();
-		}
-		else if (data instanceof ee.ImageCollection) {
-			return data.first();
-		}
-		else {
-			throw node.invalidArgument('data', 'Unsupported datatype');
-		}
+		const ignore_nodata = node.getArgument('ignore_nodata', true);
+		const reducer = ignore_nodata ? 'firstNonNull' : 'first';
+		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer[reducer]);
 	}
 
 }

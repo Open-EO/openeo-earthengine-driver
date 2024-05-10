@@ -1,0 +1,33 @@
+{
+  "id": "any",
+  "summary": "Is at least one value true?",
+  "description": "Checks if **any** (i.e. at least one) value in `data` is `true`.",
+  "categories": [
+    "logic",
+    "reducer"
+  ],
+  "parameters": [
+    {
+      "name": "data",
+      "description": "A set of boolean values.",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    }
+  ],
+  "returns": {
+    "description": "Boolean result of the logical operation.",
+    "schema": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  }
+}

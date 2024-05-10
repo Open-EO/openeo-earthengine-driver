@@ -6,7 +6,6 @@ export default class rename_dimension extends GeeProcess {
 		const dc = node.getDataCube("data");
 		const srcName = node.getArgument('source');
 		const trgName = node.getArgument('target');
-
 		if (dc.hasDimension(srcName)) {
 			throw new Errors.DimensionNotAvailable({
 				process: this.id,
@@ -20,8 +19,7 @@ export default class rename_dimension extends GeeProcess {
 			});
 		}
 
-		dc.renameDimension(srcName, trgName);
-		return dc;
+		return dc.renameDimension(srcName, trgName);
 	}
 
 }

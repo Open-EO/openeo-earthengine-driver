@@ -1,13 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class sd extends GeeProcess {
-	// ToDo processes: ignore_nodata parameter
-	geeReducer() {
-		return 'stdDev';
-	}
 
-	async execute() {
-		throw new Error("Not implemented yet.");
+	executeSync(node) {
+		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.stdDev);
 	}
 
 }

@@ -1,10 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class arctan extends GeeProcess {
 
   executeSync(node) {
-		return GeeUtils.applyNumFunction(node, data => data.atan());
+		return GeeProcessing.applyUnaryNumericalFunction(node, data => data.atan());
   }
 
 }

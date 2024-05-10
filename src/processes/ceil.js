@@ -1,10 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class ceil extends GeeProcess {
 
   executeSync(node) {
-		return GeeUtils.applyNumFunction(node, data => data.ceil());
+		return GeeProcessing.applyUnaryNumericalFunction(node, data => data.ceil());
   }
 
 }

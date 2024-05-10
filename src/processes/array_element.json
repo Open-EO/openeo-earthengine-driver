@@ -6,6 +6,7 @@
         "arrays",
         "reducer"
     ],
+    "experimental": true,
     "parameters": [
         {
             "name": "data",
@@ -37,15 +38,6 @@
                     "type": "string"
                 }
             ],
-            "optional": true
-        },
-        {
-            "name": "return_nodata",
-            "description": "By default this process throws an `ArrayElementNotAvailable` exception if the index or label is invalid. If you want to return `null` instead, set this flag to `true`.",
-            "schema": {
-                "type": "boolean"
-            },
-            "default": false,
             "optional": true
         }
     ],

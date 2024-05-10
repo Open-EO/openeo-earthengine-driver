@@ -1,10 +1,11 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class clip extends GeeProcess {
 
   static process(ee, data, min, max) {
     if (data instanceof ee.Array) {
+      // see https://issuetracker.google.com/issues/325432958
       return data.min(max).max(min);
     }
     else {
@@ -15,7 +16,7 @@ export default class clip extends GeeProcess {
   executeSync(node) {
     const min = node.getArgumentAsNumberEE('min');
     const max = node.getArgumentAsNumberEE('max');
-		return GeeUtils.applyNumFunction(node, data => clip.process(node.ee, data, min, max));
+		return GeeProcessing.applyUnaryNumericalFunction(node, data => clip.process(node.ee, data, min, max));
   }
 
 }

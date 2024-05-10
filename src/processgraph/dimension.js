@@ -1,15 +1,26 @@
 export default class Dimension {
 
-	constructor(datacube, options) {
+	constructor(datacube, options, name) {
 		this.datacube = datacube;
-		this.fromSTAC(options);
+		this.fromSTAC(options, name);
 	}
 
-	fromSTAC(source) {
+	fromSTAC(source, name) {
+		this.name = name;
 		this.type = source.type || 'other';
 		this.axis = source.type === 'spatial' ? source.axis : null;
-		this.extent = Array.isArray(source.extent) && source.extent.length === 2 ? source.extent : [];
-		this.values = Array.isArray(source.values) ? source.values : [];
+		if (Array.isArray(source.values)) {
+			this.values = source.values;
+			this.extent = null;
+		}
+		else if (Array.isArray(source.extent) && source.extent.length === 2) {
+			this.values = null;
+			this.extent = source.extent;
+		}
+		else {
+			this.values = [];
+			this.extent = null;
+		}
 		this.resolution = source.step ? source.step : null;
 		this.unit = source.unit ? source.unit : '';
 		this.referenceSystem = source.reference_system;
@@ -44,7 +55,15 @@ export default class Dimension {
 	}
 
 	drop() {
-		this.datacube.dropDimension(this);
+		this.datacube.dropDimension(this.name);
+	}
+
+	rename(newName) {
+		this.datacube.renameDimension(this.name, newName);
+	}
+
+	getType() {
+		return this.type;
 	}
 
 	getResolution() {
@@ -63,26 +82,25 @@ export default class Dimension {
 		return this.getReferenceSystem();
 	}
 
+	setName(name) {
+		this.name = name;
+	}
+
 	setReferenceSystem(newRefSys) {
 		this.referenceSystem = newRefSys;
 	}
 
-	setExtent(e, e2 = null) {
-		this.values = [];
-		if (Array.isArray(e) && e.length === 2) {
-			this.extent = e;
-		}
-		else {
-			this.extent = [e, e2];
-		}
+	setExtent(min, max) {
+		this.values = null;
+		this.extent = [min, max];
 	}
 
 	setValues(values) {
 		this.values = values;
-		this.extent = [];
+		this.extent = null;
 	}
 
-	getValues(){
+	getValues() {
 		return this.values;
 	}
 
@@ -91,6 +109,9 @@ export default class Dimension {
 	}
 
 	min() {
+		if (!Array.isArray(this.extent)) {
+			return null;
+		}
 		if (typeof this.extent[0] !== 'undefined') {
 			return this.extent[0];
 		}
@@ -100,6 +121,9 @@ export default class Dimension {
 	}
 
 	max() {
+		if (!Array.isArray(this.extent)) {
+			return null;
+		}
 		if (typeof this.extent[1] !== 'undefined') {
 			return this.extent[1];
 		}

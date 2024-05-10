@@ -1,7 +1,7 @@
 {
     "id": "max",
     "summary": "Maximum value",
-    "description": "Computes the largest value of an array of numbers, which is equal to the first element of a sorted (i.e., ordered) version of the array.\n\nAn array without non-`null` elements resolves always with `null`.",
+    "description": "Computes the largest value of an array of numbers, which is equal to the first element of a sorted (i.e., ordered) version of the array.\n\nAn array with solely no-data values returns the no-data value (or `null`).",
     "categories": [
         "math",
         "math > statistics",
@@ -53,13 +53,6 @@
                 ]
             },
             "returns": 5
-        },
-        {
-            "description": "The input array is empty: return `null`.",
-            "arguments": {
-                "data": []
-            },
-            "returns": null
         }
     ],
     "links": [

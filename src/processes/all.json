@@ -1,0 +1,33 @@
+{
+  "id": "all",
+  "summary": "Are all of the values true?",
+  "description": "Checks if **all** of the values in `data` are true.",
+  "categories": [
+    "logic",
+    "reducer"
+  ],
+  "parameters": [
+    {
+      "name": "data",
+      "description": "A set of boolean values.",
+      "schema": {
+        "type": "array",
+        "items": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    }
+  ],
+  "returns": {
+    "description": "Boolean result of the logical operation.",
+    "schema": {
+      "type": [
+        "boolean",
+        "null"
+      ]
+    }
+  }
+}

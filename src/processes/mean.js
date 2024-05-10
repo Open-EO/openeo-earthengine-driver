@@ -1,13 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class mean extends GeeProcess {
 
-  geeReducer() {
-    return 'mean';
-  }
-
-  async execute() {
-    throw new Error("Not implemented yet.");
-  }
+	executeSync(node) {
+		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.mean);
+	}
 
 }

@@ -44,6 +44,7 @@
 		"check-disk-space": "^3.4.0",
 		"epsg-index": "^2.0.0",
 		"fs-extra": "^11.2.0",
+		"luxon": "^3.4.4",
 		"proj4": "^2.10.0",
 		"restify": "^11.1.0"
 	},

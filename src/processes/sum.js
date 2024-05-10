@@ -1,19 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class sum extends GeeProcess {
 
-	geeReducer() {
-		return 'sum';
-	}
-
-	//ToDo processes: ignore_nodata parameter
 	executeSync(node) {
-		return Commons.reduceInCallback(
-			node,
-			(a, b) => a.add(b),
-			(a, b) => a + b
-		);
+		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.sum);
 	}
 
 }

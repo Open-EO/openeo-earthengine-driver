@@ -1,10 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class sqrt extends GeeProcess {
 
   executeSync(node) {
-		return GeeUtils.applyNumFunction(node, data => data.sqrt());
+		return GeeProcessing.applyUnaryNumericalFunction(node, data => data.sqrt());
   }
 
 }

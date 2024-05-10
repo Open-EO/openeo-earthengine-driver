@@ -115,6 +115,10 @@ const Utils = {
 		return null;
 	},
 
+	isBBox(bbox) {
+		return ['west', 'east', 'north', 'south'].filter(key => typeof bbox[key] === 'number').length === 4;
+	},
+
 	bboxToGeoJson(bbox) {
 		const geom = {
 			geodesic: false,

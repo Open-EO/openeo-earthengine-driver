@@ -1,5 +1,5 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeProcessing from './utils/processing.js';
 import If from './if.js';
 
 export default class round extends GeeProcess {
@@ -23,7 +23,7 @@ export default class round extends GeeProcess {
     const ee = node.ee;
     const p = node.getArgumentAsNumberEE("p", 0);
     const scaleFactor = ee.Number(10).pow(p);
-    return GeeUtils.applyNumFunction(node, data => If.process(
+    return GeeProcessing.applyUnaryNumericalFunction(node, data => If.process(
       ee,
       p.eq(0),
       // Normal integer rounding

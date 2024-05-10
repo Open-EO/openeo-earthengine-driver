@@ -1,18 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class max extends GeeProcess {
 
-	geeReducer() {
-		return 'max';
-	}
-
 	executeSync(node) {
-		return Commons.reduceInCallback(
-			node,
-			(a, b) => a.max(b),
-			(a, b) => Math.max(a, b)
-		);
+		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.max);
 	}
 
 }

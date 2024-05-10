@@ -1,11 +1,11 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeTypes from './utils/types.js';
 
 export default class If extends GeeProcess {
 
   static process(ee, value, accept, reject) {
-    const acceptType = GeeUtils.getEarthEngineType(ee, accept);
-    const rejectType = GeeUtils.getEarthEngineType(ee, reject);
+    const acceptType = GeeTypes.getEarthEngineType(ee, accept);
+    const rejectType = GeeTypes.getEarthEngineType(ee, reject);
     const result = ee.Algorithms.If(value, accept, reject);
     if (rejectType !== null && acceptType === rejectType) {
       return ee[rejectType](result)
@@ -16,6 +16,9 @@ export default class If extends GeeProcess {
   }
 
   executeSync(node) {
+    // todo: handle data cubes
+    // need the dc to be available on GEE
+    // the DC class needs to be synced between openEO driver and GEE
     const value = node.getArgumentAsEE('value');
     const accept = node.getArgumentAsEE('accept');
     const reject = node.getArgumentAsEE('reject', null);

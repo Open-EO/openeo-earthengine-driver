@@ -1,147 +1,47 @@
 {
-	"PasswordInsecure": {
-		"description": "The specified password is not considered secure by the policy of the back-end provider or no password was given at all. The user needs to specify a different password to proceed.",
-		"message": "Password does not meet the requirements.",
-		"http": 400,
-		"tags": [
-			"Account Management"
-		]
-	},
-	"BoundingBoxMissing": {
-		"description": "No bounding box specified to restrict data processing upon. Use `filter_bbox` to restrict the processed area.",
-		"message": "No bounding box specified. Use `filter_bbox` to restrict the processed area.",
-		"http": 400,
-		"tags": [
-			"Processes",
-			"Job Management"
-		]
-	},
-	"EarthEngineError": {
-		"description": "An unknown error thrown by GEE code.",
-		"message": "Process '{process}' reports: {message}",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"IndexOutOfBounds": {
-		"description": "The array has no element with the specified index.",
-		"message": "The array has no element with the specified index.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"LabelMismatch": {
-		"description": "The number of labels in the parameters `source` and `target` don't match.",
-		"message": "The number of labels in the parameters `source` and `target` don't match.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"LabelNotAvailable": {
-		"description": "A label with the specified name does not exist.",
-		"message": "A label with the specified name does not exist.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"LabelExists": {
-		"description": "A label with the specified name exists.",
-		"message": "A label with the specified name exists.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"ArrayElementNotAvailable": {
-		"description": "The array has no element with the specified index or label.",
-		"message": "The array has no element with the specified index or label.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"ArrayElementParameterMissing": {
-		"description": "The process 'array_element' requires either the 'index' or 'labels' parameter to be set.",
-		"message": "The process 'array_element' requires either the 'index' or 'labels' parameter to be set.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"ArrayElementParameterConflict": {
-		"description": "The process 'array_element' only allows that either the 'index' or the 'labels' parameter is set.",
-		"message": "The process 'array_element' only allows that either the 'index' or the 'labels' parameter is set.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"DimensionLabelCountMismatch": {
-		"description": "The number of dimension labels exceeds one, which requires a reducer",
-		"message": "The number of dimension labels exceeds one, which requires a reducer in process '{process}' parameter '{argument}'.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"DimensionNotAvailable": {
-		"description": "A dimension with the specified name does not exist.",
-		"message": "A dimension with the name specified in process '{process}' parameter '{argument}' does not exist.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"DimensionExists": {
-		"description": "A dimension with the specified name does exist.",
-		"message": "A dimension with the name specified in process '{process}' parameter '{argument}' exists.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"UndefinedElements": {
-		"description": null,
-		"message": "Not enough defined elements available for process '{process}'.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"ProcessGraphIdDoesntMatch": {
-		"description": null,
-		"message": "The id in the parameter and the id in the document don't match.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management"
-		]
-	},
-	"PredefinedProcessExists": {
-		"description": null,
-		"message": "A pre-defined process with the given id exists.",
-		"http": 400,
-		"tags": [
-			"Process Graph Management"
-		]
-	},
-	"OverlapResolverMissing": {
-		"description": null,
-		"message": "Overlapping data cubes, but no overlap resolver has been specified.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	},
-	"DataCubeEmpty": {
-		"description": null,
-		"message": "The file format doesn't support storing empty data cubes.",
-		"http": 400,
-		"tags": [
-			"Processes"
-		]
-	}
+  "EarthEngineError": {
+    "message": "Process '{process}' reports: {message}"
+  },
+  "LabelMismatch": {
+    "message": "The number of labels in the parameters `source` and `target` don't match."
+  },
+  "LabelNotAvailable": {
+    "message": "A label with the specified name does not exist."
+  },
+  "LabelExists": {
+    "message": "A label with the specified name exists."
+  },
+  "DimensionTypeNotAvailable": {
+    "message": "A dimension of type '{type}' does not exist in the data cube given in process '{process}'."
+  },
+  "DimensionNotAvailable": {
+    "message": "A dimension with the name specified in process '{process}' parameter '{argument}' does not exist."
+  },
+  "ProcessGraphIdDoesntMatch": {
+    "message": "The id in the parameter and the id in the document don't match."
+  },
+  "PredefinedProcessExists": {
+    "message": "A pre-defined process with the given id exists."
+  },
+  "DataCubeEmpty": {
+    "message": "The file format doesn't support storing empty data cubes."
+  },
+  "TemporalExtentEmpty": {
+    "message": "The temporal extent is empty. The second instant in time must always be greater/later than the first instant in time."
+  },
+  "DimensionExists": {
+    "message": "A dimension with the specified name already exists."
+  },
+  "ArrayElementNotAvailable": {
+    "message": "The array has no element with the specified index or label '{x}'."
+  },
+  "ArrayElementParameterMissing": {
+    "message": "The process `array_element` requires either the `index` or `labels` parameter to be set."
+  },
+  "ArrayElementParameterConflict": {
+    "message": "The process `array_element` only allows that either the `index` or the `labels` parameter is set."
+  },
+  "ArrayNotLabeled": {
+    "message": "The array is not a labeled array, but the `label` parameter is set. Use the `index` instead."
+  }
 }

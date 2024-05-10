@@ -1,21 +1,28 @@
 # openeo-earthengine-driver
+
 openEO back-end driver for [Google Earth Engine](https://earthengine.google.com/).
 
-This back-end currently supports **openEO API version 1.0.0**.
-Legacy versions are available as [releases](https://github.com/Open-EO/openeo-earthengine-driver/releases).
+This back-end implements **openEO API version 1.2.0**.
 
-This is a **proof-of-concept** and is not meant to be used in production!
+> [!NOTE]
+> This is not a production-ready implementation yet!
+
 If you are interested in using openEO together with Google Earth Engine, [express your interest with the Google Earth Engine Team](https://developers.google.com/earth-engine/help#feature_requests), please.
 
 ## Demo
 
-The demo instance is running at https://earthengine.openeo.org (supporting openEO API versions 0.4 and 1.0)
+The demo instance is running at <https://earthengine.openeo.org>
 
-Several user accounts are available to be used (`group1`, `group2`, ...), each with password `test123`.
+To log in, you can use your Google Account to authenticate as long as it's signed up for Google Earth Engine.
+As a non-commercial user, you can [register for Google Earth Engine](https://signup.earthengine.google.com/) for free.
+
+If you are unable to register for Google Earth Engine, we can also provide a demo account.
+Please contact [openeo.psc@uni-muenster.de](mailto:openeo.psc@uni-muenster.de).
 
 ## Setting up an instance
 
-The driver is written in [node.js](https://nodejs.org/) and requires at least version 11.0.0. Install node.js and npm according to the official documentation of each software package. Often node.js is shipped together with npm.
+The driver is written in [node.js](https://nodejs.org/) and requires at least version 20.0.0.
+Install node.js and npm according to the official documentation of each software package.
 
 Afterwards either download the files in this repository or clone it. Run `npm install` to install the dependencies
 
@@ -29,7 +36,6 @@ There are several important configuration options in the file [config.json](conf
     * `port`: The port the HTTPS (secured) instance of the openEO GEE driver is running on.
     * `key`: If you want to create an HTTPS server, pass in a private key. Otherwise set to `null`.
     * `certificate`: If you want to create an HTTPS server, pass in a PEM-encoded certificate. Otherwise set to `null`.
-* `serviceAccountCredentialsFile`: See section 'Setting up GEE authentication'.
 
 #### Setting up GEE authentication
 
@@ -42,13 +48,14 @@ The server needs to authenticate with a [service accounts](https://developers.go
 
 ##### Google User Accounts
 
-**EXPERIMENTAL:** *This authentication method currently requires you to login every 60 minutes unless the
-openEO clients refresh the tokens automatically. User workspaces also don't work reliably as of now.*
+> [!CAUTION]
+> This authentication method currently requires you to login every 60 minutes unless the openEO clients refresh the tokens automatically.
+> User workspaces also don't work reliably as of now.
 
 Alternatively, you can configure the driver to let users authenticatie with their User Accounts via OAuth2 / OpenID Connect.
 For this you need to configure the property `googleAuthClients` in the file [config.json](config.json).
 
-You want to have at least client IDs for "Web Application" from the 
+You want to have at least client IDs for "Web Application" from the
 [Google Cloud Console](https://console.cloud.google.com/apis/credentials).
 
 For example:
@@ -70,7 +77,7 @@ For example:
 
 ### Starting up the server
 
-After configuration, the server can be started. Run `npm run up` to start the server. 
+After configuration, the server can be started. Run `npm run up` to start the server.
 
 After finishing work, you can stop the server by running `npm run down`.
 
@@ -80,31 +87,18 @@ You can add a new user account by running `npm run adduser`.
 
 For both the demo servers or your own instance you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
 
-An exemplary process to create an on-demand XYZ web-service looks like this: [sample-processgraph.json](tests/data/sample-processgraph.json)
+There are various clients for the openEO API, e.g.
+- Web Editor
+- Python
+- R
+- JavaScript
+- Julia
 
-This translates into the following [Google Earth Engine Playground](https://code.earthengine.google.com/) script:
+There are various process graph examples in the following folder: [examples](./examples/)
 
-```
-// load_collection
-var col = ee.ImageCollection("COPERNICUS/S2");
-col = col.filterDate("2018-01-01", "2018-01-31");
+> [!WARNING]
+> Google Earth Engine internally works quite different compared to openEO.
+> The process implementations may slightly differ from the openEO process descriptions in some cases.
+> For example, the handling of no-data, NaN and infinity values works differently.
+> Be aware that in some cases the results may slightly differ when compared to other openEO implementations.
 
-// filter_bands (2x)
-col = col.select(["B4", "B8"]);
-
-// reduce over bands with callback normalized_difference
-col = col.map(function(image) {
-  var red = image.select("B4");
-  var nir = image.select("B8");
-	return nir.subtract(red).divide(nir.add(red));
-});
-
-// reduce over time with callback max
-var img = col.reduce('max');
-
-// save_result
-// Either download data with img.getDownloadURL() or show it in in the playground with:
-Map.addLayer(img);
-```
-
-**[Further documentation](docs/README.md) and more examples can be found in the [docs/](docs/) directory, but it is work in progress.**

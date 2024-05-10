@@ -1,7 +1,7 @@
 {
     "id": "median",
     "summary": "Statistical median",
-    "description": "The statistical median of an array of numbers is the value separating the higher half from the lower half of the data.\n\nAn array without non-`null` elements resolves always with `null`.\n\n**Remarks:**\n\n* For symmetric arrays, the result is equal to the ``mean()``.\n* The median can also be calculated by computing the ``quantiles()`` with a probability of *0.5*.",
+    "description": "The statistical median of an array of numbers is the value separating the higher half from the lower half of the data.\n\nAn array with solely no-data values returns the no-data value (or `null`).\n\n**Remarks:**\n\n* For symmetric arrays, the result is equal to the ``mean()``.\n* The median can also be calculated by computing the ``quantiles()`` with a probability of *0.5*.",
     "categories": [
         "math > statistics",
         "reducer"
@@ -70,23 +70,6 @@
                 ]
             },
             "returns": -0.5
-        },
-        {
-            "description": "The input array is empty: return `null`.",
-            "arguments": {
-                "data": []
-            },
-            "returns": null
-        },
-        {
-            "description": "The input array has only `null` elements: return `null`.",
-            "arguments": {
-                "data": [
-                    null,
-                    null
-                ]
-            },
-            "returns": null
         }
     ],
     "links": [
@@ -95,32 +78,5 @@
             "href": "http://mathworld.wolfram.com/StatisticalMedian.html",
             "title": "Statistical Median explained by Wolfram MathWorld"
         }
-    ],
-    "process_graph": {
-        "quantiles": {
-            "process_id": "quantiles",
-            "arguments": {
-                "data": {
-                    "from_parameter": "data"
-                },
-                "probabilities": [
-                    0.5
-                ],
-                "ignore_nodata": {
-                    "from_parameter": "ignore_nodata"
-                }
-            }
-        },
-        "array_element": {
-            "process_id": "array_element",
-            "arguments": {
-                "data": {
-                    "from_node": "quantiles"
-                },
-                "return_nodata": true,
-                "index": 0
-            },
-            "result": true
-        }
-    }
+    ]
 }

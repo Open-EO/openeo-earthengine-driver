@@ -1,7 +1,7 @@
 {
     "id": "variance",
     "summary": "Variance",
-    "description": "Computes the sample variance of an array of numbers by calculating the square of the standard deviation (see ``sd()``). It is defined to be the expectation of the squared deviation of a random variable from its expected value. Basically, it measures how far the numbers in the array are spread out from their average value.\n\nAn array without non-`null` elements resolves always with `null`.",
+    "description": "Computes the sample variance of an array of numbers by calculating the square of the standard deviation (see ``sd()``). It is defined to be the expectation of the squared deviation of a random variable from its expected value. Basically, it measures how far the numbers in the array are spread out from their average value.\n\nAn array with solely no-data values returns the no-data value (or `null`).",
     "categories": [
         "math > statistics",
         "reducer"
@@ -54,13 +54,6 @@
                 ]
             },
             "returns": 1.1
-        },
-        {
-            "description": "The input array is empty: return `null`.",
-            "arguments": {
-                "data": []
-            },
-            "returns": null
         }
     ],
     "links": [
@@ -69,60 +62,5 @@
             "href": "http://mathworld.wolfram.com/Variance.html",
             "title": "Variance explained by Wolfram MathWorld"
         }
-    ],
-    "process_graph": {
-        "mean": {
-            "process_id": "mean",
-            "arguments": {
-                "data": {
-                    "from_parameter": "data"
-                }
-            }
-        },
-        "apply": {
-            "process_id": "apply",
-            "arguments": {
-                "data": {
-                    "from_parameter": "data"
-                },
-                "process": {
-                    "process-graph": {
-                        "subtract": {
-                            "process_id": "subtract",
-                            "arguments": {
-                                "x": {
-                                    "from_parameter": "x"
-                                },
-                                "y": {
-                                    "from_parameter": "context"
-                                }
-                            }
-                        },
-                        "power": {
-                            "process_id": "power",
-                            "arguments": {
-                                "base": {
-                                    "from_node": "subtract"
-                                },
-                                "p": 2
-                            },
-                            "result": true
-                        }
-                    }
-                },
-                "context": {
-                    "from_node": "mean"
-                }
-            }
-        },
-        "mean2": {
-            "process_id": "mean",
-            "arguments": {
-                "data": {
-                    "from_node": "apply"
-                }
-            },
-            "result": true
-        }
-    }
+    ]
 }

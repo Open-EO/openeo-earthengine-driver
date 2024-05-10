@@ -18,7 +18,7 @@ export default class ProcessingContext {
 		if (this.userId.startsWith("google-")) {
 			console.log("Authenticate via user token");
 			const expires = 59 * 60;
-			// todo: get expiration from token and set more parameters
+			// todo auth: get expiration from token and set more parameters #82
 			ee.apiclient.setAuthToken(null, 'Bearer', user.token, expires, [], null, false, false);
 		}
 		else {
@@ -78,9 +78,27 @@ export default class ProcessingContext {
 		return this.user;
 	}
 
+	toImage(node, data) {
+		const ee = this.ee;
+		if (data instanceof ee.Image){
+			return data;
+		}
+		else if (data instanceof ee.ImageCollection) {
+			const logger = node.getLogger();
+			logger.warn("Compositing the image collection to a single image.");
+			return data.mosaic();
+		}
+		else if (data instanceof ee.Number || data instanceof ee.Array) {
+			return ee.Image(data);
+		}
+		else {
+			throw new Error("Can't convert to image.");
+		}
+	}
+
 	// Returns AxiosResponse (object) or URL (string)
-	async retrieveResults(dataCube) {
-		const logger = dataCube.getLogger();
+	async retrieveResults(node, dataCube) {
+		const logger = node.getLogger();
 		const parameters = dataCube.getOutputFormatParameters();
 		let format = dataCube.getOutputFormat();
 		if (typeof format === 'string') {
@@ -119,7 +137,7 @@ export default class ProcessingContext {
 					visBands = [parameters.gray];
 				}
 				else if (parameters.red || parameters.green || parameters.blue) {
-					throw new Errors.ProcessArgumentInvalid({
+					throw new Errors.ProcessParameterInvalid({
 						argument: "options",
 						process: "save_result",
 						namespace: "backend",
@@ -134,7 +152,8 @@ export default class ProcessingContext {
 				}
 				logger.info("Output CRS is " + crs);
 				return new Promise((resolve, reject) => {
-					dataCube.image().visualize({min: 0, max: 255, bands: visBands, palette: visPalette}).getThumbURL({
+					const img = this.toImage(node, dataCube.getData());
+					img.visualize({min: 0, max: 255, bands: visBands, palette: visPalette}).getThumbURL({
 						format: format === 'jpeg' ? 'jpg' : format,
 						dimensions: parameters.size || 1000,
 						region: region,
@@ -154,7 +173,8 @@ export default class ProcessingContext {
 			}
 			case 'gtiff-thumb':
 				return new Promise((resolve, reject) => {
-					dataCube.image().getThumbURL({
+					const img = this.toImage(node, dataCube.getData());
+					img.getThumbURL({
 						format: 'geotiff',
 						dimensions: parameters.size || 1000,
 						region: region,
@@ -173,7 +193,8 @@ export default class ProcessingContext {
 				});
 			case 'gtiff-zip':
 				return new Promise((resolve, reject) => {
-					dataCube.image().getDownloadURL({
+					const img = this.toImage(node, dataCube.getData());
+					img.getDownloadURL({
 						dimensions: parameters.size || 1000,
 						region: region,
 						crs: crs

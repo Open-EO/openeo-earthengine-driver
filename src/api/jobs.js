@@ -27,8 +27,6 @@ export default class JobsAPI {
 		server.addEndpoint('get', '/jobs/{job_id}/logs', this.getJobLogs.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
 		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
-		// todo: It's currently not possible to cancel job processing as we can't interrupt the POST request to GEE.
-		// We could use https://github.com/axios/axios#cancellation in the future. #76
 
 		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
 		server.addEndpoint('get', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
@@ -171,7 +169,7 @@ export default class JobsAPI {
 			const resultNode = await pg.execute();
 			const cube = resultNode.getResult();
 
-			let response = await context.retrieveResults(cube);
+			let response = await context.retrieveResults(resultNode, cube);
 			if (typeof response === 'string') {
 				logger.debug("Downloading data from Google: " + response);
 				response = await HttpUtils.stream(response);
@@ -229,7 +227,6 @@ export default class JobsAPI {
 		}
 		else if (job.status === 'queued' || job.status === 'running') {
 			if (partial) {
-				// ToDo 1.2: Implement partial results #74
 				throw new Errors.QueryParameterUnsupported({name: 'partial'});
 			}
 			else {
@@ -277,9 +274,9 @@ export default class JobsAPI {
 			stac_extensions: [],
 			id: job._id,
 			type: "Feature",
-			geometry: null, // ToDo 1.0: Set correct geometry, add bbox if geometry is set #78
+			geometry: null,
 			properties: {
-				datetime: null, // ToDo 1.0: Set correct datetimes #78
+				datetime: null,
 				title: job.title || null,
 				description: job.description || null,
 				created: job.created,
@@ -416,7 +413,7 @@ export default class JobsAPI {
 		const resultNode = await pg.execute();
 		const cube = resultNode.getResult();
 
-		let response = await context.retrieveResults(cube);
+		let response = await context.retrieveResults(resultNode, cube);
 		if (typeof response === 'string') {
 			logger.debug("Downloading data from Google: " + response);
 			response = await HttpUtils.stream(response);

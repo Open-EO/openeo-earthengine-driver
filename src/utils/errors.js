@@ -13,7 +13,7 @@ const ABOUT_URL = "https://openeo.org/documentation/1.0/developers/api/errors.ht
 for(const name in errors) {
 	restify_errors[name] = restify_errors.makeConstructor(name, {
 		code: name,
-		statusCode: errors[name].http,
+		statusCode: errors[name].http || 400,
 		message: errors[name].message,
 		originalError: null,
 		native: true,

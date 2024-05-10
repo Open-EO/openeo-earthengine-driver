@@ -1,18 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
-import Commons from '../processgraph/commons.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class product extends GeeProcess {
 
-  geeReducer() {
-    return 'product';
-  }
+	executeSync(node) {
+		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.product);
+	}
 
-  //ToDo processes: ignore_nodata parameter
-  executeSync(node) {
-    return Commons.reduceInCallback(
-      node,
-      (a, b) => a.multiply(b),
-      (a, b) => a * b
-    );
-  }
 }

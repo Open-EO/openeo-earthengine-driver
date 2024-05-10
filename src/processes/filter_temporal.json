@@ -53,18 +53,6 @@
                     ]
                 ]
             }
-        },
-        {
-            "name": "dimension",
-            "description": "The name of the temporal dimension to filter on. If no specific dimension is specified, the filter applies to all temporal dimensions. Fails with a `DimensionNotAvailable` exception if the specified dimension does not exist.",
-            "schema": {
-                "type": [
-                    "string",
-                    "null"
-                ]
-            },
-            "default": null,
-            "optional": true
         }
     ],
     "returns": {
@@ -75,9 +63,6 @@
         }
     },
     "exceptions": {
-        "DimensionNotAvailable": {
-            "message": "A dimension with the specified name does not exist."
-        },
         "TemporalExtentEmpty": {
             "message": "The temporal extent is empty. The second instant in time must always be greater/later than the first instant in time."
         }

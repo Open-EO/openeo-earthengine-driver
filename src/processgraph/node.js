@@ -2,7 +2,7 @@ import DataCube from './datacube.js';
 import { ProcessGraphNode } from '@openeo/js-processgraphs';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
-import GeeUtils from './utils.js';
+import GeeTypes from '../processes/utils/types.js';
 import Utils from '../utils/utils.js';
 
 export default class GeeProcessGraphNode extends ProcessGraphNode {
@@ -57,8 +57,18 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return this.processGraph.getArgument(name);
 	}
 
-	getDataCube(name) {
-		return new DataCube(this.ee, this.getArgument(name));
+	isDataCube(name) {
+		return this.getParameter(name) instanceof DataCube;
+	}
+
+	getDataCube(name, defaultValue = undefined) {
+		return new DataCube(this.ee, this.getArgument(name, defaultValue));
+	}
+
+	getDataCubeWithEE(name, defaultValue = undefined) {
+		const dc = this.getDataCube(name, defaultValue);
+		const data = this._convertToEE(name, dc.getData(), defaultValue);
+		return dc.setData(data);
 	}
 
 	getCallback(name) {
@@ -69,13 +79,9 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return callback;
 	}
 
-	isEarthEngineType(data) {
-		return GeeUtils.isEarthEngineType(this.ee, data);
-	}
-
 	getArgumentAsListEE(name, converter = null) {
 		const data = this.getArgument(name);
-		const result = GeeUtils.toList(this.ee, data, converter);
+		const result = GeeTypes.toList(this.ee, data, converter);
 		if (result === null) {
 			throw this.invalidArgument(name, 'Conversion to list not supported');
 		}
@@ -84,7 +90,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 
 	getArgumentAsStringEE(name, defaultValue = undefined) {
 		const data = this.getArgument(name, defaultValue);
-		const result = GeeUtils.toString(this.ee, data);
+		const result = GeeTypes.toString(this.ee, data);
 		if (result === null) {
 			throw this.invalidArgument(name, 'Conversion to string not supported');
 		}
@@ -93,7 +99,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 
 	getArgumentAsNumberEE(name, defaultValue = undefined) {
 		const data = this.getArgument(name, defaultValue);
-		const result = GeeUtils.toNumber(this.ee, data);
+		const result = GeeTypes.toNumber(this.ee, data);
 		if (result === null) {
 			throw this.invalidArgument(name, 'Conversion to number not supported');
 		}
@@ -101,27 +107,33 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 	}
 
 	getArgumentAsEE(name, defaultValue = undefined) {
-		const ee = this.ee;
-		let data = this.getArgument(name, defaultValue);
+		const data = this.getArgument(name, defaultValue);
+		return this._convertToEE(name, data, defaultValue);
+	}
 
-		if (data instanceof ee.ComputedObject) {
+	_convertToEE(name, data, defaultValue) {
+		const ee = this.ee;
+		if (GeeTypes.isEarthEngineType(this.ee, data, false)) {
+			return data;
+		}
+		else if (GeeTypes.isComputedObject(ee, data)) {
 			this.warn('Inspecting a ComputedObject via getInfo() is slow. Please report this issue.');
 			const info = data.getInfo();
 			if (typeof info === 'boolean' || typeof info === 'number' || typeof info === 'string') {
-				this.debug(`ComputedObject is a scalar value: ${info}`);
+				this.debug(`ComputedObject is a scalar value: ${info}`, info);
 				data = info;
 			}
 			else if (Array.isArray(info)) {
-				this.debug(`ComputedObject is an array of length ${info.length}`);
+				this.debug(`ComputedObject is an array of length ${info.length}`, info);
 				data = info;
 			}
 			else if (Utils.isObject(info)) {
 				if (typeof info.type === 'string' && typeof ee[info.type] !== 'undefined') {
-					this.debug(`Casting from ComputedObject to ${info.type}`);
+					this.debug(`Casting from ComputedObject to ${info.type}`, info);
 					return ee[info.type](data);
 				}
 				else {
-					this.debug(`ComputedObject is an object with the following keys: ${Object.keys(info)}`);
+					this.debug(`ComputedObject is an object with the following keys: ${Object.keys(info)}`, info);
 					data = info;
 				}
 			}
@@ -145,15 +157,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 				return null;
 			}
 			else if (Array.isArray(data)) {
-				if (data.length === 0) {
-					return ee.Array([], ee.PixelType.float());
-				}
-				else {
-					return ee.Array(data);
-				}
-			}
-			else if (this.isEarthEngineType(data)) {
-				return data;
+				return ee.List(data);
 			}
 			else if (Utils.isObject(data)) {
 				return ee.Dictionary(data);
@@ -163,8 +167,12 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		throw this.invalidArgument(name, 'Datatype not supported by Google Earth Engine');
 	}
 
+	getExecutionContext() {
+		return this.getProcessGraph().getArgument("executionContext");
+	}
+
 	invalidArgument(argument, reason) {
-		return new Errors.ProcessArgumentInvalid({
+		return new Errors.ProcessParameterInvalid({
 			process: this.process_id,
 			namespace: this.namespace || 'n/a',
 			argument,

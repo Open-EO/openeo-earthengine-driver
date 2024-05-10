@@ -59,7 +59,7 @@ export default class ServicesAPI {
 			cube.setSpatialExtent(rect);
 			cube.setCrs(3857);
 
-			const response = await context.retrieveResults(cube);
+			const response = await context.retrieveResults(resultNode, cube);
 			if (typeof response === 'string') {
 				logger.debug(`Serving ${response} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
 				return res.redirect(response, Utils.noop);

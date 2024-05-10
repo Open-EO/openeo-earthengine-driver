@@ -1,11 +1,11 @@
 import GeeProcess from '../processgraph/process.js';
-import GeeUtils from '../processgraph/utils.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class power extends GeeProcess {
 
   executeSync(node) {
     const p = node.getArgumentAsNumberEE('p');
-    return GeeUtils.applyNumFunction(node, data => data.pow(p), 'base');
+    return GeeProcessing.applyUnaryNumericalFunction(node, data => data.pow(p), 'base');
   }
 
 }
