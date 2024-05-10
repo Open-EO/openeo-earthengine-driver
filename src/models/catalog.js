@@ -40,9 +40,13 @@ export default class DataCatalog {
 		const files = await fse.readdir(this.dataFolder, { withFileTypes: true });
 		const promises = files.map(async (file) => {
 			const name = path.basename(file.name);
-			if (file.isFile() && name.endsWith('.json') && name !== 'catalog.json') {
+			if (file.isFile() && name.endsWith('.json')) {
 				try {
-					const collection = this.fixData(await fse.readJson(this.dataFolder + name));
+					const obj = await fse.readJson(this.dataFolder + name);
+					if (obj.type !== 'Collection') {
+						return;
+					}
+					const collection = this.fixData(obj);
 					if (this.supportedGeeTypes.includes(collection['gee:type'])) {
 						this.collections[collection.id] = collection;
 					}
@@ -180,21 +184,26 @@ export default class DataCatalog {
 
 		c.stac_extensions = [STAC_DATACUBE_EXTENSION];
 
-		// spatial dimensions for all data types
-		const x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
-		const y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
-		c['cube:dimensions'] = {
-			x: {
-				type: "spatial",
-				axis: "x",
-				extent: [c.extent.spatial.bbox[0][0], c.extent.spatial.bbox[0][x2]]
-			},
-			y: {
-				type: "spatial",
-				axis: "y",
-				extent: [c.extent.spatial.bbox[0][1], c.extent.spatial.bbox[0][y2]]
-			},
-		};
+		if (!c.extent || !c.extent.spatial || !c.extent.spatial.bbox) {
+			console.log("Invalid spatial extent for " + c.id);
+		}
+		else {
+			// spatial dimensions for all data types
+			const x2 = c.extent.spatial.bbox[0].length > 4 ? 3 : 2;
+			const y2 = c.extent.spatial.bbox[0].length > 4 ? 4 : 3;
+			c['cube:dimensions'] = {
+				x: {
+					type: "spatial",
+					axis: "x",
+					extent: [c.extent.spatial.bbox[0][0], c.extent.spatial.bbox[0][x2]]
+				},
+				y: {
+					type: "spatial",
+					axis: "y",
+					extent: [c.extent.spatial.bbox[0][1], c.extent.spatial.bbox[0][y2]]
+				},
+			};
+		}
 
 		// temporal dimension only for image collections
 		if (c['gee:type'] === 'image_collection') {
