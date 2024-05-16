@@ -14,9 +14,10 @@ export default class clip extends GeeProcess {
   }
 
   executeSync(node) {
+    const ee = node.ee;
     const min = node.getArgumentAsNumberEE('min');
     const max = node.getArgumentAsNumberEE('max');
-		return GeeProcessing.applyUnaryNumericalFunction(node, data => clip.process(node.ee, data, min, max));
+		return GeeProcessing.applyUnaryNumericalFunction(node, data => clip.process(ee, data, min, max));
   }
 
 }

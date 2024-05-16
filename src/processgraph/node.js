@@ -142,25 +142,13 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 			}
 		}
 
-		if (typeof data === 'boolean') {
-			this.warn("Implicit conversion of a boolean value to an integer.");
-			return data ? ee.Number(1) : ee.Number(0);
+		if (data === null && defaultValue === null) {
+			return null;
 		}
-		else if (typeof data === 'number') {
-			return ee.Number(data);
-		}
-		else if (typeof data === 'string') {
-			return ee.String(data);
-		}
-		else if (typeof data === 'object') {
-			if (data === null && defaultValue === null) {
-				return null;
-			}
-			else if (Array.isArray(data)) {
-				return ee.List(data);
-			}
-			else if (Utils.isObject(data)) {
-				return ee.Dictionary(data);
+		else {
+			const eeData = GeeTypes.jsToEE(this, data);
+			if (eeData !== null) {
+				return eeData;
 			}
 		}
 

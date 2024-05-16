@@ -17,6 +17,30 @@ See: https://issuetracker.google.com/issues/325444873
 
 const GeeTypes = {
 
+	jsToEE(node, data) {
+		const ee = node.ee;
+		if (typeof data === 'boolean') {
+			node.warn("Implicit conversion of a boolean value to an integer.");
+			return data ? ee.Number(1) : ee.Number(0);
+		}
+		else if (typeof data === 'number') {
+			return ee.Number(data);
+		}
+		else if (typeof data === 'string') {
+			return ee.String(data);
+		}
+		else if (typeof data === 'object') {
+			if (Array.isArray(data)) {
+				return ee.List(data);
+			}
+			else if (Utils.isObject(data)) {
+				return ee.Dictionary(data);
+			}
+		}
+
+		return null;
+	},
+
 	getEarthEngineType(ee, obj, returnComputedObject = false) {
 		if (!Utils.isObject(obj)) {
 			return null;
