@@ -177,7 +177,7 @@ export default class ServicesAPI {
 
 		res.send(204);
 
-		const logger = this.storage.getLogsById(req.params.service_id, data.log_level || service.log_level);
+		const logger = await this.storage.getLogsById(req.params.service_id, data.log_level || service.log_level);
 		logger.info('Service updated', data);
 	}
 
@@ -229,7 +229,7 @@ export default class ServicesAPI {
 			costs: 0,
 			budget: req.body.budget || null,
 			user_id: req.user._id,
-			log_level: Logs.checkLevel(req.body.log_level, 'info')
+			log_level: Logs.checkLevel(req.body.log_level, this.context.defaultLogLevel)
 		};
 		const db = this.storage.database();
 		const service = await db.insertAsync(data);

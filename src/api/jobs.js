@@ -340,7 +340,7 @@ export default class JobsAPI {
 		}
 		res.send(204);
 
-		const logger = this.storage.getLogsById(req.params.job_id, data.log_level || job.log_level);
+		const logger = await this.storage.getLogsById(req.params.job_id, data.log_level || job.log_level);
 		logger.info('Job updated', data);
 	}
 
@@ -368,7 +368,7 @@ export default class JobsAPI {
 			budget: req.body.budget || null,
 			user_id: req.user._id,
 			token: Utils.generateHash(64),
-			log_level: Logs.checkLevel(req.body.log_level, 'info')
+			log_level: Logs.checkLevel(req.body.log_level, this.context.defaultLogLevel)
 		};
 		const db = this.storage.database();
 		const job = await db.insertAsync(data);
@@ -392,7 +392,7 @@ export default class JobsAPI {
 		// ToDo: Validate data, handle budget and plan input #73
 
 		const id = Utils.timeId();
-		const log_level = Logs.checkLevel(req.body.log_level, 'info');
+		const log_level = Logs.checkLevel(req.body.log_level, this.context.defaultLogLevel);
 		const logger = await this.getResultLogs(req.user._id, id, log_level);
 		logger.debug("Starting to process request");
 

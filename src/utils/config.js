@@ -139,6 +139,8 @@ export default class Config {
 		// Path to check disk usage for (e.g. C: on Windows, / on *nix)
 		this.diskUsagePath = null;
 
+		this.defaultLogLevel = "info";
+
 		const config = Utils.require('../../config.json');
 		for(const c in config) {
 			this[c] = config[c];
