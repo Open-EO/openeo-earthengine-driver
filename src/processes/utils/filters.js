@@ -54,7 +54,7 @@ const GeeFilters = {
 
     let data = dc.getData();
 		if (this._canFilter(ee, data)) {
-			this._viaImageCollection(ee, data, ic => ic.filter(ee.Filter.date(
+			data = this._viaImageCollection(ee, data, ic => ic.filter(ee.Filter.date(
 				min || "0000-01-01",
 				max || "9999-12-31"
 			)));
@@ -150,7 +150,7 @@ const GeeFilters = {
 
     let data = dc.getData();
 		if (this._canFilter(ee, data)) {
-			this._viaImageCollection(ee, data, ic => ic.select(requestedBands));
+			data = this._viaImageCollection(ee, data, ic => ic.select(requestedBands));
 			dim.setValues(requestedBands);
 		}
 		else {
