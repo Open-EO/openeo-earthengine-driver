@@ -11,10 +11,17 @@ const GeeProcessing = {
 
 	BAND_PLACEHOLDER: "#",
 
-	applyBinaryNumericalFunction(node, func, xParameter = "x", yParameter = "y") {
+	applyBinaryNumericalFunction(node, func, xParameter = "x", yParameter = "y", xDefault = undefined, yDefault = undefined) {
 		const ee = node.ee;
-		let x = node.getArgumentAsEE(xParameter);
-		let y = node.getArgumentAsEE(yParameter);
+
+		let x = node.getArgumentAsEE(xParameter, xDefault);
+		if (!xParameter) {
+			xParameter = 'n/a';
+		}
+		let y = node.getArgumentAsEE(yParameter, yDefault);
+		if (!yParameter) {
+			yParameter = 'n/a';
+		}
 
 		const convertToList = (x instanceof ee.List || y instanceof ee.List) && !(x instanceof ee.Array || y instanceof ee.Array);
 		if (x instanceof ee.List) {
@@ -39,7 +46,9 @@ const GeeProcessing = {
 				return func(a, b.toArray());
 			}
 			else if (a instanceof ee.Number && b instanceof ee.Image) {
-				return copyProps(ee, func(ee.Image(a), b), b);
+				// If the first argument is a number and the second an image, we have to
+				// rename the bands as the band in the result image may be named "constant"
+				return copyProps(ee, func(ee.Image(a), b), b).rename(b.bandNames());
 			}
 			else if (a instanceof ee.Number && b instanceof ee.Array) {
 				a = GeeTypes.toArray(ee, ee.List.repeat(a, b.toList().length()));
@@ -55,10 +64,10 @@ const GeeProcessing = {
 			if (executionContext && executionContext.type === "reducer") {
 				const dimType = executionContext.dimension.getType();
 				if (dimType === "bands") {
-					// todo: performance optimization
-					return x.map(imgA => {
-						const id = imgA.get("system:index");
-						const imgB = y.filter(ee.Filter.eq("system:index", id)).first();
+					return x.combine(y).map(img => {
+						const bands = img.bandNames();
+						const imgA = img.select([bands.get(0)]);
+						const imgB = img.select([bands.get(1)]);
 						return eeFunc(imgA, imgB);
 					});
 				}
@@ -107,9 +116,21 @@ const GeeProcessing = {
 		throw node.invalidArgument(dataParameter, "Unsupported data type.");
 	},
 
-	reduceNumericalFunction(node, reducerName, dataParameter = "data") {
+	reduceNumericalFunction(node, reducerName, binaryFunc = null, dataParameter = "data") {
 		const ee = node.ee;
-		const data = node.getArgumentAsEE(dataParameter);
+		let data;
+
+		// If the data is an array that contains aother results, we likely can't use
+		// the GEE reducers and must use the alternative "binary" GEE operations.
+		// For example, we can use `add` instead of `sum`.
+		if (binaryFunc) {
+			data = node.getArgument(dataParameter);
+			if (Array.isArray(data) && data.some(x => typeof x !== 'number')) {
+				return data.reduce((a, b) => GeeProcessing.applyBinaryNumericalFunction(node, binaryFunc, null, null, a, b), 0);
+			}
+		}
+
+		data = node.getArgumentAsEE(dataParameter);
 		const executionContext = node.getExecutionContext();
 		const reducer = ee.Reducer[reducerName]();
 		if (data instanceof ee.List) {
