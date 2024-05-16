@@ -3,6 +3,7 @@ import HttpUtils from '../utils/http.js';
 import Errors from '../utils/errors.js';
 import StringStream from '../utils/stringstream.js';
 import GeeProcessing from '../processes/utils/processing.js';
+import GeeTypes from '../processes/utils/types.js';
 
 export default class ProcessingContext {
 
@@ -89,7 +90,7 @@ export default class ProcessingContext {
 			logger.warn("Compositing the image collection to a single image.");
 			return data.mosaic();
 		}
-		else if (data instanceof ee.Number || data instanceof ee.Array) {
+		else if (data instanceof ee.Number || data instanceof ee.Array || GeeTypes.isComputedObject(data)) {
 			return ee.Image(data);
 		}
 		else {

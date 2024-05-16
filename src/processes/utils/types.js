@@ -1,9 +1,19 @@
 import Utils from "../../utils/utils.js";
 
-// ComputedObject is returned by the following functions:
-// ee.Algorithms.If, ee.Directory.get, ee.List.get, ee.String.decodeJSON, ee.apply, aside, iterate
-// Potentially also ee.Algorithms.Describe, ee.List.reduce
-// https://issuetracker.google.com/issues/325444873
+/*
+ComputedObject is returned by the following functions:
+- ee.Algorithms.If
+- ee.Directory.get
+- ee.List.get
+- ee.String.decodeJSON
+- ee.apply
+- ee.*.aside
+- ee.*.copyProperties
+- ee.*.iterate
+- ee.Algorithms.Describe (maybe)
+- ee.List.reduce (maybe)
+See: https://issuetracker.google.com/issues/325444873
+*/
 
 const GeeTypes = {
 

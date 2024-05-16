@@ -1,7 +1,10 @@
 import GeeTypes from "./types.js";
 
-export function copyProps(img, source) {
-	return img.copyProperties(source, source.propertyNames());
+export function copyProps(ee, img, source) {
+	// copyProperties returns a ComputedObject, so cast back to ee.Image
+	// See: https://issuetracker.google.com/issues/341002190
+	// Once fixed the ee parameter can be removed
+	return ee.Image(img.copyProperties(source, source.propertyNames()));
 }
 
 const GeeProcessing = {
@@ -25,18 +28,18 @@ const GeeProcessing = {
 			if (GeeTypes.isSameNumType(ee, a, b) || (GeeTypes.isNumType(ee, a) && b instanceof ee.Number)) {
 				let result = func(a, b);
 				if (a instanceof ee.Image) {
-					result = copyProps(result, a);
+					result = copyProps(ee, result, a);
 				}
 				return result;
 			}
 			else if (a instanceof ee.Image) {
-				return copyProps(func(a, ee.Image(b)), a);
+				return copyProps(ee, func(a, ee.Image(b)), a);
 			}
 			else if (a instanceof ee.Array) {
 				return func(a, b.toArray());
 			}
 			else if (a instanceof ee.Number && b instanceof ee.Image) {
-				return copyProps(func(ee.Image(a), b), b);
+				return copyProps(ee, func(ee.Image(a), b), b);
 			}
 			else if (a instanceof ee.Number && b instanceof ee.Array) {
 				a = GeeTypes.toArray(ee, ee.List.repeat(a, b.toList().length()));
@@ -92,10 +95,10 @@ const GeeProcessing = {
 			return func(GeeTypes.toArray(ee, data)).toList();
 		}
 		else if (data instanceof ee.ImageCollection) {
-			return data.map(img => copyProps(func(img), img));
+			return data.map(img => copyProps(ee, func(img), img));
 		}
 		else if (data instanceof ee.Image) {
-			return copyProps(func(data), data);
+			return copyProps(ee, func(data), data);
 		}
 		else if (GeeTypes.isNumType(ee, data)) {
 			return func(data);
@@ -119,7 +122,7 @@ const GeeProcessing = {
 		else if (executionContext && executionContext.type === "reducer") {
 			const dimType = executionContext.dimension.getType();
 			if (dimType === "bands") {
-				const imgReducer = img => copyProps(img.reduce(reducer), img);
+				const imgReducer = img => copyProps(ee, img.reduce(reducer), img);
 				if (data instanceof ee.ImageCollection) {
 					return data.map(imgReducer);
 				}

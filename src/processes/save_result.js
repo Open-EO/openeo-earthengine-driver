@@ -15,7 +15,7 @@ export default class save_result extends GeeProcess {
 	}
 
 	executeSync(node) {
-		const data = node.getDataCubeWithEE("data");
+		const data = node.getDataCube("data");
 		data.setOutputFormat(
 			node.getArgument("format"),
 			node.getArgument("options")
