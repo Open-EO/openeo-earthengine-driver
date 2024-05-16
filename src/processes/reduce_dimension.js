@@ -1,4 +1,6 @@
 import GeeProcess from '../processgraph/process.js';
+import GeeProcessing from './utils/processing.js';
+import Errors from '../utils/errors.js';
 
 export default class reduce_dimension extends GeeProcess {
 
@@ -8,7 +10,7 @@ export default class reduce_dimension extends GeeProcess {
 		const dimensionName = node.getArgument("dimension");
 		const context = node.getArgument("context");
 		if (!dc.hasDimension(dimensionName)) {
-			throw new Error.DimensionNotAvailable({
+			throw new Errors.DimensionNotAvailable({
 				process: node.process_id,
 				argument: "dimension"
 			});
@@ -26,8 +28,22 @@ export default class reduce_dimension extends GeeProcess {
 			}
 		});
 
+		let result = resultNode.getResult();
+
+		// Bands are always present in images, so we rename them to a placeholder
+		// if officially no bands are present in the datacube anymore
+		if (dimension.getType() === "bands") {
+			const ee = node.ee;
+			if (result instanceof ee.ImageCollection) {
+				result = result.map(img => img.rename(GeeProcessing.BAND_PLACEHOLDER));
+			}
+			else if (result instanceof ee.Image) {
+				result = result.rename(GeeProcessing.BAND_PLACEHOLDER);
+			}
+		}
+
     dimension.drop();
-		dc.setData(resultNode.getResult());
+		dc.setData(result);
 
 		return dc;
 	}

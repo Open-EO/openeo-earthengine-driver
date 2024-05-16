@@ -1,5 +1,6 @@
 import Dimension from './dimension.js';
 import Utils from '../utils/utils.js';
+import GeeProcessing from '../processes/utils/processing.js';
 
 export default class DataCube {
 
@@ -158,7 +159,7 @@ export default class DataCube {
 	getEarthEngineBands() {
 		let bands = this.getBands();
 		if (bands.length === 0) {
-			bands.push("#");
+			bands.push(GeeProcessing.BAND_PLACEHOLDER);
 		}
 		return bands;
 	}
@@ -273,7 +274,7 @@ export default class DataCube {
 	// 		let oldLabel = oldLabels[i];
 	// 		let newLabel = target[i];
 	// 		if (typeof oldLabel === 'undefined') { // dimension was previously removed, so the GEE band is named "#"
-	// 			oldLabels[i] = "#";
+	// 			oldLabels[i] = GeeProcessing.BAND_PLACEHOLDER;
 	// 			allOldLabels = Array.from(newLabel);
 	// 		}
 	// 		else{

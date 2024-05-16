@@ -1,5 +1,7 @@
 import GeeProcess from '../processgraph/process.js';
+import GeeProcessing from './utils/processing.js';
 import GeeTypes from './utils/types.js';
+import Errors from '../utils/errors.js';
 
 export default class dimension_labels extends GeeProcess {
 
@@ -12,7 +14,7 @@ export default class dimension_labels extends GeeProcess {
 		const dimension = node.getArgument("dimension");
 		const dc = node.getDataCube("data");
 		if (!dc.hasDimension(dimension)) {
-			throw new Error.DimensionNotAvailable({
+			throw new Errors.DimensionNotAvailable({
 				process: node.process_id,
 				argument: "dimension"
 			});
@@ -24,12 +26,12 @@ export default class dimension_labels extends GeeProcess {
     const data = dc.getData();
 		if (dimType === "bands") {
       if (data instanceof ee.ImageCollection) {
-        const func = (img, list) => ee.List(list).cat(img.bandNames());
+        const func = (img, list) => ee.List(list).cat(img.bandNames().remove(GeeProcessing.BAND_PLACEHOLDER));
         const bands = ee.List(data.iterate(func, ee.List([])));
         return bands.distinct();
       }
       else if (data instanceof ee.Image) {
-        return data.bandNames();
+        return data.bandNames().remove(GeeProcessing.BAND_PLACEHOLDER);
       }
       else {
         return ee.List([]);

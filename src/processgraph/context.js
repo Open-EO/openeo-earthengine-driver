@@ -2,6 +2,7 @@ import Utils from '../utils/utils.js';
 import HttpUtils from '../utils/http.js';
 import Errors from '../utils/errors.js';
 import StringStream from '../utils/stringstream.js';
+import GeeProcessing from '../processes/utils/processing.js';
 
 export default class ProcessingContext {
 
@@ -146,7 +147,7 @@ export default class ProcessingContext {
 				}
 				else {
 					visBands = dataCube.getEarthEngineBands().slice(0, 1);
-					if (logger && visBands[0] !== '#') {
+					if (logger && visBands[0] !== GeeProcessing.BAND_PLACEHOLDER) {
 						logger.warn("No bands are specified in the output parameter settings. The first band will be used for a gray-value visualisation.");
 					}
 				}

@@ -6,7 +6,7 @@ export default class Dimension {
 	}
 
 	fromSTAC(source, name) {
-		this.name = name;
+		this.name = source.name || name;
 		this.type = source.type || 'other';
 		this.axis = source.type === 'spatial' ? source.axis : null;
 		if (Array.isArray(source.values)) {

@@ -4,7 +4,7 @@ import GeeProcessing from './utils/processing.js';
 export default class sd extends GeeProcess {
 
 	executeSync(node) {
-		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.stdDev);
+		return GeeProcessing.reduceNumericalFunction(node, 'stdDev');
 	}
 
 }

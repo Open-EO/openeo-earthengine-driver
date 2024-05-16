@@ -4,7 +4,7 @@ import GeeProcessing from './utils/processing.js';
 export default class median extends GeeProcess {
 
 	executeSync(node) {
-		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.median);
+		return GeeProcessing.reduceNumericalFunction(node, 'median');
 	}
 
 }

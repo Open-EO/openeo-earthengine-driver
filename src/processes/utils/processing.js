@@ -1,6 +1,12 @@
 import GeeTypes from "./types.js";
 
+export function copyProps(img, source) {
+	return img.copyProperties(source, source.propertyNames());
+}
+
 const GeeProcessing = {
+
+	BAND_PLACEHOLDER: "#",
 
 	applyBinaryNumericalFunction(node, func, xParameter = "x", yParameter = "y") {
 		const ee = node.ee;
@@ -16,21 +22,21 @@ const GeeProcessing = {
 		}
 
 		const eeFunc = (a, b) => {
-			if (GeeTypes.isSameNumType(ee, a, b)) {
-				return func(a, b);
-			}
-			else if (GeeTypes.isNumType(ee, a) && b instanceof ee.Number) {
-				return func(a, b);
+			if (GeeTypes.isSameNumType(ee, a, b) || (GeeTypes.isNumType(ee, a) && b instanceof ee.Number)) {
+				let result = func(a, b);
+				if (a instanceof ee.Image) {
+					result = copyProps(result, a);
+				}
+				return result;
 			}
 			else if (a instanceof ee.Image) {
-				return func(a, ee.Image(b));
+				return copyProps(func(a, ee.Image(b)), a);
 			}
 			else if (a instanceof ee.Array) {
 				return func(a, b.toArray());
 			}
 			else if (a instanceof ee.Number && b instanceof ee.Image) {
-				a = ee.Image(a).copyProperties({ source: b, properties: b.propertyNames() });
-				return func(a, b);
+				return copyProps(func(ee.Image(a), b), b);
 			}
 			else if (a instanceof ee.Number && b instanceof ee.Array) {
 				a = GeeTypes.toArray(ee, ee.List.repeat(a, b.toList().length()));
@@ -85,42 +91,57 @@ const GeeProcessing = {
 		if (data instanceof ee.List) {
 			return func(GeeTypes.toArray(ee, data)).toList();
 		}
+		else if (data instanceof ee.ImageCollection) {
+			return data.map(img => copyProps(func(img), img));
+		}
+		else if (data instanceof ee.Image) {
+			return copyProps(func(data), data);
+		}
 		else if (GeeTypes.isNumType(ee, data)) {
 			return func(data);
-		}
-		else if (data instanceof ee.ImageCollection) {
-			return data.map(img => func(img));
 		}
 
 		throw node.invalidArgument(dataParameter, "Unsupported data type.");
 	},
 
-	reduceNumericalFunction(node, reducerFunc = null, dataParameter = "data") {
+	reduceNumericalFunction(node, reducerName, dataParameter = "data") {
 		const ee = node.ee;
 		const data = node.getArgumentAsEE(dataParameter);
 		const executionContext = node.getExecutionContext();
-		const reducer = reducerFunc(ee);
+		const reducer = ee.Reducer[reducerName]();
 		if (data instanceof ee.List) {
-			return data.reduce(reducer());
+			return data.reduce(reducer);
 		}
 		else if (data instanceof ee.Array) {
 			// We assume ee.Array is always one-dimensional (similar to ee.List)
-			return data.reduce(reducer(), [0]);
+			return data.reduce(reducer, [0]);
 		}
 		else if (executionContext && executionContext.type === "reducer") {
 			const dimType = executionContext.dimension.getType();
 			if (dimType === "bands") {
+				const imgReducer = img => copyProps(img.reduce(reducer), img);
 				if (data instanceof ee.ImageCollection) {
-					return data.map(img => img.reduce(reducer()));
+					return data.map(imgReducer);
 				}
 				else if (data instanceof ee.Image) {
-					return data.reduce(reducer());
+					return imgReducer(data);
 				}
 				throw node.invalidArgument(dataParameter, "Unsupported data type for band reducer.");
 			}
 			else if (dimType === "temporal") {
 				if (data instanceof ee.ImageCollection) {
-					return data.reduce(reducer());
+					// Most reducers are available as functions on the ImageCollection class,
+					// which don't rename the bands. So this is preferred.
+					if (typeof data[reducerName] === "function") {
+						return data[reducerName]();
+					}
+					// In all other cases we need to use the reduce function and rename the bands
+					// The bands are named <band name>_<reducer name>
+					else {
+						return data
+							.reduce(reducer)
+							.map(img => img.regexpRename(`^(.+)_${reducerName}$`, "$1"));
+					}
 				}
 				throw node.invalidArgument(dataParameter, "Unsupported data type for temporal reducer.");
 			}

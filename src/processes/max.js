@@ -4,7 +4,7 @@ import GeeProcessing from './utils/processing.js';
 export default class max extends GeeProcess {
 
 	executeSync(node) {
-		return GeeProcessing.reduceNumericalFunction(node, ee => ee.Reducer.max);
+		return GeeProcessing.reduceNumericalFunction(node, 'max');
 	}
 
 }
