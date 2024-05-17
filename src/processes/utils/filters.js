@@ -26,6 +26,7 @@ const GeeFilters = {
 
 	filterTemporal(node, extentParam, dataParam = "data") {
     const ee = node.ee;
+		// Todo: Support GEE type inputs
     let [min, max] = node.getArgument(extentParam);
 		try {
 			const minDate = DateTime.fromISO(min, {zone: "utc"});
@@ -70,6 +71,7 @@ const GeeFilters = {
 
 	filterSpatial(node, extentParam, dataParam = "data") {
     const ee = node.ee;
+		// Todo: Support GEE type inputs
     const extent = node.getArgument(extentParam);
 		let dc;
 		if (dataParam instanceof DataCube) {
@@ -141,6 +143,7 @@ const GeeFilters = {
 		if (!Array.isArray(availableBands)) {
 			throw node.invalidArgument(bandsParam, `Data cube does not contain bands.`);
 		}
+		// Todo: Support GEE type inputs
     const requestedBands = node.getArgument(bandsParam);
 		for(const band of requestedBands) {
 			if (!availableBands.includes(band)) {

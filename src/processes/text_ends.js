@@ -1,17 +1,14 @@
 import GeeProcess from '../processgraph/process.js';
+import text_position from './text_position.js';
 
 export default class text_ends extends GeeProcess {
 
   executeSync(node) {
-    let data = node.getArgumentAsStringEE('data');
-    let pattern = node.getArgumentAsStringEE('pattern');
-    const case_sensitive = node.getArgument('case_sensitive');
-    if (!case_sensitive) {
-      data = data.toLowerCase();
-      pattern = pattern.toLowerCase();
-    }
+    const data = node.getArgumentAsStringEE('data');
+    const pattern = node.getArgumentAsStringEE('pattern');
+    const case_sensitive = node.getArgumentAsNumberEE('case_sensitive', true);
     const expectedPos = data.length().subtract(pattern.length());
-    return data.index(pattern).eq(expectedPos);
+    return text_position.process(data, pattern, case_sensitive).eq(expectedPos);
   }
 
 }

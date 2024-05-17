@@ -5,9 +5,9 @@ export default class array_create_labeled extends GeeProcess {
 
   executeSync(node) {
     const ee = node.ee;
-    const values = node.getArgument("data");
-    const keys = node.getArgument("labels");
-    const eeKeys = ee.List(keys).map(x => GeeTypes.toString(x));
+    const values = node.getArgumentAsListEE("data");
+    const keys = node.getArgumentAsListEE("labels");
+    const eeKeys = keys.map(x => GeeTypes.toString(x));
     return ee.Dictionary.fromLists(eeKeys, values);
   }
 }

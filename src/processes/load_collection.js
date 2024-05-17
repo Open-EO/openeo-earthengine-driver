@@ -39,6 +39,8 @@ export default class load_collection extends GeeProcess {
 			dc = GeeFilters.filterBands(node, "bands", dc);
 		}
 
+		// Todo: Support property filter
+
 		return dc;
 	}
 
