@@ -26,6 +26,30 @@ const commonNames = {
 	lwir12: [11.5, 12.5]
 };
 
+const geeSchemaMapping = {
+	STRING: {
+		type: "string"
+	},
+	DOUBLE: {
+		type: "number"
+	},
+	INT: {
+		type: "integer"
+	},
+	STRING_LIST: {
+		type: "array",
+		items: {
+			type: "string"
+		}
+	},
+	INT_LIST: {
+		type: "array",
+		items: {
+			type: "integer"
+		}
+	}
+};
+
 export default class DataCatalog {
 
 	constructor(context) {
@@ -46,7 +70,7 @@ export default class DataCatalog {
 					if (obj.type !== 'Collection') {
 						return;
 					}
-					const collection = this.fixData(obj);
+					const collection = this.fixDataOnce(obj);
 					if (this.supportedGeeTypes.includes(collection['gee:type'])) {
 						this.collections[collection.id] = collection;
 					}
@@ -99,22 +123,58 @@ export default class DataCatalog {
 		return await this.readLocalCatalog();
 	}
 
-	getData(id = null) {
+	getSchema(id) {
+		const collection = this.getData(id, true);
+		if (!collection) {
+			return null;
+		}
+
+		const geeSchemas = collection.summaries['gee:schema'];
+		const jsonSchema = {
+			"$schema" : "https://json-schema.org/draft/2019-09/schema",
+			"$id" : Utils.getApiUrl(`/collections/${id}/queryables`),
+			"title" : "Queryables",
+			"type" : "object",
+			"properties" : {},
+			"additionalProperties": false
+		};
+		if (!Array.isArray(geeSchemas)) {
+			return jsonSchema;
+		}
+
+		for(const geeSchema of geeSchemas) {
+			const s = {
+				description: geeSchema.description || ""
+			};
+			Object.assign(s, geeSchemaMapping[geeSchema.type] || {});
+			jsonSchema.properties[geeSchema.name] = s;
+		}
+
+		return jsonSchema;
+	}
+
+	getData(id = null, withSchema = false) {
 		if (id !== null) {
 			if (typeof this.collections[id] !== 'undefined') {
-				return this.fixLinks(this.collections[id]);
+				return this.updateCollection(this.collections[id], withSchema);
 			}
 			else {
 				return null;
 			}
 		}
 		else {
-			return Object.values(this.collections).map(c => this.fixLinks(c));
+			return Object.values(this.collections).map(c => this.updateCollection(c, withSchema));
 		}
 	}
 
-	fixLinks(c) {
+	updateCollection(c, withSchema = false) {
+		c = Object.assign({}, c);
+		if (!withSchema) {
+			c.summaries = Utils.omitFromObject(c.summaries, ['gee:schema']);
+		}
+		c.links = c.links.slice(0);
 		c.links = c.links.map(l => {
+			l = Object.assign({}, l);
 			switch(l.rel) {
 				case 'self':
 					l.href = Utils.getApiUrl("/collections/" + c.id);
@@ -137,7 +197,7 @@ export default class DataCatalog {
 		return c;
 	}
 
-	fixData(c) {
+	fixDataOnce(c) {
 		// Fix invalid headers in markdown
 		if (typeof c.description === 'string') {
 			c.description = c.description.replace(/^(#){2,6}([^#\s].+)$/img, '$1 $2');

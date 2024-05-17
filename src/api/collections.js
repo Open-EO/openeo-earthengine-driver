@@ -92,18 +92,12 @@ export default class Data {
 			id = req.params['*'].replace(/\/queryables$/, '');
 		}
 
-		const collection = this.catalog.getData(id);
-		if (collection === null) {
+		const queryables = this.catalog.getSchema(id);
+		if (queryables === null) {
 			throw new Errors.CollectionNotFound();
 		}
-		res.json({
-			"$schema" : "https://json-schema.org/draft/2019-09/schema",
-			"$id" : Utils.getApiUrl(`/collections/${id}/queryables`),
-			"title" : "Queryables",
-			"type" : "object",
-			"properties" : {},
-			"additionalProperties": false
-		});
+
+		res.json(queryables);
 	}
 
 }
