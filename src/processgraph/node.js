@@ -97,6 +97,14 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return result;
 	}
 
+	getArgumentAsDateEE(name) {
+		const data = this.getArgument(name, null);
+		if (data === null) {
+			throw this.invalidArgument(name, 'No value provided');
+		}
+		return this.ee.Date(data);
+	}
+
 	getArgumentAsNumberEE(name, defaultValue = undefined) {
 		const data = this.getArgument(name, defaultValue);
 		const result = GeeTypes.toNumber(this.ee, data);
