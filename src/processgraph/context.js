@@ -10,14 +10,14 @@ export default class ProcessingContext {
 	constructor(serverContext, user) {
 		this.serverContext = serverContext;
 		this.user = user;
-		this.userId = user._id;
+		this.userId = user ? user._id : null;
 		this.ee = Utils.require('@google/earthengine');
 	}
 
-	async connectGee() {
+	async connectGee(forcePrivateKey = false) {
 		const user = this.getUser();
 		const ee = this.ee;
-		if (this.userId.startsWith("google-")) {
+		if (!forcePrivateKey && typeof this.userId === 'string' && this.userId.startsWith("google-")) {
 			console.log("Authenticate via user token");
 			const expires = 59 * 60;
 			// todo auth: get expiration from token and set more parameters #82
@@ -34,6 +34,7 @@ export default class ProcessingContext {
 			});
 		}
 		await ee.initialize();
+		return ee;
 	}
 
 	server() {

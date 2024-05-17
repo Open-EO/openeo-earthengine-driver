@@ -141,7 +141,7 @@ const Utils = {
 		return geom;
 	},
 
-	geoJsonBbox(geojson) {
+	geoJsonBbox(geojson, asArray = false) {
 		const getCoordinatesDump = function(gj) {
 			switch(gj.type) {
 				case 'Point':
@@ -183,12 +183,17 @@ const Utils = {
 				Math.max(coord[1], prev[3])
 			];
 		}, [Number.POSITIVE_INFINITY,Number.POSITIVE_INFINITY,Number.NEGATIVE_INFINITY,Number.NEGATIVE_INFINITY]);
-		return {
-			west: bbox[0],
-			south: bbox[1],
-			east: bbox[2],
-			north: bbox[3],
-			crs: 4326
+		if (asArray) {
+			return bbox;
+		}
+		else {
+			return {
+				west: bbox[0],
+				south: bbox[1],
+				east: bbox[2],
+				north: bbox[3],
+				crs: 4326
+			}
 		}
 	},
 

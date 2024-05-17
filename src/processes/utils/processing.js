@@ -11,6 +11,18 @@ const GeeProcessing = {
 
 	BAND_PLACEHOLDER: "#",
 
+	evaluate(obj) {
+		return new Promise((resolve, reject) => {
+			return obj.evaluate((success, failure) => {
+				if (success) {
+					return resolve(success);
+				} else {
+					return reject(failure);
+				}
+			});
+		});
+	},
+
 	applyBinaryNumericalFunction(node, func, xParameter = "x", yParameter = "y", xDefault = undefined, yDefault = undefined) {
 		const ee = node.ee;
 

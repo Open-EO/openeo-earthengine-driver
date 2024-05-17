@@ -140,6 +140,7 @@ export default class Config {
 		this.diskUsagePath = null;
 
 		this.defaultLogLevel = "info";
+		this.stacAssetDownload = false;
 
 		const config = Utils.require('../../config.json');
 		for(const c in config) {

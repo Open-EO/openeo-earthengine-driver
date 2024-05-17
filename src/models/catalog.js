@@ -70,7 +70,7 @@ export default class DataCatalog {
 					if (obj.type !== 'Collection') {
 						return;
 					}
-					const collection = this.fixDataOnce(obj);
+					const collection = this.fixCollectionOnce(obj);
 					if (this.supportedGeeTypes.includes(collection['gee:type'])) {
 						this.collections[collection.id] = collection;
 					}
@@ -167,6 +167,17 @@ export default class DataCatalog {
 		}
 	}
 
+	getImageVisualization(id) {
+		const c = this.getData(id);
+		if (Array.isArray(c.summaries['gee:visualizations'])) {
+			let vis = c.summaries['gee:visualizations'];
+			if (vis.length > 0) {
+				return vis[0].image_visualization || null;
+			}
+		}
+		return null;
+	}
+
 	updateCollection(c, withSchema = false) {
 		c = Object.assign({}, c);
 		if (!withSchema) {
@@ -194,10 +205,117 @@ export default class DataCatalog {
 			title: "Queryables",
 			type: "application/schema+json"
 		});
+		if (c["gee:type"] === 'image_collection') {
+			c.links.push({
+				rel: 'items',
+				href: Utils.getApiUrl(`/collections/${c.id}/items`),
+				title: "Items",
+				type: "application/json"
+			});
+		}
 		return c;
 	}
 
-	fixDataOnce(c) {
+	convertImageToStac(img, collection) {
+		const omitProperties = [
+			"system:footprint",
+			"system:asset_size",
+			"system:index",
+			"system:time_start",
+			"system:time_end"
+		];
+
+		const id = img.properties["system:index"];
+		const geometry = img.properties["system:footprint"];
+		geometry.type = "Polygon";
+		geometry.coordinates = [geometry.coordinates];
+		const bbox = Utils.geoJsonBbox(geometry, true);
+
+		const bands = img.bands.map(b => ({
+			name: b.id,
+			// crs, , crs_transform, dimensions, data_type
+		}));
+
+		const properties = {};
+		for(const key in img.properties) {
+			if (!omitProperties.includes(key)) {
+				let newKey;
+				if (!key.includes(":")) {
+					newKey = `gee:${key.toLowerCase()}`;
+				}
+				else {
+					newKey = key.toLowerCase();
+				}
+				properties[newKey] = img.properties[key];
+			}
+		}
+		properties.datetime = Utils.toISODate(img.properties["system:time_start"]);
+		if (img.properties["system:time_end"]) {
+			properties.start_datetime = Utils.toISODate(img.properties["system:time_start"]);
+			properties.end_datetime = Utils.toISODate(img.properties["system:time_end"]);
+		}
+		properties.version = String(img.version);
+		properties["eo:bands"] = bands;
+
+		const links = [
+			{
+				rel: "self",
+				href: Utils.getApiUrl(`/collections/${collection}/items/${id}`),
+				type: "application/json"
+			},
+			{
+				rel: "root",
+				href: Utils.getApiUrl(`/`),
+				type: "application/json"
+			},
+			{
+				rel: "parent",
+				href: Utils.getApiUrl(`/collections/${collection}`),
+				type: "application/json"
+			},
+			{
+				rel: "collection",
+				href: Utils.getApiUrl(`/collections/${collection}`),
+				type: "application/json"
+			}
+		];
+
+		const assets = {
+			thumbnail: {
+				href: Utils.getApiUrl(`/thumbnails/${img.id}`),
+				type: "image/jpeg",
+				roles: ["thumbnail", "overview"]
+			}
+		};
+
+		if (this.serverContext.stacAssetDownload) {
+			assets.data = {
+				href: Utils.getApiUrl(`/assets/${img.id}`),
+				type: "image/tiff; application=geotiff",
+				roles: ["data"]
+			};
+		}
+
+		const stac = {
+			stac_version: "1.0.0",
+			stac_extensions: [
+				"https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+				"https://stac-extensions.github.io/version/v1.0.0/schema.json",
+			],
+			type: "Feature",
+			id,
+			bbox,
+			geometry,
+			properties,
+			collection,
+			links,
+			assets
+		};
+
+		return stac;
+	}
+
+	fixCollectionOnce(c) {
 		// Fix invalid headers in markdown
 		if (typeof c.description === 'string') {
 			c.description = c.description.replace(/^(#){2,6}([^#\s].+)$/img, '$1 $2');
@@ -211,9 +329,6 @@ export default class DataCatalog {
 		if (!Utils.isObject(c.summaries)) {
 			c.summaries = {};
 		}
-
-		// Not a very useful information yet
-		delete c.summaries['gee:visualizations'];
 
 		// Fix invalid summaries
 		for(const key in c.summaries) {
