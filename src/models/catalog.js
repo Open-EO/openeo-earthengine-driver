@@ -210,7 +210,7 @@ export default class DataCatalog {
 				rel: 'items',
 				href: Utils.getApiUrl(`/collections/${c.id}/items`),
 				title: "Items",
-				type: "application/json"
+				type: "application/geo+json"
 			});
 		}
 		return c;
@@ -261,7 +261,7 @@ export default class DataCatalog {
 			{
 				rel: "self",
 				href: Utils.getApiUrl(`/collections/${collection}/items/${id}`),
-				type: "application/json"
+				type: "application/geo+json"
 			},
 			{
 				rel: "root",

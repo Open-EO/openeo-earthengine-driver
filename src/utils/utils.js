@@ -62,6 +62,10 @@ const Utils = {
 		return CommonUtils.isObject(obj);
 	},
 
+	hasText(text) {
+		return typeof text === 'string' && text.length > 0;
+	},
+
 	size(obj) {
 		return CommonUtils.size(obj);
 	},
@@ -119,7 +123,19 @@ const Utils = {
 		return ['west', 'east', 'north', 'south'].filter(key => typeof bbox[key] === 'number').length === 4;
 	},
 
+	bboxToObject(bbox) {
+		return {
+			west: bbox[0],
+			east: bbox[2],
+			north: bbox[3],
+			south: bbox[1]
+		};
+	},
+
 	bboxToGeoJson(bbox) {
+		if (Array.isArray(bbox)) {
+			bbox = this.bboxToObject(bbox);
+		}
 		const geom = {
 			geodesic: false,
 			type: 'Polygon',

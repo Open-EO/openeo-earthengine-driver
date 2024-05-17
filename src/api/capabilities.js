@@ -19,7 +19,7 @@ export default class CapabilitiesAPI {
 
 	addEndpoint(method, path) {
 		method = method.toUpperCase();
-		for(const i in this.endpoints) {
+		for (const i in this.endpoints) {
 			if (this.endpoints[i].path === path) {
 				this.endpoints[i].methods.push(method);
 				return;
@@ -117,7 +117,23 @@ export default class CapabilitiesAPI {
 			"conformsTo": [
 				"https://api.openeo.org/1.2.0",
 				"https://api.stacspec.org/v1.0.0/core",
-				"https://api.stacspec.org/v1.0.0/collections"
+				"https://api.stacspec.org/v1.0.0/collections",
+				"https://api.stacspec.org/v1.0.0/ogcapi-features",
+				"https://api.stacspec.org/v1.0.0/ogcapi-features#sort",
+// Item Filter
+// 			"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
+// Collection Search
+//			"https://api.stacspec.org/v1.0.0-rc.1/collection-search",
+//			"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
+// Collection Filter
+//			"https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter",
+// Collection Sorting
+//			"https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort",
+				"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+				"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
+// CQL2 (for Item and Collection Filter)
+// 			"http://www.opengis.net/spec/cql2/1.0/conf/cql2-text",
+// 			"http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2",
 			]
 		});
 	}

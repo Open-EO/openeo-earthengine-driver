@@ -2,6 +2,12 @@ import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import GeeProcessing from '../processes/utils/processing.js';
 
+const sortPropertyMap = {
+	'properties.datetime': 'system:time_start',
+	'id': 'system:index',
+	'properties.title': 'system:index'
+};
+
 export default class Data {
 
 	constructor(context) {
@@ -133,12 +139,81 @@ export default class Data {
 		const limit = parseInt(req.query.limit, 10) || 10;
 		const offset = parseInt(req.query.offset, 10) || 0;
 
-		// Load the collection and read a "page" of items
-		const ic = this.ee.ImageCollection(id).toList(limit + 1, offset);
+		// Load the collection
+		let ic = this.ee.ImageCollection(id);
+
+		// Filter by datetime
+		const datetime = req.query.datetime || null;
+		if (Utils.hasText(datetime)) {
+			let datetimes = datetime.split('/');
+			if (datetimes.length === 1) {
+				ic = ic.filterDate(datetimes[0]);
+			}
+			else if (datetimes.length === 2) {
+				datetimes = datetimes.map(dt => (['..', ''].includes(dt) ? null : dt));
+				ic = ic.filterDate(
+					datetimes[0] || '0000-01-01',
+					datetimes[1] || '9999-12-31'
+				);
+			}
+			else {
+				throw new Errors.ParameterValueInvalid({parameter: "datetime", message: "Invalid number of timestamps."});
+			}
+		}
+
+		// Filter by bbox
+		const bboxCrs = req.query['bbox-crs'] || null;
+		if (bboxCrs) {
+			throw new Errors.ParameterValueUnsupported({parameter: "bbox-crs", message: "Bounding Box with CRS is not supported."});
+		}
+		const bbox = req.query.bbox || null;
+		if (Utils.hasText(bbox)) {
+			let c = bbox.split(',');
+			if (c.length === 6) {
+				// Ignore z axis
+				c = [c[0], c[1], c[3], c[4]];
+			}
+
+			if (c.length === 4) {
+				c = c.map(dt => parseFloat(dt));
+				if (c.some(coord => isNaN(coord))) {
+					throw new Errors.ParameterValueInvalid({parameter: "bbox", message: "Invalid coordinate value(s)."});
+				}
+				let geom = this.ee.Geometry(Utils.bboxToGeoJson(c));
+				ic = ic.filterBounds(geom);
+			}
+			else {
+				throw new Errors.ParameterValueInvalid({parameter: "bbox", message: "Invalid number of coordinates."});
+			}
+		}
+
+		// Sort
+		const sortby = req.query.sortby;
+		if (Utils.hasText(sortby)) {
+			const fields = sortby.split(',');
+			if (fields.length > 1) {
+				throw new Errors.ParameterValueUnsupported({parameter: "sortby", message: "Can only sort by one field."});
+			}
+			let field = fields[0];
+			let order = !field.startsWith('-');
+			if (['-', '+'].includes(field[0])) {
+				field = field.substring(1);
+			}
+			const prop = sortPropertyMap[field];
+			if (!prop) {
+				throw new Errors.ParameterValueUnsupported({parameter: "sortby", message: "Selected field can't be sorted by."});
+			}
+			console.log(prop, order);
+			ic = ic.sort(prop, order);
+		}
+
+		// Limit
+		const icList = ic.toList(limit + 1, offset)
+
 		// Retrieve the items
 		let items;
 		try {
-			items = await GeeProcessing.evaluate(ic);
+			items = await GeeProcessing.evaluate(icList);
 		} catch (e) {
 			throw new Errors.Internal({message: e.message});
 		}
@@ -157,26 +232,26 @@ export default class Data {
 			{
 				rel: "self",
 				href: Utils.getApiUrl(`/collections/${id}/items`),
-				type: "application/json"
+				type: "application/geo+json"
 			}
 		]
 		if (offset > 0) {
 			links.push({
 				rel: "first",
 				href: Utils.getApiUrl(`/collections/${id}/items?limit=${limit}&offset=0`),
-				type: "application/json"
+				type: "application/geo+json"
 			});
 			links.push({
 				rel: "prev",
 				href: Utils.getApiUrl(`/collections/${id}/items?limit=${limit}&offset=${Math.max(0, offset - limit)}`),
-				type: "application/json"
+				type: "application/geo+json"
 			});
 		}
 		if (hasNextPage) {
 			links.push({
 				rel: "next",
 				href: Utils.getApiUrl(`/collections/${id}/items?limit=${limit}&offset=${offset + limit}`),
-				type: "application/json"
+				type: "application/geo+json"
 			});
 		}
 

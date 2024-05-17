@@ -43,5 +43,11 @@
   },
   "ArrayNotLabeled": {
     "message": "The array is not a labeled array, but the `label` parameter is set. Use the `index` instead."
-  }
+  },
+	"ParameterValueUnsupported": {
+		"message": "The value passed for parameter '{parameter}' is unsupported: {reason}"
+	},
+	"ParameterValueInvalid": {
+		"message": "The value passed for parameter '{parameter}' is invalid: {reason}"
+	}
 }
