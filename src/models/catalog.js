@@ -1,6 +1,7 @@
 import Utils from '../utils/utils.js';
 import fse from 'fs-extra';
 import path from 'path';
+import ItemStore from './itemstore.js';
 import { Storage } from '@google-cloud/storage';
 
 const STAC_DATACUBE_EXTENSION = "https://stac-extensions.github.io/datacube/v2.2.0/schema.json";
@@ -57,9 +58,11 @@ export default class DataCatalog {
 		this.collections = {};
 		this.supportedGeeTypes = ['image', 'image_collection'];
 		this.serverContext = context;
+		this.itemCache = new ItemStore();
 	}
 
 	async readLocalCatalog() {
+		await fse.ensureDir(this.dataFolder);
 		this.collections = {};
 		const files = await fse.readdir(this.dataFolder, { withFileTypes: true });
 		const promises = files.map(async (file) => {
@@ -84,6 +87,8 @@ export default class DataCatalog {
 	}
 
 	async updateCatalog(force = false) {
+		await fse.ensureDir(this.dataFolder);
+		await this.itemCache.clear();
 		// To refresh the catalog manually, delete the catalog.json or set force to true
 		const catalogFile = this.dataFolder + 'catalog.json';
 		if (!force && await fse.exists(catalogFile)) {
@@ -191,7 +196,7 @@ export default class DataCatalog {
 					l.href = Utils.getApiUrl("/collections/" + c.id);
 					break;
 				case 'parent':
-					l.href = Utils.getApiUrl("/collections");
+					l.href = Utils.getApiUrl("/");
 					break;
 				case 'root':
 					l.href = Utils.getApiUrl("/");
@@ -209,7 +214,6 @@ export default class DataCatalog {
 			c.links.push({
 				rel: 'items',
 				href: Utils.getApiUrl(`/collections/${c.id}/items`),
-				title: "Items",
 				type: "application/geo+json"
 			});
 		}
@@ -226,10 +230,15 @@ export default class DataCatalog {
 		];
 
 		const id = img.properties["system:index"];
-		const geometry = img.properties["system:footprint"];
-		geometry.type = "Polygon";
-		geometry.coordinates = [geometry.coordinates];
-		const bbox = Utils.geoJsonBbox(geometry, true);
+		let geometry = null;
+		let bbox;
+		if (img.properties["system:footprint"]) {
+			geometry = {
+				type: "Polygon",
+				coordinates: [img.properties["system:footprint"].coordinates]
+			};
+			bbox = Utils.geoJsonBbox(geometry, true);
+		}
 
 		const bands = img.bands.map(b => ({
 			name: b.id,

@@ -1,6 +1,8 @@
 import axios from 'axios';
 import Errors from './errors.js';
 import fse from 'fs-extra';
+import Utils from './utils.js';
+import path from 'path';
 
 const HttpUtils = {
 
@@ -22,9 +24,9 @@ const HttpUtils = {
 		return response.data;
 	},
 
-	async isFile(path) {
+	async isFile(filepath) {
 		try {
-			const stat = await fse.stat(path);
+			const stat = await fse.stat(filepath);
 			if (stat.isFile()) {
 				return true;
 			}
@@ -60,8 +62,42 @@ const HttpUtils = {
 			}
 			throw error;
 		});
-
 	},
+
+	async streamToFile(url, filepath, res = null) {
+		await fse.ensureDir(path.dirname(filepath));
+		return await new Promise((resolve, reject) => {
+			const fileStream = fse.createWriteStream(filepath);
+			axios.get(url, {responseType: 'stream'})
+				.then(response => {
+					response.data.pipe(fileStream);
+					if (res) {
+						res.header('Content-Type', Utils.extensionToMediaType(filepath));
+						response.data.pipe(res);
+					}
+					fileStream.on('close', () => resolve());
+					fileStream.on('error', (e) => reject(e));
+				})
+				.catch(e => {
+					fileStream.end();
+					reject(e);
+				});
+		});
+	},
+
+	sendFile(filepath, res) {
+		res.header('Content-Type', Utils.extensionToMediaType(filepath));
+		return new Promise((resolve, reject) => {
+			const stream = fse.createReadStream(filepath);
+			stream.pipe(res);
+			stream.on('error', reject);
+			stream.on('close', () => {
+				res.end();
+				resolve();
+			});
+		});
+	}
+
 };
 
 export default HttpUtils;

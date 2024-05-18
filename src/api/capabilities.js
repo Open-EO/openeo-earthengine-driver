@@ -63,6 +63,21 @@ export default class CapabilitiesAPI {
 			},
 			links: [
 				{
+					rel: "self",
+					href: Utils.getApiUrl(`/`),
+					type: "application/json"
+				},
+				{
+					rel: "root",
+					href: Utils.getApiUrl(`/`),
+					type: "application/json"
+				},
+				{
+					rel: "service-desc",
+					href: `https://raw.githubusercontent.com/Open-EO/openeo-api/${this.context.apiVersion}/openapi.yaml`,
+					type: "application/vnd.oai.openapi"
+				},
+				{
 					rel: 'about',
 					href: 'https://earthengine.google.com/',
 					title: 'Google Earth Engine Homepage'

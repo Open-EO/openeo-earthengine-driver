@@ -92,7 +92,7 @@ export default class StoredProcessGraphs {
 			user_id: req.user._id
 		};
 		const db = this.storage.database();
-		const numRemoved = db.removeAsync(query);
+		const numRemoved = await db.removeAsync(query);
 		if (numRemoved === 0) {
 			throw new Errors.ProcessGraphNotFound();
 		}

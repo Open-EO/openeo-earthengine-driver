@@ -1,6 +1,7 @@
 import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import GeeProcessing from '../processes/utils/processing.js';
+import HttpUtils from '../utils/http.js';
 
 const sortPropertyMap = {
 	'properties.datetime': 'system:time_start',
@@ -70,7 +71,13 @@ export default class Data {
 			links: [
 				{
 					rel: "self",
-					href: Utils.getApiUrl("/collections")
+					href: Utils.getApiUrl("/collections"),
+					type: "application/json"
+				},
+				{
+					rel: "root",
+					href: Utils.getApiUrl("/"),
+					type: "application/json"
 				},
 				{
 					rel: "alternate",
@@ -203,7 +210,6 @@ export default class Data {
 			if (!prop) {
 				throw new Errors.ParameterValueUnsupported({parameter: "sortby", message: "Selected field can't be sorted by."});
 			}
-			console.log(prop, order);
 			ic = ic.sort(prop, order);
 		}
 
@@ -225,6 +231,10 @@ export default class Data {
 			items.pop();
 		}
 
+		Promise.all(items.map(item => this.catalog.itemCache.addItem(item)))
+			.then(() => this.catalog.itemCache.removeOutdated())
+			.catch(console.error);
+
 		// Convert to STAC
 		const features = items.map(item => this.catalog.convertImageToStac(item, id));
 		// Add links
@@ -233,6 +243,16 @@ export default class Data {
 				rel: "self",
 				href: Utils.getApiUrl(`/collections/${id}/items`),
 				type: "application/geo+json"
+			},
+			{
+				rel: "root",
+				href: Utils.getApiUrl(`/`),
+				type: "application/json"
+			},
+			{
+				rel: "collection",
+				href: Utils.getApiUrl(`/collections/${id}`),
+				type: "application/json"
 			}
 		]
 		if (offset > 0) {
@@ -279,51 +299,59 @@ export default class Data {
 			throw new Errors.CollectionNotFound();
 		}
 
-		// Load the collection and read a "page" of items
-		const img = this.ee.Image(cid + '/' + id);
-		// Retrieve the item
-		let metadata;
-		try {
-			metadata = await GeeProcessing.evaluate(img);
-		} catch (e) {
-			throw new Errors.Internal({message: e.message});
+		const fullId = `${cid}/${id}`;
+		let metadata = await this.catalog.itemCache.getItem(fullId);
+		if (!metadata) {
+			const img = this.ee.Image(fullId);
+			try {
+				metadata = await GeeProcessing.evaluate(img);
+				this.catalog.itemCache.addItem(metadata).catch(console.error);
+			} catch (e) {
+				throw new Errors.Internal({message: e.message});
+			}
 		}
-		// Convert to STAC and deliver
+
 		res.json(this.catalog.convertImageToStac(metadata, cid));
 	}
 
 	async getThumbnailById(req, res) {
 		const id = req.params['*'];
+		const filepath = this.catalog.itemCache.getThumbPath(id);
 
-		const idParts = id.split('/');
-		idParts.pop();
-		const cid = idParts.join('/');
-
-		const vis = this.catalog.getImageVisualization(cid);
-		if (vis === null) {
-			throw new Errors.Internal({message: 'No visualization parameters found.'});
+		if (await this.catalog.itemCache.hasThumb(id)) {
+			await HttpUtils.sendFile(filepath, res);
 		}
+		else {
+			const idParts = id.split('/');
+			idParts.pop();
+			const cid = idParts.join('/');
 
-		const img = this.ee.Image(id);
-		const geeURL = await new Promise((resolve, reject) => {
-			img.visualize(vis.band_vis).getThumbURL({
-				dimensions: 1000,
-				crs: 'EPSG:3857',
-				format: 'jpg'
-			}, (url, err) => {
-				if (typeof err === 'string') {
-					reject(new Errors.Internal({message: err}));
-				}
-				else if (typeof url !== 'string' || url.length === 0) {
-					reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
-				}
-				else {
-					resolve(url);
-				}
+			const vis = this.catalog.getImageVisualization(cid);
+			if (vis === null) {
+				throw new Errors.Internal({message: 'No visualization parameters found.'});
+			}
+
+			const img = this.ee.Image(id);
+			const geeURL = await new Promise((resolve, reject) => {
+				img.visualize(vis.band_vis).getThumbURL({
+					dimensions: 1000,
+					crs: 'EPSG:3857',
+					format: 'png'
+				}, (geeUrl, err) => {
+					if (typeof err === 'string') {
+						reject(new Errors.Internal({message: err}));
+					}
+					else if (typeof geeUrl !== 'string' || geeUrl.length === 0) {
+						reject(new Errors.Internal({message: 'Download URL provided by Google Earth Engine is empty.'}));
+					}
+					else {
+						resolve(geeUrl);
+					}
+				});
 			});
-		});
 
-		return res.redirect(geeURL, Utils.noop);
+			await HttpUtils.streamToFile(geeURL, filepath, res);
+		}
 	}
 
 	async getAssetById(req, res) {

@@ -39,7 +39,7 @@ export default class JobStore {
 	}
 
 	async findJob(query) {
-		const job = this.db.findOneAsync(query);
+		const job = await this.db.findOneAsync(query);
 		if (job === null) {
 			throw new Errors.JobNotFound();
 		}

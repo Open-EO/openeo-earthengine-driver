@@ -45,17 +45,7 @@ export default class JobsAPI {
 
 	async deliverFile(res, filepath) {
 		await HttpUtils.isFile(filepath);
-
-		res.header('Content-Type', Utils.extensionToMediaType(filepath));
-		return await new Promise((resolve, reject) => {
-			const stream = fse.createReadStream(filepath);
-			stream.pipe(res);
-			stream.on('error', reject);
-			stream.on('close', () => {
-				res.end();
-				resolve();
-			});
-		});
+		await HttpUtils.sendFile(filepath, res);
 	}
 
 	init(req) {
@@ -121,7 +111,7 @@ export default class JobsAPI {
 			user_id: req.user._id
 		};
 		const db = this.storage.database();
-		const numRemoved = db.removeAsync(query);
+		const numRemoved = await db.removeAsync(query);
 		if (numRemoved === 0) {
 			throw new Errors.JobNotFound();
 		}
@@ -334,7 +324,7 @@ export default class JobsAPI {
 		await Promise.all(promises);
 
 		const db = this.storage.database();
-		const { numAffected } = db.updateAsync(query, { $set: data });
+		const { numAffected } = await db.updateAsync(query, { $set: data });
 		if (numAffected === 0) {
 			throw new Errors.Internal({message: 'Number of changed elements was 0.'});
 		}

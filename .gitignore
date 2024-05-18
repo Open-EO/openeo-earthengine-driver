@@ -1,10 +1,11 @@
 /node_modules/
-/storage/collections/*.json
+/storage/collections/
 /storage/database/*.db
-/storage/user_files/*
-/storage/temp_files/*
-/storage/job_files/*
-/storage/service_files/*
+/storage/user_files/
+/storage/temp_files/
+/storage/job_files/
+/storage/service_files/
+/storage/item_thumb_cache/
 /nbproject/
 /package-lock.json
 /.node-xmlhttprequest-sync-*
@@ -12,5 +13,6 @@
 coverage/
 /test-report.html
 /logs
-.idea
 /config_server.json
+.idea
+.vscode
