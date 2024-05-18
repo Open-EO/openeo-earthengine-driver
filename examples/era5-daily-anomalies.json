@@ -45,7 +45,7 @@
         "data": {
           "from_node": "convert"
         },
-        "frequency": "daily"
+        "period": "day"
       }
     },
     "anomaly": {
@@ -58,7 +58,7 @@
         "normals": {
           "from_node": "normals"
         },
-        "frequency": "daily"
+        "period": "day"
       }
     },
     "reduce": {

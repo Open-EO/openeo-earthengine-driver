@@ -16,7 +16,7 @@ export default class dimension_labels extends GeeProcess {
 		if (!dc.hasDimension(dimension)) {
 			throw new Errors.DimensionNotAvailable({
 				process: node.process_id,
-				argument: "dimension"
+				parameter: "dimension"
 			});
 		}
 

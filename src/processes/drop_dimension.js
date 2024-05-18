@@ -10,7 +10,7 @@ export default class drop_dimension extends GeeProcess {
     if (!dc.hasDimension(dimensionName)) {
       throw new Errors.DimensionNotAvailable({
         process: this.id,
-        argument: 'name'
+        parameter: 'name'
       });
     }
 
@@ -52,7 +52,7 @@ export default class drop_dimension extends GeeProcess {
     else {
       throw new Errors.DimensionLabelCountMismatch({
         process: this.id,
-        argument: 'name'
+        parameter: 'name'
       });
     }
 

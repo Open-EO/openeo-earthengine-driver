@@ -9,13 +9,13 @@ export default class rename_dimension extends GeeProcess {
 		if (dc.hasDimension(srcName)) {
 			throw new Errors.DimensionNotAvailable({
 				process: this.id,
-				argument: 'source'
+				parameter: 'source'
 			});
 		}
 		else if (dc.hasDimension(trgName)) {
 			throw new Errors.DimensionExists({
 				process: this.id,
-				argument: 'target'
+				parameter: 'target'
 			});
 		}
 

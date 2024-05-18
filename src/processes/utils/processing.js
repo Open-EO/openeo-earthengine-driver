@@ -23,6 +23,19 @@ const GeeProcessing = {
 		});
 	},
 
+	iterateInParallel(ee, collectionA, collectionB, func, sortBy = null) {
+		if (sortBy !== null) {
+			collectionA = collectionA.sort(sortBy)
+			collectionB = collectionB.sort(sortBy);
+		}
+		let counter = ee.Number(0);
+		return collectionA.map(imgA => {
+			const imgB = collectionB.toList(1, counter).get(0);
+			counter = counter.add(1);
+			return func(imgA, imgB);
+		});
+	},
+
 	applyBinaryNumericalFunction(node, func, xParameter = "x", yParameter = "y", xDefault = undefined, yDefault = undefined) {
 		const ee = node.ee;
 
@@ -76,6 +89,7 @@ const GeeProcessing = {
 			if (executionContext && executionContext.type === "reducer") {
 				const dimType = executionContext.dimension.getType();
 				if (dimType === "bands") {
+					// result = GeeProcessing.iterateInParallel(ee, x, y, eeFunc);
 					return x.combine(y).map(img => {
 						const bands = img.bandNames();
 						const imgA = img.select([bands.get(0)]);
@@ -132,7 +146,7 @@ const GeeProcessing = {
 		const ee = node.ee;
 		let data;
 
-		// If the data is an array that contains aother results, we likely can't use
+		// If the data is an array that contains other results, we likely can't use
 		// the GEE reducers and must use the alternative "binary" GEE operations.
 		// For example, we can use `add` instead of `sum`.
 		if (binaryFunc) {
@@ -174,8 +188,7 @@ const GeeProcessing = {
 					// In all other cases we need to use the reduce function and rename the bands
 					// The bands are named <band name>_<reducer name>
 					else {
-						return data
-							.reduce(reducer)
+						return ee.ImageCollection(data.reduce(reducer))
 							.map(img => img.regexpRename(`^(.+)_${reducerName}$`, "$1"));
 					}
 				}

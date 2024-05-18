@@ -79,8 +79,8 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return callback;
 	}
 
-	getArgumentAsListEE(name, converter = null) {
-		const data = this.getArgument(name);
+	getArgumentAsListEE(name, converter = null, defaultValue = undefined) {
+		const data = this.getArgument(name, defaultValue);
 		const result = GeeTypes.toList(this.ee, data, converter);
 		if (result === null) {
 			throw this.invalidArgument(name, 'Conversion to list not supported');
@@ -167,11 +167,11 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return this.getProcessGraph().getArgument("executionContext");
 	}
 
-	invalidArgument(argument, reason) {
+	invalidArgument(parameter, reason) {
 		return new Errors.ProcessParameterInvalid({
 			process: this.process_id,
 			namespace: this.namespace || 'n/a',
-			argument,
+			parameter,
 			reason
 		});
 	}

@@ -141,7 +141,7 @@ export default class ProcessingContext {
 				}
 				else if (parameters.red || parameters.green || parameters.blue) {
 					throw new Errors.ProcessParameterInvalid({
-						argument: "options",
+						parameter: "options",
 						process: "save_result",
 						namespace: "backend",
 						reason: "The output band definitions are not properly given."

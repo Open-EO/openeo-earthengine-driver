@@ -12,7 +12,7 @@ export default class reduce_dimension extends GeeProcess {
 		if (!dc.hasDimension(dimensionName)) {
 			throw new Errors.DimensionNotAvailable({
 				process: node.process_id,
-				argument: "dimension"
+				parameter: "dimension"
 			});
 		}
 
