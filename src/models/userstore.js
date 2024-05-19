@@ -111,14 +111,13 @@ export default class UserStore {
 	}
 
 	async all() {
-		return await this.db.findAsync({});
+		return await this.db.findAsync({}).sort({ name: 1 });
 	}
 
 	async remove(name) {
-		const query = { name };
-		let user = await this.db.findOneAsync(query);
+		let user = await this.get(name);
 		if (user !== null) {
-			await this.db.removeAsync(query);
+			await this.db.removeAsync({ name });
 			// todo: remove other data from db, remove files from job_files, service_files and user_files
 		}
 	}
