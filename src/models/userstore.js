@@ -102,9 +102,25 @@ export default class UserStore {
 		};
 	}
 
+	async get(name) {
+		return await this.db.findOneAsync({ name });
+	}
+
 	async exists(name) {
-		const user = await this.db.findOneAsync({ name });
-		return user !== null;
+		return (await this.get(name) !== null);
+	}
+
+	async all() {
+		return await this.db.findAsync({});
+	}
+
+	async remove(name) {
+		const query = { name };
+		let user = await this.db.findOneAsync(query);
+		if (user !== null) {
+			await this.db.removeAsync(query);
+			// todo: remove other data from db, remove files from job_files, service_files and user_files
+		}
 	}
 
 	async register(name, password, email = null) {

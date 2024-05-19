@@ -81,7 +81,13 @@ After configuration, the server can be started. Run `npm run up` to start the se
 
 After finishing work, you can stop the server by running `npm run down`.
 
-You can add a new user account by running `npm run adduser`.
+#### User management
+
+To manage the user accounts that are not authenticting through their Google Accounts:
+
+- Add a new user: `npm run adduser`
+- Delete a user: `npm run deluser`
+- List all users: `npm run users`
 
 ## Usage
 
