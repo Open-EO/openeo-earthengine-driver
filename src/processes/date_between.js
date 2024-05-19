@@ -1,5 +1,5 @@
 import GeeProcess from '../processgraph/process.js';
-import If from './if.js';
+import between from './between.js';
 
 export default class date_between extends GeeProcess {
 
@@ -10,8 +10,7 @@ export default class date_between extends GeeProcess {
     const max = node.getArgumentAsDateEE('max').millis();
     // Check if the max values are included or excluded
     const exclude_max = node.getArgumentAsNumberEE('exclude_max', false);
-    const upper = If.process(node.ee, exclude_max, x.lt(max), x.lte(max));
-    return min.lte(x).and(upper);
+    return between.process(node.ee, x, min, max, exclude_max);
   }
 
 }
