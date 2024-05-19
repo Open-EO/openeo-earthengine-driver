@@ -6,9 +6,9 @@ export default class reduce_dimension extends GeeProcess {
 
 	async execute(node) {
 		const dc = node.getDataCube("data");
-		const callback = node.getCallback("reducer");
+		const reducer = node.getCallback("reducer");
 		const dimensionName = node.getArgument("dimension");
-		const context = node.getArgument("context");
+		const context = node.getArgument("context", null);
 		if (!dc.hasDimension(dimensionName)) {
 			throw new Errors.DimensionNotAvailable({
 				process: node.process_id,
@@ -18,9 +18,9 @@ export default class reduce_dimension extends GeeProcess {
 
 		const dimension = dc.dim(dimensionName);
 
-		const resultNode = await callback.execute({
+		const resultNode = await reducer.execute({
 			data: dc.getData(),
-			context: context,
+			context,
 			executionContext: {
 				type: "reducer",
 				parameter: "dimension",

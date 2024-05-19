@@ -102,3 +102,6 @@ There are various process graph examples in the following folder: [examples](./e
 > For example, the handling of no-data, NaN and infinity values works differently.
 > Be aware that in some cases the results may slightly differ when compared to other openEO implementations.
 
+Other known issues:
+- Ideally, all comutations - including the datacube management - run on GEE's side.
+  Currently, some smaller checks still run in the proxy implementation due to the issue that we can't easily abort execution on GEE in case we identify anomalies or other issues.
