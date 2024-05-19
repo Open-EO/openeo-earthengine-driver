@@ -117,7 +117,8 @@ export default class DataCatalog {
 			try {
 				await fse.readJSON(destination);
 			} catch (e) {
-				await file.download({ destination, validation: 'crc32cs' });
+				fse.unlink(destination);
+				console.error("Received invalid JSON file: " + destination);
 			}
 		});
 		return await Promise.all(promises);
