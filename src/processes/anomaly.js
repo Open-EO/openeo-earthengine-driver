@@ -32,10 +32,8 @@ export default class anomaly extends GeeProcess {
 				return copyProps(ee, image.subtract(normal), image);
 			});
 
-		dc.setData(images);
 		// dc.setValues();
-
-		return dc;
+		return dc.setData(images);
 	}
 
 }

@@ -1,8 +1,8 @@
 import DataCube from '../../processgraph/datacube.js';
 import Errors from '../../utils/errors.js';
 import Utils from '../../utils/utils.js';
-import GeeGeoJsonUtils from './geojson.js';
 import { DateTime, Settings } from 'luxon';
+import GeeTypes from './types.js';
 
 Settings.throwOnInvalid = true;
 
@@ -105,7 +105,7 @@ const GeeFilters = {
 
     let data = dc.getData();
 		if (this._canFilter(ee, data)) {
-			const eeGeometry = GeeGeoJsonUtils.toGeometry(node, geometry);
+			const eeGeometry = GeeTypes.toFeatureLike(node, geometry);
 			data = this._viaImageCollection(ee, data, ic => ic.filter(ee.Filter.bounds(eeGeometry)));
 			if (clip) {
 				data = this._viaImageCollection(ee, data, ic => ic.map(img => img.clip(eeGeometry)));

@@ -96,10 +96,8 @@ export default class climatological_normal extends GeeProcess {
 			return periodData.mean().copyProperties({ source: firstImg, properties: firstImg.propertyNames() });
 		});
 
-		dc.setData(ee.ImageCollection(normals));
 		dc.dimT().setValues(labels);
-
-		return dc;
+		return dc.setData(ee.ImageCollection(normals));
 	}
 
 }

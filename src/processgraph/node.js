@@ -114,6 +114,15 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 		return result;
 	}
 
+	getArgumentAsFeatureLikeEE(name, defaultValue = undefined) {
+		const data = this.getArgument(name);
+		const result = GeeTypes.toFeatureLike(this.ee, data);
+		if (result === null && defaultValue !== null) {
+			throw this.invalidArgument(name, 'Conversion to feature collection, feature or geometry not supported');
+		}
+		return result;
+	}
+
 	getArgumentAsEE(name, defaultValue = undefined) {
 		const data = this.getArgument(name, defaultValue);
 		return this._convertToEE(name, data, defaultValue);

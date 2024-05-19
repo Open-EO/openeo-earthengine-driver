@@ -3,9 +3,35 @@ import GeeProcessing from './utils/processing.js';
 
 export default class mask extends GeeProcess {
 
-  executeSync(node) {
+  static process(node, data, maskImageFn, masks = null) {
     const ee = node.ee;
-    let data = node.getArgumentAsEE("data");
+    if (data instanceof ee.imageCollection) {
+      if (masks instanceof ee.ImageCollection) {
+        data = GeeProcessing.iterateInParallel(ee, data, masks, maskImageFn);
+      }
+      else if (masks instanceof ee.Image) {
+        data = data.map(img => maskImageFn(img, masks));
+      }
+      else {
+        throw new Error("The mask must be an Image or ImageCollection.");
+      }
+      return data;
+    }
+    else if (data instanceof ee.Image) {
+      if (masks instanceof ee.Image) {
+        return maskImageFn(data, masks);
+      }
+      else {
+        throw new Error("The mask must be an Image.");
+      }
+    }
+    else {
+      throw new Error("The data must be an Image or ImageCollection.");
+    }
+  }
+
+  executeSync(node) {
+    let dc = node.getDataCubeWithEE("data");
     let masks = node.getArgumentAsEE("mask");
     const replacement = node.getArgumentAsEE("replacement", null);
 
@@ -23,27 +49,11 @@ export default class mask extends GeeProcess {
       }
     };
 
-    if (data instanceof ee.imageCollection) {
-      if (masks instanceof ee.ImageCollection) {
-        return GeeProcessing.iterateInParallel(ee, data, masks, maskImageFn)
-      }
-      else if (masks instanceof ee.Image) {
-        return data.map(img => maskImageFn(img, masks));
-      }
-      else {
-        throw node.invalidArgument("mask", "The mask must be an Image or ImageCollection.");
-      }
-    }
-    else if (data instanceof ee.Image) {
-      if (masks instanceof ee.Image) {
-        return maskImageFn(data, masks);
-      }
-      else {
-        throw node.invalidArgument("mask", "The mask must be an Image.");
-      }
-    }
-    else {
-      throw node.invalidArgument("data", "The data must be an Image or ImageCollection.");
+    try {
+      const data = mask.process(node, dc.getData(), maskImageFn, masks);
+      return dc.setData(data);
+    } catch (error) {
+      throw node.invalidArgument("mask", error.message);
     }
   }
 

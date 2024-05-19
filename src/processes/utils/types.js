@@ -215,6 +215,38 @@ const GeeTypes = {
 		}
 
 		return null;
+	},
+
+	// Converts to ee.Geometry, ee.Feature or ee.FeatureCollection
+	toFeatureLike(ee, data) {
+		if (data instanceof ee.Geometry || data instanceof ee.Feature || data instanceof ee.FeatureCollection) {
+			return data;
+		}
+		else if (data instanceof ee.List) {
+			return ee.FeatureCollection(data);
+		}
+		else if (GeeTypes.isComputedObject(ee, data)) {
+			return ee.FeatureCollection(data);
+		}
+
+		if (Utils.isObject(data) && typeof data.type === 'string') {
+			switch(data.type) {
+				case 'Feature':
+					return ee.Feature(data);
+				case 'FeatureCollection':
+					return ee.FeatureCollection(data);
+				case 'Point':
+				case 'MultiPoint':
+				case 'LineString':
+				case 'MultiLineString':
+				case 'Polygon':
+				case 'MultiPolygon':
+				case 'GeometryCollection':
+					return ee.Geometry(data);
+			}
+		}
+
+		return null;
 	}
 
 };

@@ -43,9 +43,7 @@ export default class reduce_dimension extends GeeProcess {
 		}
 
     dimension.drop();
-		dc.setData(result);
-
-		return dc;
+		return dc.setData(result);
 	}
 
 }

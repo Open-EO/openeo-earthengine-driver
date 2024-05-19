@@ -9,8 +9,7 @@ export default class apply extends GeeProcess {
 			x: dc.getData(),
 			context: node.getArgument("context")
 		});
-		dc.setData(resultNode.getResult());
-		return dc;
+		return dc.setData(resultNode.getResult());
 	}
 
 }
