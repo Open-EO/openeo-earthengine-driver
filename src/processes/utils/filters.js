@@ -105,7 +105,7 @@ const GeeFilters = {
 
     let data = dc.getData();
 		if (this._canFilter(ee, data)) {
-			const eeGeometry = GeeTypes.toFeatureLike(node, geometry);
+			const eeGeometry = GeeTypes.toFeatureLike(node.ee, geometry);
 			data = this._viaImageCollection(ee, data, ic => ic.filter(ee.Filter.bounds(eeGeometry)));
 			if (clip) {
 				data = this._viaImageCollection(ee, data, ic => ic.map(img => img.clip(eeGeometry)));
