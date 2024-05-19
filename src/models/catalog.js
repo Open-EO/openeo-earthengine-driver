@@ -109,15 +109,17 @@ export default class DataCatalog {
 
 		await fse.emptyDir(this.dataFolder);
 		const promises = data[0].map(async file => {
-			if (!file.name.endsWith('.json')) {
+			if ((file.name !== "catalog/catalog.json" && file.name.endsWith('/catalog.json')) || !file.name.endsWith('.json')) {
 				return;
 			}
-			const destination = this.dataFolder + path.basename(file.name);
+			const destination = this.dataFolder + path.basename(path.dirname(file.name)) + '_' + path.basename(file.name);
 			await file.download({ destination, validation: 'md5' });
 			try {
 				await fse.readJSON(destination);
 			} catch (e) {
-				fse.unlink(destination);
+				if (await fse.exists(destination)) {
+					fse.unlink(destination);
+				}
 				console.error("Received invalid JSON file: " + destination);
 			}
 		});
