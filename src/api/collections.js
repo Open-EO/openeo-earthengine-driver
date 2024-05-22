@@ -60,6 +60,8 @@ export default class Data {
 				id: c.id,
 				title: c.title,
 				description: c.description,
+				experimental: c.experimental,
+				deprecated: c.deprecated,
 				license: c.license,
 				extent: c.extent,
 				links: c.links
