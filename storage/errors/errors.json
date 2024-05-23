@@ -70,7 +70,7 @@
 		"message": "The media type is not supported. Allowed: {types}"
 	},
 	"FileTypeInvalid": {
-		"message": "File format {type} not allowed. Allowed file formats: {types}"
+		"message": "File format '{type}' not allowed. Allowed file formats: {types}"
 	},
 	"FileSizeExceeded": {
 		"message": "File size it too large. Maximum file size: {size}"

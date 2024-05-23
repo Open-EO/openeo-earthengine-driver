@@ -1,5 +1,5 @@
 import GeeProcess from '../processgraph/process.js';
-import DataCube from '../processgraph/datacube.js';
+import DataCube from '../datacube/datacube.js';
 
 export default class create_cube extends GeeProcess {
 

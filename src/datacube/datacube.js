@@ -18,7 +18,7 @@ export default class DataCube {
 			this.data = data.data;
 			this.output = Object.assign({}, data.output);
 			for(const i in data.dimensions) {
-				this.dimensions[i] = new Dimension(this, data.dimensions[i]);
+				this.dimensions[i] = Dimension.fromDimension(this, data.dimensions[i]);
 			}
 		}
 		else {
@@ -46,28 +46,39 @@ export default class DataCube {
 	}
 
 	findSingleDimension(type, axis = null) {
-		let filter;
-		let label = "type '" + type + "'";
-		if (axis) {
-			filter = dim => dim.type === type && dim.axis === axis;
-			label += " with axis '" + axis + "'";
-		}
-		else {
-			filter = dim => dim.type === type;
-		}
-		const dims = Object.values(this.dimensions).filter(filter);
+		let axisLabel = axis ? ` (axis: ${axis})` : '';
+		const dims = this.findDimensions(type, axis);
 		if (dims.length > 1) {
-			throw new Error("Multiple dimensions matching "+label+" found. Should be only one.");
+			throw new Error(`Multiple dimensions of type '${type}'${axisLabel} found. Should be only one.`);
 		}
 		else if (dims.length === 0) {
-			throw new Error("No dimension of "+label+" found.");
+			throw new Error(`No dimension of type '${type}'${axisLabel} found.`);
 		}
 		return dims[0];
 	}
 
-	hasDimensionsXY() {
-		const spatialDimensions = Object.values(this.dimensions).filter(dim => dim.type === 'spatial' && ['x', 'y'].includes(dim.axis));
-		return spatialDimensions.length >= 2;
+	findDimensions(type, axis = null) {
+		return Object.values(this.dimensions).filter(dim => dim.type === type && dim.axis === axis);
+	}
+
+	hasDimensionType(type, axis = null) {
+		return Object.values(this.dimensions).some(dim => dim.type === type && dim.axis === axis);
+	}
+
+	hasXY() {
+		return this.hasDimensionType('spatial', 'x') && this.hasDimensionType('spatial', 'y');
+	}
+
+	hasZ() {
+		return this.hasDimensionType('spatial', 'z');
+	}
+
+	hasT() {
+		return this.hasDimensionType('temporal');
+	}
+
+	hasBands() {
+		return this.hasDimensionType('bands');
 	}
 
 	dimX() {
@@ -113,7 +124,7 @@ export default class DataCube {
 		const crsBbox = Utils.getCrsBBox(newCrs);
 		if (Array.isArray(crsBbox)) {
 			if(this.logger && (crsBbox[1] > extent.west || crsBbox[2] > extent.south || crsBbox[3] < extent.east || crsBbox[0] < extent.north)) {
-				// this.logger.warn("Bounding Box has been reduced to the maximum bounding box supported by the target CRS.");
+				this.logger.warn("Bounding Box has been reduced to the maximum bounding box supported by the target CRS.");
 			}
 			extent.west = Math.max(extent.west, crsBbox[1]);
 			extent.south = Math.max(extent.south, crsBbox[2]);
@@ -128,13 +139,13 @@ export default class DataCube {
 	}
 
 	setSpatialExtent(extent) {
-		extent.crs = extent.crs > 0 ? extent.crs : 4326;
+		extent.crs = extent.crs > 1000 ? extent.crs : 4326;
 		const toCrs = this.getCrs();
 		const p1 = Utils.proj(extent.crs, toCrs, [extent.west, extent.south]);
 		const p2 = Utils.proj(extent.crs, toCrs, [extent.east, extent.north]);
 		this.dimX().setExtent(p1[0], p2[0]);
 		this.dimY().setExtent(p1[1], p2[1]);
-		if (Utils.isNumeric(extent.base) && Utils.isNumeric(extent.height)) {
+		if (Utils.isNumeric(extent.base) && Utils.isNumeric(extent.height) && this.dimZ()) {
 			this.dimZ().setExtent(extent.base, extent.height);
 		}
 	}
@@ -151,10 +162,6 @@ export default class DataCube {
 		};
 	}
 
-	getTemporalExtent() {
-		return this.dimT();
-	}
-
 	// returns: array
 	getEarthEngineBands() {
 		let bands = this.getBands();
@@ -166,9 +173,10 @@ export default class DataCube {
 
 	// returns: array
 	getBands() {
-		try {
+		if (this.hasBands()) {
 			return this.dimBands().getValues();
-		} catch(e) {
+		}
+		else {
 			return [];
 		}
 	}
@@ -178,14 +186,17 @@ export default class DataCube {
 	}
 
 	getCrs() {
-		const x = this.dimX();
-		const y = this.dimY();
-
-		if (x.crs() !== y.crs()) {
-			throw new Error("Spatial dimensions for x and y must not differ.");
+		if (!this.hasXY()) {
+			return null;
 		}
 
-		return x.crs();
+		const x = this.dimX();
+		const y = this.dimY();
+		if (x.getReferenceSystem() !== y.getReferenceSystem()) {
+			throw new Error("Spatial dimensions for x and y have different CRS.");
+		}
+
+		return x.getReferenceSystem();
 	}
 
 	setCrs(refSys) {
@@ -195,26 +206,10 @@ export default class DataCube {
 		this.setSpatialExtent(this.limitExtentToCrs(extent, refSys)); // Update the extent based on the new CRS
 	}
 
-	setReferenceSystem(dimName, refSys) {
-		const dimension = this.getDimension(dimName);
-		if (dimension.type === 'spatial' && ['x', 'y'].includes(dimension.axis)) {
-			throw new Error("You need to set spatial reference systems for axes x and y with setCrs().");
-		}
-		dimension.setReferenceSystem(refSys);
-	}
-
-	getResolution(dimName) {
-		return this.getDimension(dimName).getResolution();
-	}
-
-	setResolution(dimName, resolution) {
-		this.getDimension(dimName).setResolution(resolution);
-	}
-
 	setDimensionsFromSTAC(dimensions) {
 		this.dimensions = {};
 		for (const name in dimensions) {
-			this.dimensions[name] = new Dimension(this, dimensions[name], name);
+			this.dimensions[name] = Dimension.fromSTAC(this, dimensions[name], name);
 		}
 	}
 

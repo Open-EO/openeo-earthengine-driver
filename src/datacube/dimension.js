@@ -1,32 +1,48 @@
 export default class Dimension {
 
-	constructor(datacube, options, name) {
-		this.datacube = datacube;
-		this.fromSTAC(options, name);
-	}
-
-	fromSTAC(source, name) {
-		this.name = source.name || name;
-		this.type = source.type || 'other';
-		this.axis = source.type === 'spatial' ? source.axis : null;
+	static fromSTAC(datacube, source, name) {
+		const dim = new Dimension(datacube, name, source.type, source.axis);
 		if (Array.isArray(source.values)) {
-			this.values = source.values;
-			this.extent = null;
+			dim.setValues(source.values);
 		}
 		else if (Array.isArray(source.extent) && source.extent.length === 2) {
-			this.values = null;
-			this.extent = source.extent;
+			dim.setExtent(source.extent[0], source.extent[1]);
+		}
+		dim.setResolution(source.step);
+		dim.setUnit(source.unit)
+		if (!source.reference_system && source.type === 'spatial') {
+			dim.setReferenceSystem(4326);
 		}
 		else {
-			this.values = [];
-			this.extent = null;
+			dim.setReferenceSystem(source.reference_system);
 		}
-		this.resolution = source.step ? source.step : null;
-		this.unit = source.unit ? source.unit : '';
-		this.referenceSystem = source.reference_system;
-		if (!this.referenceSystem && this.type === 'spatial') {
-			this.referenceSystem = 4326;
+		return dim;
+	}
+
+	static fromDimension(datacube, dimension) {
+		const dim = new Dimension(datacube, dimension.name, dimension.type, dimension.axis);
+		dim.values = dimension.values;
+		dim.extent = dimension.extent;
+		dim.resolution = dimension.resolution;
+		dim.unit = dimension.unit;
+		dim.referenceSystem = dimension.referenceSystem;
+		return dim;
+	}
+
+	constructor(datacube, name, type = 'other', axis = null) {
+		this.datacube = datacube;
+		this.name = name;
+		this.type = type;
+		if (type === 'spatial') {
+			this.axis = axis;
 		}
+		else {
+			this.axis = null;
+		}
+		this.setValues([]);
+		this.setResolution();
+		this.setUnit();
+		this.setReferenceSystem();
 	}
 
 	toSTAC() {
@@ -36,10 +52,10 @@ export default class Dimension {
 		if (this.axis) {
 			obj.axis = this.axis;
 		}
-		if (this.extent.length === 2) {
+		if (Array.isArray(this.extent) && this.extent.length === 2) {
 			obj.extent = this.extent;
 		}
-		if (this.values.length > 0) {
+		if (Array.isArray(this.values) && this.values.length > 0) {
 			obj.values = this.values;
 		}
 		if (this.resolution) {
@@ -70,7 +86,7 @@ export default class Dimension {
 		return this.resolution;
 	}
 
-	setResolution(resolution) {
+	setResolution(resolution = null) {
 		this.resolution = resolution;
 	}
 
@@ -78,8 +94,12 @@ export default class Dimension {
 		return this.referenceSystem;
 	}
 
-	crs() { // Alias
-		return this.getReferenceSystem();
+	getUnit() {
+		return this.unit;
+	}
+
+	setUnit(unit = '') {
+		this.unit = unit;
 	}
 
 	setName(name) {

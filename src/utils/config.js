@@ -1,3 +1,7 @@
+import GTiffFormat from "../formats/gtiff.js";
+import JpegFormat from "../formats/jpeg.js";
+import JsonFormat from "../formats/json.js";
+import PngFormat from "../formats/png.js";
 import Utils from "./utils.js";
 
 export default class Config {
@@ -33,95 +37,13 @@ export default class Config {
 			options: []
 		};
 
-		const sizeOption = {
-			type: 'integer',
-			description: 'The size for the longest side the image, in pixels.',
-			default: 1000,
-			minimum: 1,
-			maximum: 2000
-		};
-		const visOptions = {
-			red: {
-				type: 'string',
-				subtype: 'band-name', // The formats are not specification compliant, but are allowed to be added.
-				description: 'Band name being used for the red channel.',
-				default: null
-			},
-			green: {
-				type: 'string',
-				subtype: 'band-name',
-				description: 'Band name being used for the green channel.',
-				default: null
-			},
-			blue: {
-				type: 'string',
-				subtype: 'band-name',
-				description: 'Band name being used for the blue channel.',
-				default: null
-			},
-			gray: {
-				type: 'string',
-				subtype: 'band-name',
-				description: 'Band name being used as a gray channel.',
-				default: null
-			},
-			palette: {
-				type: 'array',
-				description: 'List of hex RGB colors used as palette for visualization, e.g. `#ffffff` for white.',
-				default: null
-			},
-			size: sizeOption,
-			epsgCode: {
-				type: 'integer',
-				subtype: 'epsg-code', // The formats are not specification compliant, but are allowed to be added.
-				description: 'EPSG Code to reproject the images to. Defaults to WGS 84 (EPSG Code 4326).',
-				default: 4326
-			}
-		};
 
 		this.inputFormats = {};
 		this.outputFormats = {
-			PNG: {
-				title: 'PNG',
-				gis_data_types: ['raster'],
-				parameters: visOptions
-			},
-			JPEG: {
-				title: 'JPG / JPEG',
-				gis_data_types: ['raster'],
-				parameters: visOptions
-			},
-			"GTIFF-THUMB": {
-				title: 'GeoTiff (thumbnail)',
-				gis_data_types: ['raster'],
-				parameters: {
-					size: sizeOption,
-					epsgCode: {
-						type: 'integer',
-						subtype: 'epsg-code', // The subtype is not specification compliant, but is allowed to be added.
-						description: 'EPSG Code to reproject the images to. Defaults to native CRS.',
-						default: null
-					}
-				}
-			},
-			"GTIFF-ZIP": {
-				title: 'GeoTiff (zipped)',
-				gis_data_types: ['raster'],
-				parameters: {
-					size: sizeOption,
-					epsgCode: {
-						type: 'integer',
-						subtype: 'epsg-code', // The subtype is not specification compliant, but is allowed to be added.
-						description: 'EPSG Code to reproject the images to. Defaults to native CRS.',
-						default: null
-					}
-				}
-			},
-			JSON: {
-				title: 'JSON',
-				gis_data_types: ['raster', 'vector', 'table', 'other'],
-				parameters: {}
-			}
+			PNG: new PngFormat(),
+			JPEG: new JpegFormat(),
+			GTIFF: new GTiffFormat(),
+			JSON: new JsonFormat()
 		};
 
 		this.services = {

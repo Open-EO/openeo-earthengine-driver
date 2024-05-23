@@ -142,7 +142,18 @@ const GeeProcessing = {
 		throw node.invalidArgument(dataParameter, "Unsupported data type.");
 	},
 
-	reduceNumericalFunction(node, reducerName, binaryFunc = null, dataParameter = "data") {
+	reduceNumericalFunction(node, reducerSpec, binaryFunc = null, dataParameter = "data") {
+		let reducerName;
+		let bandSuffix;
+		if (Array.isArray(reducerSpec)) {
+			reducerName = reducerSpec[0];
+			bandSuffix = reducerSpec[1];
+		}
+		else {
+			reducerName = reducerSpec;
+			bandSuffix = reducerSpec
+		}
+
 		const ee = node.ee;
 		let data;
 
@@ -189,7 +200,7 @@ const GeeProcessing = {
 					// The bands are named <band name>_<reducer name>
 					else {
 						return ee.ImageCollection(data.reduce(reducer))
-							.map(img => img.regexpRename(`^(.+)_${reducerName}$`, "$1"));
+							.map(img => img.regexpRename(`^(.+)_${bandSuffix}$`, "$1"));
 					}
 				}
 				throw node.invalidArgument(dataParameter, "Unsupported data type for temporal reducer.");

@@ -7,11 +7,11 @@ const epsg = Utils.require('epsg-index/all.json');
 
 export default class GeeProcessGraph extends ProcessGraph {
 
-	constructor(process, context, jsonSchemaValidator = null) {
-		super(process, context.server().processes(), jsonSchemaValidator);
+	constructor(process, context, logger = null) {
+		super(process, context.server().processes());
 		this.context = context;
-		this.loadCollectionRect = null;
-		this.logger = null;
+		this.logger = logger;
+		this.constraints = {};
 	}
 
 	getContext() {
@@ -33,18 +33,11 @@ export default class GeeProcessGraph extends ProcessGraph {
 	}
 
 	createNodeInstance(json, id, parent) {
-		// Optimization for web services to only load the extent of the data that is needed if no spatial extent is defined by the load_collection process
-		if (this.loadCollectionRect && json.process_id === 'load_collection' && Utils.isObject(json.arguments) && !json.arguments.spatial_extent) {
-			// ToDo perf: If an extent exists, use the intersecting area between tile and user-selected bounding box to further improve runtime.
-			json.arguments.spatial_extent = this.loadCollectionRect;
-		}
 		return new GeeProcessGraphNode(json, id, parent);
 	}
 
 	createProcessGraphInstance(process) {
-		const pg = new GeeProcessGraph(process, this.context);
-		pg.setLogger(this.getLogger());
-		return pg;
+		return new GeeProcessGraph(process, this.context, this.getLogger());
 	}
 
 	createProcessInstance(process) {
@@ -101,12 +94,22 @@ export default class GeeProcessGraph extends ProcessGraph {
 		return process.executeSync(node);
 	}
 
-	optimizeLoadCollectionRect(rect) {
-		this.loadCollectionRect = rect;
-	}
-
 	addError(error) {
 		this.errors.add(Errors.wrap(error));
+	}
+
+	setAdditionalConstraint(process, parameter, value) {
+		if (!this.constraints[process]) {
+			this.constraints[process] = {};
+		}
+		this.constraints[process][parameter] = value;
+	}
+
+	getAdditionalConstraint(process, parameter) {
+		if (this.constraints[process]) {
+			return this.constraints[process][parameter];
+		}
+		return undefined;
 	}
 
 }

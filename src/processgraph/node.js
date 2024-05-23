@@ -1,9 +1,8 @@
-import DataCube from './datacube.js';
+import DataCube from '../datacube/datacube.js';
 import { ProcessGraphNode } from '@openeo/js-processgraphs';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
 import GeeTypes from '../processes/utils/types.js';
-import Utils from '../utils/utils.js';
 
 export default class GeeProcessGraphNode extends ProcessGraphNode {
 
@@ -67,7 +66,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 
 	getDataCubeWithEE(name, defaultValue = undefined) {
 		const dc = this.getDataCube(name, defaultValue);
-		const data = this._convertToEE(name, dc.getData(), defaultValue);
+		const data = this.convertToEE(name, dc.getData());
 		return dc.setData(data);
 	}
 
@@ -77,6 +76,14 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 			throw this.invalidArgument('process', 'No process specified.');
 		}
 		return callback;
+	}
+
+	getArgument(name, defaultValue = undefined) {
+		const constraint = this.getProcessGraph().getAdditionalConstraint(this.process_id, name);
+		if (typeof constraint !== 'undefined') {
+			return constraint;
+		}
+		return super.getArgument(name, defaultValue);
 	}
 
 	getArgumentAsListEE(name, converter = null, defaultValue = undefined) {
@@ -125,51 +132,15 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 
 	getArgumentAsEE(name, defaultValue = undefined) {
 		const data = this.getArgument(name, defaultValue);
-		return this._convertToEE(name, data, defaultValue);
+		return this.convertToEE(name, data);
 	}
 
-	_convertToEE(name, data, defaultValue) {
-		const ee = this.ee;
-		if (GeeTypes.isEarthEngineType(this.ee, data, false)) {
-			return data;
+	convertToEE(name, data) {
+		const eeData = GeeTypes.toEE(this, data);
+		if (typeof eeData === 'undefined') {
+			throw this.invalidArgument(name, 'Datatype not supported by Google Earth Engine');
 		}
-		else if (GeeTypes.isComputedObject(ee, data)) {
-			this.warn('Inspecting a ComputedObject via getInfo() is slow. Please report this issue.');
-			const info = data.getInfo();
-			if (typeof info === 'boolean' || typeof info === 'number' || typeof info === 'string') {
-				this.debug(`ComputedObject is a scalar value: ${info}`, info);
-				data = info;
-			}
-			else if (Array.isArray(info)) {
-				this.debug(`ComputedObject is an array of length ${info.length}`, info);
-				data = info;
-			}
-			else if (Utils.isObject(info)) {
-				if (typeof info.type === 'string' && typeof ee[info.type] !== 'undefined') {
-					this.debug(`Casting from ComputedObject to ${info.type}`, info);
-					return ee[info.type](data);
-				}
-				else {
-					this.debug(`ComputedObject is an object with the following keys: ${Object.keys(info)}`, info);
-					data = info;
-				}
-			}
-			else {
-				this.warn(`Can't cast ComputedObject to native GEE type.`, info);
-			}
-		}
-
-		if (data === null && defaultValue === null) {
-			return null;
-		}
-		else {
-			const eeData = GeeTypes.jsToEE(this, data);
-			if (eeData !== null) {
-				return eeData;
-			}
-		}
-
-		throw this.invalidArgument(name, 'Datatype not supported by Google Earth Engine');
+		return eeData;
 	}
 
 	getExecutionContext() {

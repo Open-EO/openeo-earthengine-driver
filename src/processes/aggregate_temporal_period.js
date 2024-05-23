@@ -34,7 +34,7 @@ export default class aggregate_temporal_period extends GeeProcess {
 		const aggregatedImages = newLabels.map(label => {
 			const collection = images.filterMetadata('aggregationLabel', 'equals', label);
 			const firstImg = collection.first();
-			const image = ee.Image(reducer.execute({
+			const resultNode = ee.Image(reducer.executeSync({
 				data: collection,
 				context,
 				executionContext: {
@@ -43,7 +43,7 @@ export default class aggregate_temporal_period extends GeeProcess {
 					dimension
 				}
 			}));
-			return image
+			return ee.Image(resultNode.getResult())
 				.set('label', label)
 				.set('system:time_start', firstImg.get('system:time_start'));
 		});

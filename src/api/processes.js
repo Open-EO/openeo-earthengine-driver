@@ -7,8 +7,9 @@ export default class Processes {
 	async beforeServerStart(server) {
 		server.addEndpoint('get', '/processes', this.getProcesses.bind(this));
 
+		const a = Date.now();
 		const num = await this.registry.addFromFolder('./src/processes/');
-		console.log(`Loaded ${num} processes.`);
+		console.log(`Loaded ${num} processes (${Date.now()-a} ms)`);
 		return num;
 	}
 

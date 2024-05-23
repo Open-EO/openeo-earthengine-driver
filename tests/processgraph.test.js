@@ -1,7 +1,7 @@
 /* global describe, beforeAll, afterAll, test, expect */
 import ServerContext from '../src/utils/servercontext.js';
 import DB from '../src/utils/db.js';
-import ProcessingContext from '../src/processgraph/context.js';
+import ProcessingContext from '../src/utils/processingcontext.js';
 import GeeProcessGraph from '../src/processgraph/processgraph.js';
 import Utils from '../src/utils/utils.js';
 import fse from 'fs-extra';

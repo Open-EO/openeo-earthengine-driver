@@ -6,19 +6,26 @@ export default class save_result extends GeeProcess {
 	async validate(node) {
 		await super.validate(node);
 
-		const format = node.getArgument("format");
-		if (!node.getServerContext().isValidOutputFormat(format)) {
-			throw new Errors.FormatUnsupported();
+		const config = node.getServerContext();
+
+		const formatName = node.getArgument("format");
+		const format = config.getOutputFormat(formatName);
+		if (!format) {
+			throw new Errors.FileTypeInvalid({
+				type: formatName,
+				types: Object.keys(config.outputFormats)
+			});
 		}
-		// var options = node.getArgument("options");
-		// ToDo processes: Validate the options
+
+		const options = node.getArgument("options", {});
+		format.validateParameters(options);
 	}
 
 	executeSync(node) {
 		const data = node.getDataCube("data");
 		data.setOutputFormat(
 			node.getArgument("format"),
-			node.getArgument("options")
+			node.getArgument("options", {})
 		);
 		return data;
 	}

@@ -54,10 +54,22 @@ const HttpUtils = {
 					const chunks = [];
 					error.response.data.on("data", chunk => chunks.push(chunk));
 					error.response.data.on("error", () => reject(error));
-					error.response.data.on("end", () => reject(new Errors.EarthEngineError({
-						message: Buffer.concat(chunks).toString(),
-						process: 'save_result'
-					})));
+					error.response.data.on("end", () => {
+						const content = Buffer.concat(chunks).toString();
+						let message = content;
+						try {
+							const obj = JSON.parse(content);
+							if (obj?.error?.message) {
+								message = obj.error.message;
+							}
+						} catch (e) {
+							// invalid JSON
+						}
+						reject(new Errors.EarthEngineError({
+							message,
+							process: 'save_result'
+						}))
+					});
 				});
 			}
 			throw error;

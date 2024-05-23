@@ -1,6 +1,6 @@
 import Config from './config.js';
 import GeeProcessRegistry from '../processgraph/registry.js';
-import ProcessingContext from '../processgraph/context.js';
+import ProcessingContext from './processingcontext.js';
 import Utils from './utils.js';
 
 import DataCatalog from '../models/catalog.js';
@@ -9,7 +9,6 @@ import FileWorkspace from '../models/workspace.js';
 import JobStore from '../models/jobstore.js';
 import UserStore from '../models/userstore.js';
 import ServiceStore from '../models/servicestore.js';
-import fse from 'fs-extra';
 
 export default class ServerContext extends Config {
 
@@ -22,12 +21,6 @@ export default class ServerContext extends Config {
 		this.jobStore = new JobStore();
 		this.userStore = new UserStore(this);
 		this.serviceStore = new ServiceStore();
-		if (this.serviceAccountCredentialsFile) {
-			this.geePrivateKey = fse.readJsonSync(this.serviceAccountCredentialsFile);
-		}
-		else {
-			this.geePrivateKey = null;
-		}
 	}
 
 	jobs() {
@@ -57,12 +50,24 @@ export default class ServerContext extends Config {
 		return this.serviceStore;
 	}
 
-	isValidOutputFormat(format) {
-		return (typeof format === 'string' && Utils.isObject(this.outputFormats[format.toUpperCase()]));
+	getFormat(format, type) {
+		if (typeof format !== 'string') {
+			return null;
+		}
+		const ucFormat = format.toUpperCase();
+		const varName = `${type}Formats`;
+		if (!this[varName] || !this[varName][ucFormat]) {
+			return null;
+		}
+		return this[varName][ucFormat];
 	}
 
-	isValidInputFormat(format) {
-		return (typeof format === 'string' && Utils.isObject(this.inputFormats[format.toUpperCase()]));
+	getOutputFormat(format) {
+		return this.getFormat(format, 'output');
+	}
+
+	getInputFormat(format) {
+		return this.getFormat(format, 'input');
 	}
 
 	isValidServiceType(service_type) {

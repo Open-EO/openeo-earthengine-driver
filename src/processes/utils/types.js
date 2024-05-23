@@ -41,6 +41,50 @@ const GeeTypes = {
 		return null;
 	},
 
+	toEE(node, data) {
+		const ee = node.ee;
+		const logger = node.getLogger();
+		if (GeeTypes.isEarthEngineType(ee, data, false)) {
+			return data;
+		}
+		else if (GeeTypes.isComputedObject(ee, data)) {
+			logger.warn('Inspecting a ComputedObject via getInfo() is slow. Please report this issue.');
+			const info = data.getInfo();
+			if (typeof info === 'boolean' || typeof info === 'number' || typeof info === 'string') {
+				logger.debug(`ComputedObject is a scalar value: ${info}`, info);
+				data = info;
+			}
+			else if (Array.isArray(info)) {
+				logger.debug(`ComputedObject is an array of length ${info.length}`, info);
+				data = info;
+			}
+			else if (Utils.isObject(info)) {
+				if (typeof info.type === 'string' && typeof ee[info.type] !== 'undefined') {
+					logger.debug(`Casting from ComputedObject to ${info.type}`, info);
+					return ee[info.type](data);
+				}
+				else {
+					logger.debug(`ComputedObject is an object with the following keys: ${Object.keys(info)}`, info);
+					data = info;
+				}
+			}
+			else {
+				logger.warn(`Can't cast ComputedObject to native GEE type.`, info);
+			}
+		}
+
+		if (data === null) {
+			return null;
+		}
+
+		const eeData = GeeTypes.jsToEE(node, data);
+		if (eeData !== null) {
+			return eeData;
+		}
+
+		return undefined;
+	},
+
 	getEarthEngineType(ee, obj, returnComputedObject = false) {
 		if (!Utils.isObject(obj)) {
 			return null;

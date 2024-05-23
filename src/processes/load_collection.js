@@ -1,5 +1,5 @@
 import GeeProcess from '../processgraph/process.js';
-import DataCube from '../processgraph/datacube.js';
+import DataCube from '../datacube/datacube.js';
 import GeeFilters from './utils/filters.js';
 
 export default class load_collection extends GeeProcess {

@@ -61,7 +61,7 @@ export default class aggregate_temporal extends GeeProcess {
 			.map((label, range) => {
 				let dates = ee.List(range);
 				let collection = data.filterDate(dates.get(0), dates.get(1));
-				const image = ee.Image(reducer.execute({
+				const resultNode = reducer.executeSync({
 					data: collection,
 					context,
 					executionContext: {
@@ -69,8 +69,8 @@ export default class aggregate_temporal extends GeeProcess {
 						parameter: "dimension",
 						dimension
 					}
-				}));
-				return image
+				});
+				return ee.Image(resultNode.getResult())
 					.set('label', label)
 					.set('system:time_start', label);
 			});

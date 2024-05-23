@@ -28,16 +28,16 @@ export default class GeeJsonSchemaValidator extends JsonSchemaValidator {
 	}
 
 	async validateOutputFormat(data) {
-		if (!this.context.server().isValidOutputFormat(data)) {
+		if (!this.context.server().getOutputFormat(data)) {
 			throw new ajv.ValidationError([{
-				message: "Output format  '" + data + "' not supported."
+				message: "Output format '" + data + "' not supported."
 			}]);
 		}
 		return true;
 	}
 
 	async validateInputFormat(data) {
-		if (!this.context.server().isValidInputFormat(data)) {
+		if (!this.context.server().getInputFormat(data)) {
 			throw new ajv.ValidationError([{
 				message: "Input format  '" + data + "' not supported."
 			}]);

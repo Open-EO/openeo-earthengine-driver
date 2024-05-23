@@ -157,10 +157,18 @@ export default class CapabilitiesAPI {
 		res.json(this.context.services);
 	}
 
+	transformFormats(formats) {
+		const result = {};
+		for (const key in formats) {
+			result[key] = formats[key].toJSON();
+		}
+		return result;
+	}
+
 	async getFileFormats(req, res) {
 		res.json({
-			input: this.context.inputFormats,
-			output: this.context.outputFormats
+			input: this.transformFormats(this.context.inputFormats),
+			output: this.transformFormats(this.context.outputFormats)
 		});
 	}
 }

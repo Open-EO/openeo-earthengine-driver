@@ -2,6 +2,7 @@ import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
 import Logs from '../models/logs.js';
+import GeeResults from '../processes/utils/results.js';
 
 export default class ServicesAPI {
 
@@ -39,40 +40,41 @@ export default class ServicesAPI {
 			throw new Errors.ServiceNotFound();
 		}
 
-		let logger = console;
+		let logger;
+		try {
+			logger = await this.storage.getLogsById(req.params.service_id, service.log_level);
+		} catch (e) {
+			console.error(e);
+			logger = console;
+		}
+
 		try {
 			const rect = this.storage.calculateXYZRect(req.params.x, req.params.y, req.params.z);
 			const context = this.context.processingContext(req);
-			// Update user id to the user id, which stored the job. See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
+			// Update user id to the user id, which stored the job.
+			// See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
 			context.setUserId(service.user_id);
 
-			const logs = await this.storage.getLogsById(req.params.service_id, service.log_level);
-
-			const pg = new ProcessGraph(service.process, context);
-			pg.setLogger(logs);
-			logger = logs;
-
-			pg.optimizeLoadCollectionRect(rect);
+			const pg = new ProcessGraph(service.process, context, logger);
+			pg.setAdditionalConstraint('load_collection', 'spatial_extent', rect);
 			const resultNode = await pg.execute();
 			const cube = resultNode.getResult();
+
 			cube.setOutputFormatParameter('size', '256x256');
 			cube.setSpatialExtent(rect);
 			cube.setCrs(3857);
+			if (!cube.getOutputFormat()) {
+				cube.setOutputFormat('png');
+			}
 
-			const response = await context.retrieveResults(resultNode, cube);
-			if (typeof response === 'string') {
-				logger.debug(`Serving ${response} for tile ${req.params.x}/${req.params.y}/${req.params.z}`);
-				return res.redirect(response, Utils.noop);
+			const response = await GeeResults.retrieve(resultNode);
+			logger.debug(`Streaming tile ${req.params.x}/${req.params.y}/${req.params.z} to client`);
+			let contentType = 'application/octet-stream';
+			if (typeof response.headers['content-type'] !== 'undefined') {
+				contentType = response.headers['content-type'];
 			}
-			else {
-				logger.debug(`Streaming to tile ${req.params.x}/${req.params.y}/${req.params.z}`);
-				let contentType = 'application/octet-stream';
-				if (typeof response.headers['content-type'] !== 'undefined') {
-					contentType = response.headers['content-type'];
-				}
-				res.header('Content-Type', contentType);
-				response.data.pipe(res);
-			}
+			res.header('Content-Type', contentType);
+			response.data.pipe(res);
 		} catch(e) {
 			logger.error(e);
 			throw e;

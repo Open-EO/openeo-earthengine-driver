@@ -5,6 +5,7 @@ import path from 'path';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
 import Logs from '../models/logs.js';
+import GeeResults from '../processes/utils/results.js';
 const packageInfo = Utils.require('../../package.json');
 
 export default class JobsAPI {
@@ -27,6 +28,7 @@ export default class JobsAPI {
 		server.addEndpoint('get', '/jobs/{job_id}/logs', this.getJobLogs.bind(this));
 		server.addEndpoint('get', '/jobs/{job_id}/results', this.getJobResults.bind(this));
 		server.addEndpoint('post', '/jobs/{job_id}/results', this.postJobResults.bind(this));
+		server.addEndpoint('delete', '/jobs/{job_id}/results', this.deleteJobResults.bind(this));
 
 		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
 		server.addEndpoint('get', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
@@ -154,19 +156,14 @@ export default class JobsAPI {
 			await this.storage.updateJobStatus(query, 'running');
 
 			const context = this.context.processingContext(req);
-			const pg = new ProcessGraph(job.process, context);
-			pg.setLogger(logger);
+			const pg = new ProcessGraph(job.process, context, logger);
 			const resultNode = await pg.execute();
-			const cube = resultNode.getResult();
 
-			let response = await context.retrieveResults(resultNode, cube);
-			if (typeof response === 'string') {
-				logger.debug("Downloading data from Google: " + response);
-				response = await HttpUtils.stream(response);
-			}
+			const response = await GeeResults.retrieve(resultNode, false);
+			// todo: implement exporting multiple images
+			// const response = await GeeResults.retrieve(resultNode, true);
 
-			const extension = context.getExtension(cube.getOutputFormat());
-			const filePath = this.storage.getJobFile(job._id, Utils.generateHash() + "." + extension);
+			const filePath = this.storage.getJobFile(job._id, String(Utils.generateHash()) + GeeResults.getFileExtension(resultNode));
 			logger.debug("Storing result to: " + filePath);
 			await fse.ensureDir(path.dirname(filePath));
 			await new Promise((resolve, reject) => {
@@ -201,6 +198,25 @@ export default class JobsAPI {
 			user_id: req.user._id
 		};
 		await this.getJobRultsByQuery(query, false, req, res);
+	}
+
+	async deleteJobResults(req, res) {
+		this.init(req);
+
+		const query = {
+			_id: req.params.job_id,
+			user_id: req.user._id
+		};
+
+		const job = await this.storage.findJob(query);
+		if (job.status === 'queued' || job.status === 'running') {
+			const newStatus = job.status === 'queued' ? 'created' : 'canceled';
+			await this.storage.updateJobStatus(query, newStatus);
+		}
+
+		// todo: actually stop the processing
+
+		res.send(204);
 	}
 
 	async getJobRultsByQuery(query, pub, req, res) {
@@ -387,8 +403,7 @@ export default class JobsAPI {
 		logger.debug("Starting to process request");
 
 		const context = this.context.processingContext(req);
-		const pg = new ProcessGraph(req.body.process, context);
-		pg.setLogger(logger);
+		const pg = new ProcessGraph(req.body.process, context, logger);
 		pg.allowUndefinedParameters(false);
 		const errorList = await pg.validate(false);
 		if (errorList.count() > 0) {
@@ -401,19 +416,10 @@ export default class JobsAPI {
 
 		logger.debug("Executing processes");
 		const resultNode = await pg.execute();
-		const cube = resultNode.getResult();
 
-		let response = await context.retrieveResults(resultNode, cube);
-		if (typeof response === 'string') {
-			logger.debug("Downloading data from Google: " + response);
-			response = await HttpUtils.stream(response);
-		}
+		const response = await GeeResults.retrieve(resultNode);
 
-		let contentType = 'application/octet-stream';
-		if (Utils.isObject(response.headers) && typeof response.headers['content-type'] !== 'undefined') {
-			contentType = response.headers['content-type'];
-		}
-		res.header('Content-Type', contentType);
+		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
 		res.header('OpenEO-Costs', 0);
 		const monitorUrl = Utils.getApiUrl('/result/logs/' + id) + '?log_level=' + log_level;
 		res.header('Link', `<${monitorUrl}>; rel="monitor"`);

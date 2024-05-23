@@ -1,4 +1,4 @@
-import DataCube from '../../processgraph/datacube.js';
+import DataCube from '../../datacube/datacube.js';
 import Errors from '../../utils/errors.js';
 import Utils from '../../utils/utils.js';
 import { DateTime, Settings } from 'luxon';
@@ -45,8 +45,7 @@ const GeeFilters = {
 		else {
 			dc = node.getDataCubeWithEE(dataParam);
 		}
-		const dim = dc.dimT();
-		if (!dim) {
+		if (!dc.hasT()) {
 			throw new Errors.DimensionTypeNotAvailable({
 				process: node.process_id,
 				type: "temporal"
@@ -59,7 +58,7 @@ const GeeFilters = {
 				min || "0000-01-01",
 				max || "9999-12-31"
 			)));
-			dim.setExtent(min, max);
+			dc.findDimensions('temporal').map(dim => dim.setExtent(min, max));
 		}
 		else {
 			const paramName = typeof dataParam === "string" ? dataParam : extentParam;
@@ -80,7 +79,7 @@ const GeeFilters = {
 		else {
 			dc = node.getDataCubeWithEE(dataParam);
 		}
-		if (!dc.dimX() || !dc.dimY()) {
+		if (!dc.hasXY()) {
 			throw new Errors.DimensionTypeNotAvailable({
 				process: node.process_id,
 				type: "spatial"
@@ -131,15 +130,15 @@ const GeeFilters = {
 			dc = node.getDataCubeWithEE(dataParam);
 		}
 
-		const dim = dc.dimBands();
-		if (!dim) {
+		if (!dc.hasBands()) {
 			throw new Errors.DimensionTypeNotAvailable({
 				process: node.process_id,
 				type: "bands"
 			});
 		}
 
-		const availableBands = dc.getBands();
+		const dim = dc.dimBands();
+		const availableBands = dim.getValues();
 		if (!Array.isArray(availableBands)) {
 			throw node.invalidArgument(bandsParam, `Data cube does not contain bands.`);
 		}
@@ -154,7 +153,7 @@ const GeeFilters = {
     let data = dc.getData();
 		if (this._canFilter(ee, data)) {
 			data = this._viaImageCollection(ee, data, ic => ic.select(requestedBands));
-			dim.setValues(requestedBands);
+		dim.setValues(requestedBands);
 		}
 		else {
 			const paramName = typeof dataParam === "string" ? dataParam : bandsParam;

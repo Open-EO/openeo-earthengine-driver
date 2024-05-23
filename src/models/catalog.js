@@ -88,17 +88,22 @@ export default class DataCatalog {
 
 	async updateCatalog(force = false) {
 		await fse.ensureDir(this.dataFolder);
-		await this.itemCache.clear();
-		// To refresh the catalog manually, delete the catalog.json or set force to true
-		const catalogFile = this.dataFolder + 'catalog.json';
-		if (!force && await fse.exists(catalogFile)) {
-			const stat = await fse.stat(catalogFile);
-			const fileTime = new Date(stat.ctime).getTime();
-			const expiryTime = new Date().getTime() - 24 * 60 * 60 * 1000; // Expiry time: A day
-			if (fileTime > expiryTime) {
+
+		const syncTimeFile = this.dataFolder + 'sync.txt';
+		if (!force) {
+			let syncTime;
+			try {
+				syncTime = parseInt(await fse.readFile(syncTimeFile, 'utf8'), 10);
+			} catch (e) {
+				syncTime = 0;
+			}
+			const expiryTime = Date.now() - 24 * 60 * 60 * 1000; // Expiry time: A day
+			if (syncTime > expiryTime) {
 				return;
 			}
 		}
+
+		await this.itemCache.clear();
 
 		const storage = new Storage({
 			keyFile: this.serverContext.serviceAccountCredentialsFile || null
@@ -109,7 +114,7 @@ export default class DataCatalog {
 
 		await fse.emptyDir(this.dataFolder);
 		const promises = data[0].map(async file => {
-			if ((file.name !== "catalog/catalog.json" && file.name.endsWith('/catalog.json')) || !file.name.endsWith('.json')) {
+			if (file.name.endsWith('catalog.json') || !file.name.endsWith('.json')) {
 				return;
 			}
 			const destination = this.dataFolder + path.basename(path.dirname(file.name)) + '_' + path.basename(file.name);
@@ -123,7 +128,8 @@ export default class DataCatalog {
 				console.error("Received invalid JSON file: " + destination);
 			}
 		});
-		return await Promise.all(promises);
+		await Promise.all(promises);
+		await fse.writeFile(syncTimeFile, Date.now().toString());
 	}
 
 	async loadCatalog() {
