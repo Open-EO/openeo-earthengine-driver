@@ -54,7 +54,7 @@ export default class GTiffFormat extends FileFormat {
     }
     else if (data instanceof ee.Image) {
       const eeOpts = {
-        dimensions: parameters.size || 1000,
+        scale: parameters.scale || 100,
         region,
         crs,
         format
