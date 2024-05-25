@@ -4,7 +4,7 @@ import GeeProcessing from './utils/processing.js';
 export default class any extends GeeProcess {
 
 	executeSync(node) {
-		return GeeProcessing.reduceNumericalFunction(node, 'anyNonZero');
+		return GeeProcessing.reduceNumericalFunction(node, ['anyNonZero', 'any']);
 	}
 
 }

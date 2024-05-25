@@ -271,13 +271,18 @@ export default class JobsAPI {
 				assets[fileName] = {
 					href: href,
 					roles: ["data"],
-					type: type
+					type: type,
+					"file:size": file.stat.size,
+					created: file.stat.birthtime,
+					updated: file.stat.mtime
 				};
 			}
 		}
 		const item = {
 			stac_version: packageInfo.stac_version,
-			stac_extensions: [],
+			stac_extensions: [
+				"https://stac-extensions.github.io/file/v2.0.0/schema.json",
+			],
 			id: job._id,
 			type: "Feature",
 			geometry: null,

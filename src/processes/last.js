@@ -6,7 +6,7 @@ export default class last extends GeeProcess {
 	executeSync(node) {
 		const ignore_nodata = node.getArgument('ignore_nodata', true);
 		const reducer = ignore_nodata ? 'lastNonNull' : 'last';
-		return GeeProcessing.reduceNumericalFunction(node, reducer);
+		return GeeProcessing.reduceNumericalFunction(node, [reducer, 'last']);
 	}
 
 }
