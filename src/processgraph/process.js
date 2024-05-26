@@ -9,7 +9,7 @@ export default class GeeProcess extends BaseProcess {
 	}
 
 	toJSON() {
-		return Utils.omitFromObject(super.toJSON(), ["executeSync", "async"]);
+		return Utils.omitFromObject(super.toJSON(), ["executeSync", "execute"]);
 	}
 
 	async execute(node) {

@@ -171,16 +171,16 @@ const GeeProcessing = {
 		const executionContext = node.getExecutionContext();
 		const reducer = ee.Reducer[reducerName]();
 		if (data instanceof ee.List) {
-			return data.reduce(reducer);
+			return ee.List(data.reduce(reducer));
 		}
 		else if (data instanceof ee.Array) {
 			// We assume ee.Array is always one-dimensional (similar to ee.List)
-			return data.reduce(reducer, [0]);
+			return ee.Array(data.reduce(reducer, [0]));
 		}
 		else if (executionContext && executionContext.type === "reducer") {
 			const dimType = executionContext.dimension.getType();
 			if (dimType === "bands") {
-				const imgReducer = img => copyProps(ee, img.reduce(reducer), img);
+				const imgReducer = img => copyProps(ee, ee.Image(img.reduce(reducer)), img);
 				if (data instanceof ee.ImageCollection) {
 					return data.map(imgReducer);
 				}

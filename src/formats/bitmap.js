@@ -136,7 +136,7 @@ export default class BitmapLike extends FileFormat {
     return dc2.setData(eeData);
   }
 
-  retrieve(ee, dc) {
+  async retrieve(ee, dc) {
 		const parameters = dc.getOutputFormatParameters();
     const img = dc.getData();
 
@@ -153,7 +153,7 @@ export default class BitmapLike extends FileFormat {
       region,
       crs
     };
-    return new Promise((resolve, reject) => {
+    return await new Promise((resolve, reject) => {
       img.getThumbURL(eeOpts, (url, err) => {
         if (err) {
           reject(err);

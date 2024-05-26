@@ -65,4 +65,8 @@ export default class FileFormat {
     return node.getResult();
   }
 
+  async retrieve(/*ee, dc*/) {
+    throw new Error('Not implemented');
+  }
+
 }

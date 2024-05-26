@@ -6,6 +6,6 @@ export default class array_create extends GeeProcess {
     const ee = node.ee;
     const data = node.getArgumentAsListEE("data", []);
     const repeat = node.getArgumentAsNumberEE("repeat", 1);
-    return ee.List.sequence(1, repeat).iterate((i, newList) => ee.List(newList).cat(data), ee.List([]));
+    return ee.List(ee.List.sequence(1, repeat).iterate((i, newList) => ee.List(newList).cat(data), ee.List([])));
   }
 }

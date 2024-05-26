@@ -36,7 +36,7 @@ export default class GTiffFormat extends FileFormat {
     return dc2.setData(GeeResults.toImageOrCollection(node, dc.getData(), allowMultiple));
   }
 
-  retrieve(ee, dc) {
+  async retrieve(ee, dc) {
 		const parameters = dc.getOutputFormatParameters();
 
 		let region = null;
@@ -59,7 +59,7 @@ export default class GTiffFormat extends FileFormat {
         crs,
         format
       };
-      return new Promise((resolve, reject) => {
+      return await new Promise((resolve, reject) => {
         data.getDownloadURL(eeOpts, (url, err) => {
           if (err) {
             reject(err);

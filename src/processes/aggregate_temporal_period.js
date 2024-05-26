@@ -1,9 +1,10 @@
 import GeeProcess from '../processgraph/process.js';
 import GeeClimateUtils from './utils/climate.js';
+import GeeProcessing from './utils/processing.js';
 
 export default class aggregate_temporal_period extends GeeProcess {
 
-	executeSync(node) {
+	async execute(node) {
 		const ee = node.ee;
 		// STEP 1: Get parameters and set some variables
 		const dc = node.getDataCubeWithEE('data');
@@ -51,8 +52,8 @@ export default class aggregate_temporal_period extends GeeProcess {
 		// STEP 4: Update data cube
 		dc.setData(ee.ImageCollection(aggregatedImages));
 
-		node.warn('Inspecting GEE objects (for dimension labels) via getInfo() is slow. Do not use this in production.');
-		dimension.setValues(newLabels.getInfo()); // ToDo: Make faster, getInfo is slow.
+		const temporalLabels = await GeeProcessing.evaluate(newLabels);
+		dimension.setValues(temporalLabels);
 
 		return dc;
 	}
