@@ -4,7 +4,7 @@ import HttpUtils from '../../utils/http.js';
 
 const GeeResults = {
 
-	toImageOrCollection(node, data, allowMultiple) {
+	toImageOrCollection(node, data, allowMultiple = false) {
 		const ee = node.ee;
 		const eeData = GeeTypes.toEE(node, data);
 		if (eeData instanceof ee.Image) {
@@ -42,7 +42,7 @@ const GeeResults = {
 	},
 
 	// Returns AxiosResponse (object) or URL (string)
-	async retrieve(node, allowMultiple = false) {
+	async retrieve(node) {
 		const logger = node.getLogger();
 		let dc = node.getResult();
 		const config = node.getServerContext();
@@ -56,7 +56,7 @@ const GeeResults = {
 			});
 		}
 
-		dc = format.preprocess(node, allowMultiple);
+		dc = format.preprocess(node);
 
 		let response = await format.retrieve(node.ee, dc);
 		if (typeof response === 'string') {

@@ -14,7 +14,7 @@ export default class JsonFormat extends FileFormat {
   }
 
   getGisDataTypes() {
-    return ['raster', 'vector', 'table', 'other'];
+    return ['vector', 'table', 'other'];
   }
 
   async retrieve(ee, dc) {

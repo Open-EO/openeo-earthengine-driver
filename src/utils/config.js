@@ -2,6 +2,7 @@ import GTiffFormat from "../formats/gtiff.js";
 import JpegFormat from "../formats/jpeg.js";
 import JsonFormat from "../formats/json.js";
 import PngFormat from "../formats/png.js";
+import GifFormat from "../formats/gif.js";
 import Utils from "./utils.js";
 
 export default class Config {
@@ -40,9 +41,10 @@ export default class Config {
 
 		this.inputFormats = {};
 		this.outputFormats = {
+			GTIFF: new GTiffFormat(),
 			PNG: new PngFormat(),
 			JPEG: new JpegFormat(),
-			GTIFF: new GTiffFormat(),
+			GIF: new GifFormat(),
 			JSON: new JsonFormat()
 		};
 

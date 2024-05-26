@@ -23,8 +23,9 @@ export const SCALE_PARAMETER = {
 
 export default class FileFormat {
 
-  constructor(title, parameters = {}) {
+  constructor(title, parameters = {}, description = '') {
     this.title = title;
+    this.description = description;
     this.parameters = parameters;
   }
 
@@ -42,6 +43,10 @@ export default class FileFormat {
     this.parameters[name] = parameter;
   }
 
+  removeParameter(name) {
+    delete this.parameters[name];
+  }
+
   getFileExtension(/*parameters*/) {
     return '';
   }
@@ -56,16 +61,21 @@ export default class FileFormat {
   toJSON() {
     return {
       title: this.title,
+      description: this.description,
       gis_data_types: this.getGisDataTypes(),
       parameters: this.parameters
     };
   }
 
-  preprocess(node/*, allowMultiple*/) {
+  preprocess(node) {
     return node.getResult();
   }
 
   async retrieve(/*ee, dc*/) {
+    throw new Error('Not implemented');
+  }
+
+  async export(/*ee, dc*/) {
     throw new Error('Not implemented');
   }
 

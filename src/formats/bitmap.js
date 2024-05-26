@@ -9,6 +9,13 @@ EPSGCODE_PARAMETER_BITMAP.default = 4326;
 EPSGCODE_PARAMETER_BITMAP.description += 'Defaults to WGS 84 (EPSG Code 4326).';
 
 const VISUALIZATION_PARAMETER = {
+  collectionRenderer: {
+    description: "For image collections (time series) a specific method combine the images into a single image can be chosen.",
+    type: "string",
+    enum: ["filmstrip", "mosaic"],
+    default: "mosaic",
+    optional: true
+  },
   bands: {
     description: "Band selection for visualization",
     oneOf: [
@@ -69,8 +76,8 @@ const VISUALIZATION_PARAMETER = {
 
 export default class BitmapLike extends FileFormat {
 
-  constructor(title) {
-    super(title);
+  constructor(title, description = '') {
+    super(title, {}, description);
     this.addParameter('epsgCode', EPSGCODE_PARAMETER_BITMAP);
     this.addParameter('size', SIZE_PARAMETER);
     this.addParameters(VISUALIZATION_PARAMETER);
@@ -84,7 +91,12 @@ export default class BitmapLike extends FileFormat {
     return null;
   }
 
-  preprocess(node, allowMultiple) {
+  allowMultiple(parameters) {
+    const renderer = parameters.collectionRenderer || 'mosaic';
+    return renderer === 'filmstrip';
+  }
+
+  preprocess(node) {
     const ee = node.ee;
     const dc = node.getResult();
 		const parameters = dc.getOutputFormatParameters();
@@ -111,7 +123,8 @@ export default class BitmapLike extends FileFormat {
 
     const visConfig = {min: 0, max: 255, bands, palette};
 
-    let eeData = GeeResults.toImageOrCollection(node, dc.getData(), allowMultiple)
+    const allowMultiple = this.allowMultiple(parameters);
+    let eeData = GeeResults.toImageOrCollection(node, dc.getData(), allowMultiple);
     if (eeData instanceof ee.ImageCollection) {
       eeData = eeData.map(img => img.visualize(visConfig));
     }
@@ -153,8 +166,9 @@ export default class BitmapLike extends FileFormat {
       region,
       crs
     };
+    const urlFunc = (img instanceof ee.ImageCollection) ? 'getFilmstripThumbURL' : 'getThumbURL';
     return await new Promise((resolve, reject) => {
-      img.getThumbURL(eeOpts, (url, err) => {
+      img[urlFunc](eeOpts, (url, err) => {
         if (err) {
           reject(err);
         }
