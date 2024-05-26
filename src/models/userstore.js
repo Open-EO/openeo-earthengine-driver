@@ -3,6 +3,7 @@ import DB from '../utils/db.js';
 import Errors from '../utils/errors.js';
 import crypto from "crypto";
 import HttpUtils from '../utils/http.js';
+import fse from 'fs-extra';
 
 export default class UserStore {
 
@@ -117,8 +118,50 @@ export default class UserStore {
 	async remove(name) {
 		let user = await this.get(name);
 		if (user !== null) {
-			await this.db.removeAsync({ name });
-			// todo: remove other data from db, remove files from job_files, service_files and user_files
+			await this.db.removeAsync({ _id: user._id});
+			console.log('- Removed user from database');
+
+			try {
+				const pgDb = this.serverContext.storedProcessGraphs().database();
+				await pgDb.removeAsync({user_id: user._id});
+				console.log('- Removed process graphs from database');
+			} catch (err) {
+				console.error('- Error removing process graphs:', err);
+			}
+
+			try {
+				const serviceModel = this.serverContext.webServices();
+				const serviceDb = serviceModel.database();
+				const services = await serviceDb.findAsync({user_id: user._id});
+				await serviceDb.removeAsync({user_id: user._id});
+				console.log('- Removed web services from database');
+
+				await Promise.all(services.map(service => serviceModel.removeLogsById(service._id)));
+				console.log('- Removed web services logs from file system');
+			} catch (err) {
+				console.error('- Error removing web services:', err);
+			}
+
+			try {
+				const jobModel = this.serverContext.jobs();
+				const jobDb = jobModel.database();
+				const jobs = await jobDb.findAsync({user_id: user._id});
+				await jobDb.removeAsync({user_id: user._id});
+				console.log('- Removed batch jobs from database');
+
+				await Promise.all(jobs.map(job => job.removeResults(job._id)));
+				console.log('- Removed batch job results and logs from file system');
+			} catch (err) {
+				console.error('- Error removing jobs:', err);
+			}
+
+			try {
+				const fileFolder = this.serverContext.files().getUserFolder(user._id);
+				await fse.remove(fileFolder);
+				console.log('- Removed user files from file system');
+			} catch (err) {
+				console.error('- Error removing user files:', err);
+			}
 		}
 	}
 
