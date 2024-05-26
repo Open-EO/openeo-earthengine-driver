@@ -1,3 +1,4 @@
+import API from '../utils/API.js';
 import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import GeeProcessing from '../processes/utils/processing.js';
@@ -46,7 +47,7 @@ export default class Data {
 		console.log(`Loaded ${num} collections (${Date.now()-a} ms)`);
 
 		const b = Date.now();
-		const pContext = this.context.processingContext({});
+		const pContext = this.context.processingContext();
 		this.ee = await pContext.connectGee(true);
 		console.log(`Established connection to GEE for STAC (${Date.now()-b} ms)`);
 
@@ -75,17 +76,17 @@ export default class Data {
 			links: [
 				{
 					rel: "self",
-					href: Utils.getApiUrl("/collections"),
+					href: API.getUrl("/collections"),
 					type: "application/json"
 				},
 				{
 					rel: "root",
-					href: Utils.getApiUrl("/"),
+					href: API.getUrl("/"),
 					type: "application/json"
 				},
 				{
 					rel: "alternate",
-					href: Utils.getApiUrl("/stac"),
+					href: API.getUrl("/stac"),
 					title: "STAC API",
 					type: "application/json"
 				},
@@ -245,36 +246,36 @@ export default class Data {
 		const links = [
 			{
 				rel: "self",
-				href: Utils.getApiUrl(`/collections/${id}/items`),
+				href: API.getUrl(`/collections/${id}/items`),
 				type: "application/geo+json"
 			},
 			{
 				rel: "root",
-				href: Utils.getApiUrl(`/`),
+				href: API.getUrl(`/`),
 				type: "application/json"
 			},
 			{
 				rel: "collection",
-				href: Utils.getApiUrl(`/collections/${id}`),
+				href: API.getUrl(`/collections/${id}`),
 				type: "application/json"
 			}
 		]
 		if (offset > 0) {
 			links.push({
 				rel: "first",
-				href: Utils.getApiUrl(`/collections/${id}/items?limit=${limit}&offset=0`),
+				href: API.getUrl(`/collections/${id}/items?limit=${limit}&offset=0`),
 				type: "application/geo+json"
 			});
 			links.push({
 				rel: "prev",
-				href: Utils.getApiUrl(`/collections/${id}/items?limit=${limit}&offset=${Math.max(0, offset - limit)}`),
+				href: API.getUrl(`/collections/${id}/items?limit=${limit}&offset=${Math.max(0, offset - limit)}`),
 				type: "application/geo+json"
 			});
 		}
 		if (hasNextPage) {
 			links.push({
 				rel: "next",
-				href: Utils.getApiUrl(`/collections/${id}/items?limit=${limit}&offset=${offset + limit}`),
+				href: API.getUrl(`/collections/${id}/items?limit=${limit}&offset=${offset + limit}`),
 				type: "application/geo+json"
 			});
 		}

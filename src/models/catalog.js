@@ -3,6 +3,7 @@ import fse from 'fs-extra';
 import path from 'path';
 import ItemStore from './itemstore.js';
 import { Storage } from '@google-cloud/storage';
+import API from '../utils/API.js';
 
 const STAC_DATACUBE_EXTENSION = "https://stac-extensions.github.io/datacube/v2.2.0/schema.json";
 
@@ -146,7 +147,7 @@ export default class DataCatalog {
 		const geeSchemas = collection.summaries['gee:schema'];
 		const jsonSchema = {
 			"$schema" : "https://json-schema.org/draft/2019-09/schema",
-			"$id" : Utils.getApiUrl(`/collections/${id}/queryables`),
+			"$id" : API.getUrl(`/collections/${id}/queryables`),
 			"title" : "Queryables",
 			"type" : "object",
 			"properties" : {},
@@ -202,27 +203,27 @@ export default class DataCatalog {
 			l = Object.assign({}, l);
 			switch(l.rel) {
 				case 'self':
-					l.href = Utils.getApiUrl("/collections/" + c.id);
+					l.href = API.getUrl("/collections/" + c.id);
 					break;
 				case 'parent':
-					l.href = Utils.getApiUrl("/");
+					l.href = API.getUrl("/");
 					break;
 				case 'root':
-					l.href = Utils.getApiUrl("/");
+					l.href = API.getUrl("/");
 					break;
 			}
 			return l;
 		});
 		c.links.push({
 			rel: 'http://www.opengis.net/def/rel/ogc/1.0/queryables',
-			href: Utils.getApiUrl(`/collections/${c.id}/queryables`),
+			href: API.getUrl(`/collections/${c.id}/queryables`),
 			title: "Queryables",
 			type: "application/schema+json"
 		});
 		if (c["gee:type"] === 'image_collection') {
 			c.links.push({
 				rel: 'items',
-				href: Utils.getApiUrl(`/collections/${c.id}/items`),
+				href: API.getUrl(`/collections/${c.id}/items`),
 				type: "application/geo+json"
 			});
 		}
@@ -278,29 +279,29 @@ export default class DataCatalog {
 		const links = [
 			{
 				rel: "self",
-				href: Utils.getApiUrl(`/collections/${collection}/items/${id}`),
+				href: API.getUrl(`/collections/${collection}/items/${id}`),
 				type: "application/geo+json"
 			},
 			{
 				rel: "root",
-				href: Utils.getApiUrl(`/`),
+				href: API.getUrl(`/`),
 				type: "application/json"
 			},
 			{
 				rel: "parent",
-				href: Utils.getApiUrl(`/collections/${collection}`),
+				href: API.getUrl(`/collections/${collection}`),
 				type: "application/json"
 			},
 			{
 				rel: "collection",
-				href: Utils.getApiUrl(`/collections/${collection}`),
+				href: API.getUrl(`/collections/${collection}`),
 				type: "application/json"
 			}
 		];
 
 		const assets = {
 			thumbnail: {
-				href: Utils.getApiUrl(`/thumbnails/${img.id}`),
+				href: API.getUrl(`/thumbnails/${img.id}`),
 				type: "image/jpeg",
 				roles: ["thumbnail", "overview"]
 			}
@@ -308,7 +309,7 @@ export default class DataCatalog {
 
 		if (this.serverContext.stacAssetDownload) {
 			assets.data = {
-				href: Utils.getApiUrl(`/assets/${img.id}`),
+				href: API.getUrl(`/assets/${img.id}`),
 				type: "image/tiff; application=geotiff",
 				roles: ["data"]
 			};

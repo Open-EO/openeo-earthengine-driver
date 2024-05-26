@@ -3,15 +3,15 @@ import ServerContext from '../src/utils/servercontext.js';
 import DB from '../src/utils/db.js';
 import ProcessingContext from '../src/utils/processingcontext.js';
 import GeeProcessGraph from '../src/processgraph/processgraph.js';
-import Utils from '../src/utils/utils.js';
+import API from '../src/utils/API.js';
 import fse from 'fs-extra';
 
 describe('Process Graph Registry', () => {
 	let serverContext, json;
 
 	beforeAll(async () => {
-		Utils.serverUrl = 'http://localhost:8080';
-		Utils.apiPath = '/v1';
+		API.origin = 'http://localhost:8080';
+		API.path = '/v1';
 
 		serverContext = new ServerContext();
 		await serverContext.collections().loadCatalog();
@@ -39,7 +39,7 @@ describe('Process Graph Registry', () => {
 		const req = {
 			user: serverContext.users().emptyUser()
 		};
-		const p = new GeeProcessGraph(json, new ProcessingContext(serverContext, req));
+		const p = new GeeProcessGraph(json, new ProcessingContext(serverContext, req.user));
 		const errors = await p.validate(false);
 		if (errors.count() > 0) {
 			console.log(errors.getMessage());

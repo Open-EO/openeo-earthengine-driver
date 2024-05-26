@@ -1,6 +1,7 @@
 import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
+import API from '../utils/API.js';
 
 export default class StoredProcessGraphs {
 
@@ -28,7 +29,7 @@ export default class StoredProcessGraphs {
 		if (!Utils.isObject(req.body)) {
 			throw new Errors.RequestBodyMissing();
 		}
-		const pg = new ProcessGraph(req.body, this.context.processingContext(req));
+		const pg = new ProcessGraph(req.body, this.context.processingContext(req.user));
 		const errors = await pg.validate(false);
 		res.send(200, {
 			errors: errors.toJSON()
@@ -65,7 +66,7 @@ export default class StoredProcessGraphs {
 			throw new Errors.PredefinedProcessExists();
 		}
 
-		const pg = new ProcessGraph(req.body, this.context.processingContext(req));
+		const pg = new ProcessGraph(req.body, this.context.processingContext(req.user));
 		await pg.validate();
 
 		const query = {
@@ -118,7 +119,7 @@ export default class StoredProcessGraphs {
 				pg.links = [];
 			}
 			pg.links.push({
-				href: Utils.getApiUrl("/udp/" + pg.token),
+				href: API.getUrl("/udp/" + pg.token),
 				rel: 'canonical',
 				type: 'application/json'
 			});

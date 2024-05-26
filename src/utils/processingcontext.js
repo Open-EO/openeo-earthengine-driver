@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 
 export default class ProcessingContext {
 
-	constructor(serverContext, user) {
+	constructor(serverContext, user = null) {
 		this.serverContext = serverContext;
 		this.user = user;
 		this.userId = user ? user._id : null;

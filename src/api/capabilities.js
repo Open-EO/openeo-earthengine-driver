@@ -1,3 +1,4 @@
+import API from '../utils/API.js';
 import Utils from '../utils/utils.js';
 const packageInfo = Utils.require('../../package.json');
 
@@ -38,7 +39,7 @@ export default class CapabilitiesAPI {
 	async getVersions(req, res) {
 		const versions = this.context.otherVersions.slice(0); // Make sure to clone it
 		versions.push({
-			url: Utils.getApiUrl(),
+			url: API.getUrl(),
 			production: this.context.production,
 			api_version: this.context.apiVersion
 		});
@@ -64,12 +65,12 @@ export default class CapabilitiesAPI {
 			links: [
 				{
 					rel: "self",
-					href: Utils.getApiUrl(`/`),
+					href: API.getUrl(`/`),
 					type: "application/json"
 				},
 				{
 					rel: "root",
-					href: Utils.getApiUrl(`/`),
+					href: API.getUrl(`/`),
 					type: "application/json"
 				},
 				{
@@ -107,19 +108,19 @@ export default class CapabilitiesAPI {
 				},
 				{
 					rel: 'version-history',
-					href: Utils.getServerUrl() + '/.well-known/openeo',
+					href: API.getBaseUrl() + '/.well-known/openeo',
 					type: 'application/json',
 					title: 'Supported API versions'
 				},
 				{
 					rel: "data",
-					href: Utils.getApiUrl("/collections"),
+					href: API.getUrl("/collections"),
 					type: "application/json",
 					title: "Datasets"
 				},
 				{
 					rel: "conformance",
-					href: Utils.getApiUrl("/conformance"),
+					href: API.getUrl("/conformance"),
 					type: "application/json",
 					title: "OGC Conformance classes"
 				}

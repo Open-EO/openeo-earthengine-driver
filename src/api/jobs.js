@@ -1,11 +1,12 @@
+import API from '../utils/API.js';
 import Utils from '../utils/utils.js';
 import HttpUtils from '../utils/http.js';
-import fse from 'fs-extra';
 import path from 'path';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
 import Logs from '../models/logs.js';
-import GeeResults from '../processes/utils/results.js';
+import runBatchJob from './worker/batchjob.js';
+import runSync, { getResultLogs } from './worker/sync.js';
 const packageInfo = Utils.require('../../package.json');
 
 export default class JobsAPI {
@@ -87,18 +88,11 @@ export default class JobsAPI {
 		res.json(logs);
 	}
 
-	async getResultLogs(user_id, id, log_level) {
-		const file = path.normalize(path.join('./storage/user_files/', user_id, 'sync_logs' , id + '.logs.db'));
-		const logs = new Logs(file, Utils.getApiUrl('/result/logs/' + id), log_level);
-		await logs.init();
-		return logs;
-	}
-
 	async getSyncLogFile(req, res) {
 		this.init(req);
 
 		try {
-			const logs = await this.getResultLogs(req.user._id, req.params.id, req.query.log_level);
+			const logs = await getResultLogs(req.user._id, req.params.id, req.query.log_level);
 			res.json(await logs.get(null, 0));
 		} catch (e) {
 			throw new Errors.NotFound();
@@ -131,55 +125,18 @@ export default class JobsAPI {
 			user_id: req.user._id
 		};
 
-		let logger = console;
-		try {
-
-			const job = await this.storage.findJob(query);
-			if (job.status === 'queued' || job.status === 'running') {
-				throw new Errors.JobNotFinished();
-			}
-
-			logger = await this.storage.getLogsById(job._id, job.log_level);
-
-			const promises = [];
-			promises.push(this.storage.removeResults(job._id, false));
-			promises.push(logger.clear());
-			await Promise.all(promises);
-
-			logger.info("Queueing batch job");
-			await this.storage.updateJobStatus(query, 'queued');
-
-			res.send(202);
-
-			// ToDo sync: move all the following to a worker #77
-			logger.info("Starting batch job");
-			await this.storage.updateJobStatus(query, 'running');
-
-			const context = this.context.processingContext(req);
-			const pg = new ProcessGraph(job.process, context, logger);
-			const resultNode = await pg.execute();
-
-			const response = await GeeResults.retrieve(resultNode, false);
-			// todo: implement exporting multiple images
-			// const response = await GeeResults.retrieve(resultNode, true);
-
-			const filePath = this.storage.getJobFile(job._id, String(Utils.generateHash()) + GeeResults.getFileExtension(resultNode));
-			logger.debug("Storing result to: " + filePath);
-			await fse.ensureDir(path.dirname(filePath));
-			await new Promise((resolve, reject) => {
-				const writer = fse.createWriteStream(filePath);
-				response.data.pipe(writer);
-				writer.on('error', reject);
-				writer.on('close', resolve);
-			});
-
-			logger.info("Finished");
-			this.storage.updateJobStatus(query, 'finished');
-		} catch(e) {
-			logger.error(e);
-			this.storage.updateJobStatus(query, 'error');
-			throw e;
+		const job = await this.storage.findJob(query);
+		if (job.status === 'queued' || job.status === 'running') {
+			throw new Errors.JobNotFinished();
 		}
+
+		const logger = await this.storage.getLogsById(job._id, job.log_level);
+		logger.info("Queueing batch job");
+		await this.storage.updateJobStatus(query, 'queued');
+
+		res.send(202);
+
+		await runBatchJob(this.context, this.storage, this.user, query);
 	}
 
 	async getJobResultsByToken(req, res) {
@@ -247,7 +204,7 @@ export default class JobsAPI {
 		const files = await Utils.walk(folder);
 		const links = [
 			{
-				href: Utils.getApiUrl("/results/" + job.token),
+				href: API.getUrl("/results/" + job.token),
 				rel: 'canonical',
 				type: 'application/json'
 			}
@@ -255,7 +212,7 @@ export default class JobsAPI {
 		const assets = {};
 		for(const file of files) {
 			const fileName = path.relative(folder, file.path);
-			const href = Utils.getApiUrl("/storage/" + job.token + "/" + fileName);
+			const href = API.getUrl("/storage/" + job.token + "/" + fileName);
 			const type = Utils.extensionToMediaType(fileName);
 			if (fileName === this.storage.logFileName) {
 				if (!pub) {
@@ -322,7 +279,7 @@ export default class JobsAPI {
 			if (this.storage.isFieldEditable(key)) {
 				switch(key) {
 					case 'process': {
-						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user));
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());
 						break;
@@ -362,7 +319,7 @@ export default class JobsAPI {
 			throw new Errors.RequestBodyMissing();
 		}
 
-		const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+		const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user));
 		pg.allowUndefinedParameters(false);
 		await pg.validate();
 
@@ -388,7 +345,7 @@ export default class JobsAPI {
 		await this.storage.getLogsById(job._id, job.log_level);
 
 		res.header('OpenEO-Identifier', job._id);
-		res.redirect(201, Utils.getApiUrl('/jobs/' + job._id), Utils.noop);
+		res.redirect(201, API.getUrl('/jobs/' + job._id), Utils.noop);
 	}
 
 	async postSyncResult(req, res) {
@@ -401,32 +358,14 @@ export default class JobsAPI {
 		// const plan = req.body.plan || this.context.plans.default;
 		// const budget = req.body.budget || null;
 		// ToDo: Validate data, handle budget and plan input #73
-
 		const id = Utils.timeId();
-		const log_level = Logs.checkLevel(req.body.log_level, this.context.defaultLogLevel);
-		const logger = await this.getResultLogs(req.user._id, id, log_level);
-		logger.debug("Starting to process request");
+    const log_level = Logs.checkLevel(req.body.log_level, this.context.defaultLogLevel);
 
-		const context = this.context.processingContext(req);
-		const pg = new ProcessGraph(req.body.process, context, logger);
-		pg.allowUndefinedParameters(false);
-		const errorList = await pg.validate(false);
-		if (errorList.count() > 0) {
-			errorList.getAll().forEach(error => logger.error(error));
-			throw errorList.first();
-		}
-		else {
-			logger.info("Validated without errors");
-		}
-
-		logger.debug("Executing processes");
-		const resultNode = await pg.execute();
-
-		const response = await GeeResults.retrieve(resultNode);
+		const response = await runSync(this.context, req.user, id, req.body.process, log_level);
 
 		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
 		res.header('OpenEO-Costs', 0);
-		const monitorUrl = Utils.getApiUrl('/result/logs/' + id) + '?log_level=' + log_level;
+		const monitorUrl = API.getUrl('/result/logs/' + id) + '?log_level=' + log_level;
 		res.header('Link', `<${monitorUrl}>; rel="monitor"`);
 		response.data.pipe(res);
 	}

@@ -8,8 +8,6 @@ import { createRequire } from "module";
 const Utils = {
 
 	crsBboxes: {},
-	serverUrl: null,
-	apiPath: null,
 
 	require(file) {
 		const require = createRequire(import.meta.url);
@@ -26,20 +24,6 @@ const Utils = {
 			list.push(i);
 		}
 		return list;
-	},
-
-	getApiUrl(endpoint = '') {
-		if (this.serverUrl === null || this.apiPath === null) {
-			console.warn('Server has not started yet, Utils.getApiUrl() is not available yet.');
-		}
-		return this.serverUrl + this.apiPath + endpoint;
-	},
-
-	getServerUrl() {
-		if (this.serverUrl === null || this.apiPath === null) {
-			console.warn('Server has not started yet, Utils.getServerUrl() is not available yet.');
-		}
-		return this.serverUrl;
 	},
 
 	toISODate(timestamp) {

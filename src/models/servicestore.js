@@ -1,7 +1,8 @@
-import Utils from '../utils/utils.js';
+import API from '../utils/API.js';
 import DB from '../utils/db.js';
 import path from 'path';
 import fse from 'fs-extra';
+import Errors from '../utils/errors.js';
 import Logs from './logs.js';
 
 export default class ServiceStore {
@@ -17,6 +18,14 @@ export default class ServiceStore {
 		return path.normalize(path.join(this.serviceFolder, serviceId + '.logs.db'))
 	}
 
+	async findService(query) {
+		const job = await this.db.findOneAsync(query);
+		if (job === null) {
+			throw new Errors.ServiceNotFound();
+		}
+		return job;
+	}
+
 	async removeLogsById(serviceId) {
 		await fse.unlink(this.getLogFile(serviceId));
 	}
@@ -24,7 +33,7 @@ export default class ServiceStore {
 	async getLogsById(serviceId, log_level) {
 		return await Logs.loadLogsFromCache(
 			this.getLogFile(serviceId),
-			Utils.getApiUrl('/services/' + serviceId + '/logs'),
+			API.getUrl('/services/' + serviceId + '/logs'),
 			log_level
 		);
 	}

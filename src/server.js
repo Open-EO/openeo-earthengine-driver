@@ -8,7 +8,7 @@ import ProcessGraphsAPI from './api/storedprocessgraphs.js';
 import ServicesAPI from './api/services.js';
 import UsersAPI from './api/users.js';
 
-import Utils from './utils/utils.js';
+import API from './utils/API.js';
 import ServerContext from './utils/servercontext.js';
 
 import fse from 'fs-extra';
@@ -143,9 +143,9 @@ class Server {
 			const port = process.env.PORT || this.serverContext.port;
 			this.http_server.listen(port, () => {
 				const exposePortStr = this.serverContext.exposePort !== 80 ? ":" + this.serverContext.exposePort : "";
-				Utils.serverUrl = "http://" + this.serverContext.hostname + exposePortStr;
-				Utils.apiPath = this.serverContext.apiPath;
-				console.info('HTTP-Server listening at %s', Utils.getApiUrl());
+				API.origin = "http://" + this.serverContext.hostname + exposePortStr;
+				API.path = this.serverContext.apiPath;
+				console.info('HTTP-Server listening at %s', API.getUrl());
 				resolve();
 			});
 		});
@@ -157,9 +157,9 @@ class Server {
 				const sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
 				this.https_server.listen(sslport, () => {
 					const exposePortStr = this.serverContext.ssl.exposePort !== 443 ? ":" + this.serverContext.ssl.exposePort : "";
-					Utils.serverUrl = "https://" + this.serverContext.hostname + exposePortStr;
-					Utils.apiPath = this.serverContext.apiPath;
-					console.info('HTTPS-Server listening at %s', Utils.getApiUrl());
+					API.origin = "https://" + this.serverContext.hostname + exposePortStr;
+					API.path = this.serverContext.apiPath;
+					console.info('HTTPS-Server listening at %s', API.getUrl());
 					resolve();
 				});
 			}

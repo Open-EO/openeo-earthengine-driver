@@ -1,8 +1,9 @@
+import API from '../utils/API.js';
 import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
 import Logs from '../models/logs.js';
-import GeeResults from '../processes/utils/results.js';
+import runWebService from './worker/webservice.js';
 
 export default class ServicesAPI {
 
@@ -32,43 +33,18 @@ export default class ServicesAPI {
 		const query = {
 			// Tiles are always public!
 			// user_id: req.user._id,
-			_id: req.params.service_id
+			_id: req.params.service_id,
+			// Check that the service is enabled
+			enabled: true
 		};
-		const db = this.storage.database();
-		const service = await db.findOneAsync(query);
-		if (service === null) {
-			throw new Errors.ServiceNotFound();
-		}
+		const xyz = [req.params.x, req.params.y, req.params.z];
 
-		let logger;
-		try {
-			logger = await this.storage.getLogsById(req.params.service_id, service.log_level);
-		} catch (e) {
-			console.error(e);
-			logger = console;
-		}
+		const service = await this.storage.findService(query);
+		const logger = await this.storage.getLogsById(service._id, service.log_level);
 
 		try {
-			const rect = this.storage.calculateXYZRect(req.params.x, req.params.y, req.params.z);
-			const context = this.context.processingContext(req);
-			// Update user id to the user id, which stored the job.
-			// See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
-			context.setUserId(service.user_id);
-
-			const pg = new ProcessGraph(service.process, context, logger);
-			pg.setAdditionalConstraint('load_collection', 'spatial_extent', rect);
-			const resultNode = await pg.execute();
-			const cube = resultNode.getResult();
-
-			cube.setOutputFormatParameter('size', '256x256');
-			cube.setSpatialExtent(rect);
-			cube.setCrs(3857);
-			if (!cube.getOutputFormat()) {
-				cube.setOutputFormat('png');
-			}
-
-			const response = await GeeResults.retrieve(resultNode);
-			logger.debug(`Streaming tile ${req.params.x}/${req.params.y}/${req.params.z} to client`);
+			const response = await runWebService(this.context, this.storage, req.user, query, xyz);
+			logger.debug(`Streaming tile ${xyz.join("/")} to client`);
 			let contentType = 'application/octet-stream';
 			if (typeof response.headers['content-type'] !== 'undefined') {
 				contentType = response.headers['content-type'];
@@ -142,7 +118,7 @@ export default class ServicesAPI {
 			if (this.storage.isFieldEditable(key)) {
 				switch(key) {
 					case 'process': {
-						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user));
 						// ToDo 1.0: Correctly handle service paramaters #79
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());
@@ -212,7 +188,7 @@ export default class ServicesAPI {
 			throw new Errors.ServiceUnsupported();
 		}
 
-		const pg = new ProcessGraph(req.body.process, this.context.processingContext(req));
+		const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user));
 		// ToDo 1.0: Correctly handle service paramaters #79
 		pg.allowUndefinedParameters(false);
 		await pg.validate();
@@ -240,7 +216,7 @@ export default class ServicesAPI {
 		await this.storage.getLogsById(service._id, service.log_level);
 
 		res.header('OpenEO-Identifier', service._id);
-		res.redirect(201, Utils.getApiUrl('/services/' + service._id), Utils.noop);
+		res.redirect(201, API.getUrl('/services/' + service._id), Utils.noop);
 	}
 
 	async getServiceLogs(req, res) {
@@ -273,7 +249,7 @@ export default class ServicesAPI {
 	}
 
 	makeServiceUrl(service) {
-		return Utils.getApiUrl('/' + service.type.toLowerCase() + '/' + service._id + "/{z}/{x}/{y}");
+		return API.getUrl('/' + service.type.toLowerCase() + '/' + service._id + "/{z}/{x}/{y}");
 	}
 
 }

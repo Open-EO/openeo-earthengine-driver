@@ -74,8 +74,8 @@ export default class ServerContext extends Config {
 		return (typeof service_type === 'string' && Utils.isObject(this.services[service_type.toLowerCase()]));
 	}
 
-	processingContext(req) {
-		return new ProcessingContext(this, req.user);
+	processingContext(user) {
+		return new ProcessingContext(this, user);
 	}
 
 }

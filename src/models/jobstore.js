@@ -1,4 +1,4 @@
-import Utils from '../utils/utils.js';
+import API from '../utils/API.js';
 import DB from '../utils/db.js';
 import fse from 'fs-extra';
 import path from 'path';
@@ -60,7 +60,7 @@ export default class JobStore {
 	async getLogsById(jobId, log_level) {
 		return await Logs.loadLogsFromCache(
 			this.getLogFile(jobId),
-			Utils.getApiUrl('/jobs/' + jobId + '/logs'),
+			API.getUrl('/jobs/' + jobId + '/logs'),
 			log_level
 		);
 	}
