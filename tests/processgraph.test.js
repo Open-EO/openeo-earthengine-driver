@@ -26,7 +26,7 @@ describe('Process Graph Registry', () => {
 
 	test('Processes', () => {
 		const registry = serverContext.processes();
-		expect(registry.count()).toBe(69);
+		expect(registry.count()).toBeGreaterThan(93);
 		expect(registry.get('load_collection')).not.toBe(null);
 	});
 

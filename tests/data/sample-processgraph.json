@@ -89,7 +89,7 @@
         "data": {
           "from_node": "reduce_time"
         },
-        "format": "GTIFF-THUMB"
+        "format": "GTIFF"
       },
       "result": true
     }
