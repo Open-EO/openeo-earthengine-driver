@@ -1,0 +1,73 @@
+{
+    "id": "sort",
+    "summary": "Sort data",
+    "description": "Sorts an array into ascending (default) or descending order.\n\n**Remarks:**\n\n* The ordering of ties is implementation-dependent.\n* Temporal strings can *not* be compared based on their string representation due to the time zone/time-offset representations.",
+    "categories": [
+        "arrays",
+        "sorting"
+    ],
+    "parameters": [
+        {
+            "name": "data",
+            "description": "An array with data to sort.",
+            "schema": {
+                "type": "array",
+                "items": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "type": "string",
+                            "format": "date-time",
+                            "subtype": "date-time"
+                        },
+                        {
+                            "type": "string",
+                            "format": "date",
+                            "subtype": "date"
+                        }
+                    ]
+                }
+            }
+        },
+        {
+            "name": "asc",
+            "description": "The default sort order is ascending, with smallest values first. To sort in reverse (descending) order, set this parameter to `false`.",
+            "schema": {
+                "type": "boolean"
+            },
+            "default": true,
+            "optional": true
+        }
+    ],
+    "returns": {
+        "description": "The sorted array.",
+        "schema": {
+            "type": "array",
+            "items": {
+                "anyOf": [
+                    {
+                        "type": "number"
+                    },
+                    {
+                        "type": "null"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date-time",
+                        "subtype": "date-time"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "subtype": "date"
+                    }
+                ]
+            }
+        }
+    }
+}
