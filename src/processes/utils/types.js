@@ -191,11 +191,9 @@ const GeeTypes = {
 			return data;
 		}
 		else if (data instanceof ee.List) {
+			const isEmpty = ee.Number(data.length()).eq(0);
 			// see https://issuetracker.google.com/issues/340814270
-			// const isEmpty = ee.Number(data.length()).eq(0);
-			// const pixelType = ee.Algorithms.If(isEmpty, defaultType);
-			// return ee.Array(data, pixelType);
-			return ee.Array(data);
+			return ee.Array(ee.Algorithms.If(isEmpty, ee.Array(data, defaultType), ee.Array(data)));
 		}
 		else if (data instanceof ee.Dictionary) {
 			return data.toArray();
