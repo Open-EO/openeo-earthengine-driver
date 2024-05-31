@@ -365,12 +365,9 @@ export default class Data {
 		if (band) {
 			img = img.select(band);
 		}
-		const crs = 'EPSG:4326';
 		const geeURL = await new Promise((resolve, reject) => {
 			img.getDownloadURL({
 				dimensions: this.context.stacAssetDownloadSize,
-				region: img.geometry(null, crs),
-				crs,
 				filePerBand: false,
 				format: 'GEO_TIFF'
 			}, (url, err) => {
@@ -386,7 +383,12 @@ export default class Data {
 			});
 		});
 
-		return res.redirect(geeURL, Utils.noop);
+		const filename = id.replace(/\//g, '_') + (band ? '_' + band: '') + '.tiff';
+		const response = await HttpUtils.stream(geeURL, 'download_stac_asset');
+		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
+		res.header('Content-Disposition', `attachment; filename="${filename}"`);
+		response.data.pipe(res);
+
 	}
 
 }

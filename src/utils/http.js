@@ -38,7 +38,7 @@ const HttpUtils = {
 		}
 	},
 
-	stream(opts) {
+	stream(opts, process="save_result") {
 		if (typeof opts === 'string') {
 			opts = {
 				method: 'get',
@@ -67,7 +67,7 @@ const HttpUtils = {
 						}
 						reject(new Errors.EarthEngineError({
 							message,
-							process: 'save_result'
+							process
 						}))
 					});
 				});
