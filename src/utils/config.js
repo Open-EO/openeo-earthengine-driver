@@ -64,7 +64,7 @@ export default class Config {
 		this.diskUsagePath = null;
 
 		this.defaultLogLevel = "info";
-		this.stacAssetDownload = false;
+		this.stacAssetDownloadSize = 2000; // > 0 and <= 2000
 
 		const config = Utils.require('../../config.json');
 		for(const c in config) {

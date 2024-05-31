@@ -5,7 +5,13 @@ import ItemStore from './itemstore.js';
 import { Storage } from '@google-cloud/storage';
 import API from '../utils/API.js';
 
-const STAC_DATACUBE_EXTENSION = "https://stac-extensions.github.io/datacube/v2.2.0/schema.json";
+const STAC_EXTENSIONS = {
+	cube: "https://stac-extensions.github.io/datacube/v2.2.0/schema.json",
+	eo: "https://stac-extensions.github.io/eo/v1.1.0/schema.json",
+	proj: "https://stac-extensions.github.io/projection/v1.1.0/schema.json",
+	raster: "https://stac-extensions.github.io/raster/v1.1.0/schema.json",
+	version: "https://stac-extensions.github.io/version/v1.0.0/schema.json"
+};
 
 // Rough auto mapping for common band names until GEE lists them.
 // Optimized for Copernicus S2 data
@@ -50,6 +56,43 @@ const geeSchemaMapping = {
 			type: "integer"
 		}
 	}
+};
+
+const geeDataTypeMapping = {
+	int: [
+		{
+			name: "int8",
+			min: -128,
+			max: 127
+		},
+		{
+			name: "uint8",
+			min: 0,
+			max: 255
+		},
+		{
+			name: "int16",
+			min: -32768,
+			max: 32767,
+		},
+		{
+			name: "uint16",
+			min: 0,
+			max: 65535,
+		},
+		{
+			name: "int32",
+			min: -2147483648,
+			max: 2147483647,
+		},
+		{
+			name: "uint32",
+			min: 0,
+			max: 4294967295,
+		}
+	],
+	float: "float32",
+	double: "float64"
 };
 
 export default class DataCatalog {
@@ -144,7 +187,7 @@ export default class DataCatalog {
 			return null;
 		}
 
-		const geeSchemas = collection.summaries['gee:schema'];
+		const geeSchemas = collection.summaries['gee:schema'] || [];
 		const jsonSchema = {
 			"$schema" : "https://json-schema.org/draft/2019-09/schema",
 			"$id" : API.getUrl(`/collections/${id}/queryables`),
@@ -238,6 +281,7 @@ export default class DataCatalog {
 			"system:time_start",
 			"system:time_end"
 		];
+		const extensions = new Set();
 
 		const id = img.properties["system:index"];
 		let geometry = null;
@@ -250,16 +294,28 @@ export default class DataCatalog {
 			bbox = Utils.geoJsonBbox(geometry, true);
 		}
 
-		const bands = img.bands.map(b => ({
-			name: b.id,
-			// crs, , crs_transform, dimensions, data_type
-		}));
+		const geeSchemas = collection.summaries['gee:schema'] || [];
+		const stacPropertyMapping = {};
+		for (const schema of geeSchemas) {
+			if (schema.stac_name) {
+				stacPropertyMapping[schema.name] = schema.stac_name;
+			}
+		}
 
 		const properties = {};
 		for(const key in img.properties) {
 			if (!omitProperties.includes(key)) {
 				let newKey;
-				if (!key.includes(":")) {
+				if (stacPropertyMapping[key]) {
+					newKey = stacPropertyMapping[key];
+					if (newKey.includes(":")) {
+						const extPrefix = newKey.split(":")[0];
+						if (STAC_EXTENSIONS[extPrefix]) {
+							extensions.add(STAC_EXTENSIONS[extPrefix]);
+						}
+					}
+				}
+				else if (!key.includes(":")) {
 					newKey = `gee:${key.toLowerCase()}`;
 				}
 				else {
@@ -268,18 +324,37 @@ export default class DataCatalog {
 				properties[newKey] = img.properties[key];
 			}
 		}
+
 		properties.datetime = Utils.toISODate(img.properties["system:time_start"]);
 		if (img.properties["system:time_end"]) {
 			properties.start_datetime = Utils.toISODate(img.properties["system:time_start"]);
 			properties.end_datetime = Utils.toISODate(img.properties["system:time_end"]);
 		}
+
+		extensions.add(STAC_EXTENSIONS.version);
 		properties.version = String(img.version);
-		properties["eo:bands"] = bands;
+
+		const hasBands = Array.isArray(img.bands) && img.bands.length > 0;
+		const collectionBands = collection.summaries['eo:bands'] || [];
+		// Is it a spectral band or SAR?
+		const isEO = hasBands && collectionBands.some(band => {
+			const keys = Object.keys(band);
+			console.log(keys);
+			return keys.includes("common_name") || keys.includes("center_wavelength") || keys.includes("full_width_half_max");
+		})
+		const bandMap = {};
+		for(const band of collectionBands) {
+			bandMap[band.name] = band;
+		}
+		if (hasBands && isEO) {
+			extensions.add(STAC_EXTENSIONS.eo);
+			properties["eo:bands"] = img.bands.map(band => Object.assign({name: band.id}, bandMap[band.id]));
+		}
 
 		const links = [
 			{
 				rel: "self",
-				href: API.getUrl(`/collections/${collection}/items/${id}`),
+				href: API.getUrl(`/collections/${collection.id}/items/${id}`),
 				type: "application/geo+json"
 			},
 			{
@@ -289,12 +364,12 @@ export default class DataCatalog {
 			},
 			{
 				rel: "parent",
-				href: API.getUrl(`/collections/${collection}`),
+				href: API.getUrl(`/collections/${collection.id}`),
 				type: "application/json"
 			},
 			{
 				rel: "collection",
-				href: API.getUrl(`/collections/${collection}`),
+				href: API.getUrl(`/collections/${collection.id}`),
 				type: "application/json"
 			}
 		];
@@ -307,7 +382,75 @@ export default class DataCatalog {
 			}
 		};
 
-		if (this.serverContext.stacAssetDownload) {
+		if (hasBands) {
+			for (const imgBand of img.bands) {
+				// Base asset for the band
+				const asset = {
+					href: API.getUrl(`/assets/${img.id}?band=${imgBand.id}`),
+					type: "image/tiff; application=geotiff",
+					roles: ["data"]
+				};
+
+				// Projection
+				if (imgBand.crs_transform) {
+					extensions.add(STAC_EXTENSIONS.proj);
+					asset["proj:transform"] = imgBand.crs_transform;
+				}
+				if (imgBand.dimensions) {
+					extensions.add(STAC_EXTENSIONS.proj);
+					const largerIndex = imgBand.dimensions[0] > imgBand.dimensions[1] ? 0 : 1;
+					const ratio = imgBand.dimensions[largerIndex] / this.serverContext.stacAssetDownloadSize;
+					const x = Math.round(imgBand.dimensions[0] / ratio);
+					const y = Math.round(imgBand.dimensions[1] / ratio);
+					asset["proj:shape"] = [y, x];
+				}
+				if (imgBand.crs) {
+					if (imgBand.crs.startsWith("EPSG:")) {
+						extensions.add(STAC_EXTENSIONS.proj);
+						asset["proj:epsg"] = parseInt(imgBand.crs.substring(5), 10);
+					}
+					else {
+						asset["gee:crs"] = imgBand.crs;
+					}
+				}
+
+				const baseBand = bandMap[imgBand.id] || {};
+				// Move gsd to asset
+				if (baseBand.gsd) {
+					asset.gsd = baseBand.gsd;
+				}
+
+				// EO bands
+				if (baseBand && isEO) {
+					asset["eo:bands"] = [
+						Utils.pickFromObject(baseBand, ["name", "description", "common_name", "center_wavelength", "full_width_half_max"])
+					];
+				}
+
+				// Raster bands
+				let rasterBand = baseBand;
+				if (isEO) {
+					rasterBand = {
+						name: rasterBand.name,
+						scale: rasterBand["gee:scale"],
+						offset: rasterBand["gee:offset"]
+					};
+				}
+				const dataType = this.getDataTypeFromPixelType(imgBand.data_type);
+				if (dataType) {
+					rasterBand.data_type = dataType;
+				}
+				// It should contain more than just a name property
+				if (Utils.size(rasterBand) > 1) {
+					extensions.add(STAC_EXTENSIONS.raster);
+					asset["raster:bands"] = [rasterBand];
+				}
+
+				// Add asset
+				assets[imgBand.id] = asset;
+			}
+		}
+		else {
 			assets.data = {
 				href: API.getUrl(`/assets/${img.id}`),
 				type: "image/tiff; application=geotiff",
@@ -317,21 +460,35 @@ export default class DataCatalog {
 
 		const stac = {
 			stac_version: "1.0.0",
-			stac_extensions: [
-				"https://stac-extensions.github.io/eo/v1.1.0/schema.json",
-				"https://stac-extensions.github.io/version/v1.0.0/schema.json",
-			],
+			stac_extensions: Array.from(extensions),
 			type: "Feature",
 			id,
 			bbox,
 			geometry,
 			properties,
-			collection,
+			collection: collection.id,
 			links,
 			assets
 		};
 
 		return stac;
+	}
+
+	getDataTypeFromPixelType(geeDataType) {
+		if (Utils.isObject(geeDataType) && geeDataType.type === "PixelType") {
+			const types = geeDataTypeMapping[geeDataType.precision];
+			if (Array.isArray(types)) {
+				for(const type of types) {
+					if (geeDataType.min === type.min && geeDataType.max === type.max) {
+						return type.name;
+					}
+				}
+			}
+			else if (typeof types === 'string') {
+				return types;
+			}
+		}
+		return null;
 	}
 
 	fixCollectionOnce(c) {
@@ -376,7 +533,7 @@ export default class DataCatalog {
 			}
 		}
 
-		c.stac_extensions = [STAC_DATACUBE_EXTENSION];
+		c.stac_extensions = [STAC_EXTENSIONS.cube];
 
 		if (!c.extent || !c.extent.spatial || !c.extent.spatial.bbox) {
 			console.log("Invalid spatial extent for " + c.id);

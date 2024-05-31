@@ -37,9 +37,7 @@ export default class Data {
 		server.addEndpoint('get', '/collections/{collection_id}/queryables', this.getCollectionQueryables.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/items', this.getCollectionItems.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/items/{item_id}', this.getCollectionItemById.bind(this));
-		if (this.context.stacAssetDownload) {
-			server.addEndpoint('get', ['/assets/{asset_id}', '/assets/*'], this.getAssetById.bind(this));
-		}
+		server.addEndpoint('get', ['/assets/{asset_id}', '/assets/*'], this.getAssetById.bind(this));
 		server.addEndpoint('get', ['/thumbnails/{asset_id}', '/thumbnails/*'], this.getThumbnailById.bind(this));
 
 		const a = Date.now();
@@ -143,7 +141,7 @@ export default class Data {
 			id = req.params['*'].replace(/\/items$/, '');
 		}
 
-		const collection = this.catalog.getData(id);
+		const collection = this.catalog.getData(id, true);
 		if (collection === null) {
 			throw new Errors.CollectionNotFound();
 		}
@@ -241,7 +239,7 @@ export default class Data {
 			.catch(console.error);
 
 		// Convert to STAC
-		const features = items.map(item => this.catalog.convertImageToStac(item, id));
+		const features = items.map(item => this.catalog.convertImageToStac(item, collection));
 		// Add links
 		const links = [
 			{
@@ -299,7 +297,7 @@ export default class Data {
 			id = match[2];
 		}
 
-		const collection = this.catalog.getData(cid);
+		const collection = this.catalog.getData(cid, true);
 		if (collection === null) {
 			throw new Errors.CollectionNotFound();
 		}
@@ -316,7 +314,7 @@ export default class Data {
 			}
 		}
 
-		res.json(this.catalog.convertImageToStac(metadata, cid));
+		res.json(this.catalog.convertImageToStac(metadata, collection));
 	}
 
 	async getThumbnailById(req, res) {
@@ -339,7 +337,7 @@ export default class Data {
 			const img = this.ee.Image(id);
 			const geeURL = await new Promise((resolve, reject) => {
 				img.visualize(vis.band_vis).getThumbURL({
-					dimensions: 1000,
+					dimensions: 600,
 					crs: 'EPSG:3857',
 					format: 'png'
 				}, (geeUrl, err) => {
@@ -361,12 +359,16 @@ export default class Data {
 
 	async getAssetById(req, res) {
 		const id = req.params['*'];
+		const band = req.query.band || null;
 
-		const img = this.ee.Image(id);
+		let img = this.ee.Image(id);
+		if (band) {
+			img = img.select(band);
+		}
 		const crs = 'EPSG:4326';
 		const geeURL = await new Promise((resolve, reject) => {
 			img.getDownloadURL({
-				dimensions: 1000,
+				dimensions: this.context.stacAssetDownloadSize,
 				region: img.geometry(null, crs),
 				crs,
 				filePerBand: false,
