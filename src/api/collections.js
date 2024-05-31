@@ -385,6 +385,10 @@ export default class Data {
 
 		const filename = id.replace(/\//g, '_') + (band ? '_' + band: '') + '.tiff';
 		const response = await HttpUtils.stream(geeURL, 'download_stac_asset');
+		console.log(response);
+		if (response?.headers?.['content-length']) {
+			res.header('Content-Length', response?.headers?.['content-length']);
+		}
 		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
 		res.header('Content-Disposition', `attachment; filename="${filename}"`);
 		response.data.pipe(res);
