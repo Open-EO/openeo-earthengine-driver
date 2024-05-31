@@ -385,7 +385,6 @@ export default class Data {
 
 		const filename = id.replace(/\//g, '_') + (band ? '_' + band: '') + '.tiff';
 		const response = await HttpUtils.stream(geeURL, 'download_stac_asset');
-		console.log(response);
 		if (response?.headers?.['content-length']) {
 			res.header('Content-Length', response?.headers?.['content-length']);
 		}

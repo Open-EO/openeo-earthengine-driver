@@ -339,7 +339,6 @@ export default class DataCatalog {
 		// Is it a spectral band or SAR?
 		const isEO = hasBands && collectionBands.some(band => {
 			const keys = Object.keys(band);
-			console.log(keys);
 			return keys.includes("common_name") || keys.includes("center_wavelength") || keys.includes("full_width_half_max");
 		})
 		const bandMap = {};
