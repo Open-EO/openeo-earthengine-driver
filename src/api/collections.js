@@ -37,7 +37,9 @@ export default class Data {
 		server.addEndpoint('get', '/collections/{collection_id}/queryables', this.getCollectionQueryables.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/items', this.getCollectionItems.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/items/{item_id}', this.getCollectionItemById.bind(this));
-		server.addEndpoint('get', ['/assets/{asset_id}', '/assets/*'], this.getAssetById.bind(this));
+		if (this.context.stacAssetDownloadSize > 0) {
+			server.addEndpoint('get', ['/assets/{asset_id}', '/assets/*'], this.getAssetById.bind(this));
+		}
 		server.addEndpoint('get', ['/thumbnails/{asset_id}', '/thumbnails/*'], this.getThumbnailById.bind(this));
 
 		const a = Date.now();

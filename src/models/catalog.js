@@ -381,7 +381,7 @@ export default class DataCatalog {
 			}
 		};
 
-		if (hasBands) {
+		if (hasBands && this.serverContext.stacAssetDownloadSize > 0) {
 			for (const imgBand of img.bands) {
 				// Base asset for the band
 				const asset = {
@@ -449,7 +449,7 @@ export default class DataCatalog {
 				assets[imgBand.id] = asset;
 			}
 		}
-		else {
+		else if (this.serverContext.stacAssetDownloadSize > 0) {
 			assets.data = {
 				href: API.getUrl(`/assets/${img.id}`),
 				type: "image/tiff; application=geotiff",
