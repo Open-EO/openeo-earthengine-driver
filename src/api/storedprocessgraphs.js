@@ -71,11 +71,11 @@ export default class StoredProcessGraphs {
 
 		const query = {
 			id: req.params.process_graph_id,
-			user_id: req.user._id,
-			// Set the token for public access
-			token: Utils.generateHash(64)
+			user_id: req.user._id
 		};
-		const data = Object.assign({}, req.body, query);
+		// Set the token for public access
+		const token = { token: Utils.generateHash(64) };
+		const data = Object.assign({}, req.body, query, token);
 		const db = this.storage.database();
 		const { numAffected } = await db.updateAsync(query, data, { upsert: true });
 		if (numAffected === 0) {
