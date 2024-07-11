@@ -41,7 +41,7 @@ export default class JobStore {
 	async findJob(query) {
 		const job = await this.db.findOneAsync(query);
 		if (job === null) {
-			throw new Errors.JobNotFound();
+			throw new Errors.JobNotFound({identifier: query._id});
 		}
 		return job;
 	}
@@ -68,7 +68,7 @@ export default class JobStore {
 	async updateJobStatus(query, status) {
 		const { numAffected } = await this.db.updateAsync(query, { $set: { status: status } });
 		if (numAffected === 0) {
-			throw new Errors.JobNotFound();
+			throw new Errors.JobNotFound({identifier: query._id});
 		}
 	}
 

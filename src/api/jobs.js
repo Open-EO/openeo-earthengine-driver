@@ -109,7 +109,7 @@ export default class JobsAPI {
 		const db = this.storage.database();
 		const numRemoved = await db.removeAsync(query);
 		if (numRemoved === 0) {
-			throw new Errors.JobNotFound();
+			throw new Errors.JobNotFound({identifier: req.params.job_id});
 		}
 		else {
 			await this.storage.removeResults(req.params.job_id);
