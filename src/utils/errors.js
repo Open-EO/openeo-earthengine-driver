@@ -16,7 +16,6 @@ for(const name in errors) {
 		statusCode: errors[name].http || 400,
 		message: errors[name].message,
 		originalError: null,
-		native: true,
 		toJSON: function() {
 			return {
 				id: Utils.timeId(),
@@ -67,7 +66,10 @@ restify_errors.wrap = function(e, callback) {
 		e = e.first();
 	}
 
-	if (CommonUtils.isObject(e) && e.native === true) {
+	if (CommonUtils.isObject(e) && e.constructor.name === 'ProcessGraphError') {
+		return new restify_errors.Internal(e); // An error from openeo-js-processgraphs
+	}
+	else if (CommonUtils.isObject(e) && e.constructor.name in errors) {
 		return e; // An openEO error
 	}
 	else {
