@@ -1,13 +1,12 @@
 import API from '../utils/API.js';
 import Utils from '../utils/utils.js';
 import HttpUtils from '../utils/http.js';
-import path from 'path';
 import Errors from '../utils/errors.js';
 import ProcessGraph from '../processgraph/processgraph.js';
 import Logs from '../models/logs.js';
 import runBatchJob from './worker/batchjob.js';
 import runSync, { getResultLogs } from './worker/sync.js';
-const packageInfo = Utils.require('../../package.json');
+import fse from 'fs-extra';
 
 export default class JobsAPI {
 
@@ -43,12 +42,12 @@ export default class JobsAPI {
 		if (!p) {
 			throw new Errors.NotFound();
 		}
-		await this.deliverFile(res, p);
-	}
 
-	async deliverFile(res, filepath) {
-		await HttpUtils.isFile(filepath);
-		await HttpUtils.sendFile(filepath, res);
+		const stat = await HttpUtils.getFile(p);
+		const bytes = stat.size;
+
+		const range = HttpUtils.parseRangeHeader(req.headers.range, bytes);
+		await HttpUtils.sendFile(p, res, range);
 	}
 
 	init(req) {
@@ -176,7 +175,7 @@ export default class JobsAPI {
 		res.send(204);
 	}
 
-	async getJobRultsByQuery(query, pub, req, res) {
+	async getJobRultsByQuery(query, publish, req, res) {
 		const job = await this.storage.findJob(query);
 		const partial = typeof req.query.partial !== 'undefined';
 		if (job.status === 'error') {
@@ -200,60 +199,28 @@ export default class JobsAPI {
 			throw new Errors.JobNotStarted();
 		}
 
-		const folder = this.storage.getJobFolder(job._id);
-		const files = await Utils.walk(folder);
-		const links = [
-			{
-				href: API.getUrl("/results/" + job.token),
-				rel: 'canonical',
-				type: 'application/json'
-			}
-		];
-		const assets = {};
-		for(const file of files) {
-			const fileName = path.relative(folder, file.path);
-			const href = API.getUrl("/storage/" + job.token + "/" + fileName);
-			const type = Utils.extensionToMediaType(fileName);
-			if (fileName === this.storage.logFileName) {
-				if (!pub) {
-					links.push({
-						href: href,
-						rel: 'monitor',
-						type: type,
-						title: 'Batch Job Log File'
-					});
-				}
-			}
-			else {
-				assets[fileName] = {
-					href: href,
-					roles: ["data"],
-					type: type,
-					"file:size": file.stat.size,
-					created: file.stat.birthtime,
-					updated: file.stat.mtime
-				};
-			}
-		}
-		const item = {
-			stac_version: packageInfo.stac_version,
-			stac_extensions: [
-				"https://stac-extensions.github.io/file/v2.0.0/schema.json",
-			],
-			id: job._id,
-			type: "Feature",
-			geometry: null,
-			properties: {
-				datetime: null,
-				title: job.title || null,
-				description: job.description || null,
-				created: job.created,
-				updated: job.updated,
-				'openeo:status': job.status
-			},
-			assets: assets,
-			links: links
+		const makeStorageUrl = obj => {
+			obj.href = API.getUrl("/storage/" + job.token + "/" + obj.href);
+			return obj;
 		};
+    const stacpath = this.storage.getJobFile(job._id, 'stac.json');
+		const item = await fse.readJSON(stacpath);
+
+		if (publish) {
+			// Don't include log file in public responses
+			item.links = item.links.filter(link => link.rel !== 'monitor');
+		}
+		item.links = item.links.map(link => makeStorageUrl(link));
+		item.links.push({
+			href: API.getUrl("/results/" + job.token),
+			rel: 'canonical',
+			type: 'application/json'
+		});
+
+		for(const key in item.assets) {
+			item.assets[key] = makeStorageUrl(item.assets[key]);
+		}
+
 		res.send(item);
 	}
 

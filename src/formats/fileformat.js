@@ -21,12 +21,19 @@ export const SCALE_PARAMETER = {
   minimum: 1
 };
 
+export const NAME_PARAMETER = {
+  type: 'string',
+  description: 'Name of the exported assets and files, without file extension. Defaults to a random hash.',
+  default: null
+};
+
 export default class FileFormat {
 
   constructor(title, parameters = {}, description = '') {
     this.title = title;
     this.description = description;
     this.parameters = parameters;
+    this.addParameter('name', NAME_PARAMETER);
   }
 
   getParameters() {
@@ -67,8 +74,8 @@ export default class FileFormat {
     };
   }
 
-  preprocess(node) {
-    return node.getResult();
+  preprocess(context, dc/*, logger*/) {
+    return dc;
   }
 
   async retrieve(/*ee, dc*/) {

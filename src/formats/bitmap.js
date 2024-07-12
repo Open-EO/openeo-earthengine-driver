@@ -96,9 +96,8 @@ export default class BitmapLike extends FileFormat {
     return renderer === 'filmstrip';
   }
 
-  preprocess(node) {
-    const ee = node.ee;
-    const dc = node.getResult();
+  preprocess(context, dc, logger) {
+    const ee = context.ee;
 		const parameters = dc.getOutputFormatParameters();
 
 		if (dc.hasXY() && parameters.epsgCode >= 1000) {
@@ -117,14 +116,14 @@ export default class BitmapLike extends FileFormat {
     else {
       bands = dc.getEarthEngineBands().slice(0, 1);
       if (bands[0] !== GeeProcessing.BAND_PLACEHOLDER) {
-        node.getLogger().warn("No valid set of bands specified in the output parameters. The first band will be used for a gray-value visualisation.");
+        logger.warn("No valid set of bands specified in the output parameters. The first band will be used for a gray-value visualisation.");
       }
     }
 
     const visConfig = {min: 0, max: 255, bands, palette};
 
     const allowMultiple = this.allowMultiple(parameters);
-    let eeData = GeeResults.toImageOrCollection(node, dc.getData(), allowMultiple);
+    let eeData = GeeResults.toImageOrCollection(ee, logger, dc.getData(), allowMultiple);
     if (eeData instanceof ee.ImageCollection) {
       eeData = eeData.map(img => img.visualize(visConfig));
     }
@@ -132,7 +131,7 @@ export default class BitmapLike extends FileFormat {
       eeData = eeData.visualize(visConfig);
     }
 
-    const dc2 = new DataCube(node.ee, dc);
+    const dc2 = new DataCube(ee, dc);
     if (dc2.hasT() && !allowMultiple) {
       dc2.dimT().drop();
     }

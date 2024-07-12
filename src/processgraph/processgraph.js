@@ -12,6 +12,15 @@ export default class GeeProcessGraph extends ProcessGraph {
 		this.context = context;
 		this.logger = logger;
 		this.constraints = {};
+		this.results = [];
+	}
+
+	addResult(dc) {
+		this.results.push(dc);
+	}
+
+	getResults() {
+		return this.results;
 	}
 
 	getContext() {

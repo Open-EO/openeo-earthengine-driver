@@ -1,6 +1,4 @@
 import Utils from './utils.js';
-import HttpUtils from './http.js';
-import Errors from './errors.js';
 import fse from 'fs-extra';
 
 export default class ProcessingContext {
@@ -25,7 +23,7 @@ export default class ProcessingContext {
 		else if (this.serverContext.serviceAccountCredentialsFile) {
 			console.log("Authenticate via private key");
 			if (!this.eePrivateKey) {
-				this.eePrivateKey = await fse.readJson(this.serverContext.serviceAccountCredentialsFile);
+				this.eePrivateKey = await fse.readJSON(this.serverContext.serviceAccountCredentialsFile);
 			}
 			if (!Utils.isObject(this.eePrivateKey)) {
 				console.error("ERROR: GEE private key not found.");
@@ -60,18 +58,6 @@ export default class ProcessingContext {
 
 	getJob(jobId) { // returns promise
 		return this.serverContext.jobs().getById(jobId);
-	}
-
-	isFileFromWorkspace(file) { // returns promise
-		const p = this.workspace.getPath(this.userId, file);
-		if (!p) {
-			throw new Errors.FilePathInvalid();
-		}
-		return Promise.resolve(HttpUtils.isFile(p));
-	}
-
-	readFileFromWorkspace(file) { // returns promise
-		return this.serverContext.files().getFileContents(this.userId, file);
 	}
 
 	getVariable(id) {

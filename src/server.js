@@ -176,7 +176,7 @@ class Server {
 	}
 
 	injectCorsHeader(req, res, next) {
-		if (!req.headers['origin']) {
+		if (!req.headers.origin) {
 			return next();
 		}
 

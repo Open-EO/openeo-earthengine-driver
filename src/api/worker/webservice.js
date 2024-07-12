@@ -17,16 +17,19 @@ export default async function run(config, storage, user, query, xyz) {
     const pg = new ProcessGraph(service.process, context, logger);
     pg.setAdditionalConstraint('load_collection', 'spatial_extent', rect);
     const resultNode = await pg.execute();
-    const cube = resultNode.getResult();
+    if (pg.getResults().length > 1) {
+      logger.warn("Multiple results can't be processed in synchronous mode. Only the result from the result node will be returned.");
+    }
+    const dc = resultNode.getResult();
 
-    cube.setOutputFormatParameter('size', '256x256');
-    cube.setSpatialExtent(rect);
-    cube.setCrs(3857);
-    if (!cube.getOutputFormat()) {
-      cube.setOutputFormat('png');
+    dc.setOutputFormatParameter('size', '256x256');
+    dc.setSpatialExtent(rect);
+    dc.setCrs(3857);
+    if (!dc.getOutputFormat()) {
+      dc.setOutputFormat('png');
     }
 
-    return await GeeResults.retrieve(resultNode);
+    return await GeeResults.retrieve(context, dc, logger);
   } catch(e) {
     logger.error(e);
     throw e;

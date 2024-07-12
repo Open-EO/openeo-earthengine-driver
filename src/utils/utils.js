@@ -62,6 +62,10 @@ const Utils = {
 		return CommonUtils.pickFromObject(obj, pick);
 	},
 
+	equals(a, b) {
+		return CommonUtils.equals(a, b);
+	},
+
 	generateHash(length = 16) {
 		return crypto.randomBytes(Math.ceil(length/2)).toString('hex').slice(0,length);
 	},

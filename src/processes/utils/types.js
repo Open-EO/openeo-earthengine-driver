@@ -20,10 +20,9 @@ See also: https://issuetracker.google.com/issues/325444873
 
 const GeeTypes = {
 
-	jsToEE(node, data) {
-		const ee = node.ee;
+	jsToEE(ee, logger, data) {
 		if (typeof data === 'boolean') {
-			node.warn("Implicit conversion of a boolean value to an integer.");
+			logger.warn("Implicit conversion of a boolean value to an integer.");
 			return data ? ee.Number(1) : ee.Number(0);
 		}
 		else if (typeof data === 'number') {
@@ -44,9 +43,7 @@ const GeeTypes = {
 		return null;
 	},
 
-	toEE(node, data) {
-		const ee = node.ee;
-		const logger = node.getLogger();
+	toEE(ee, logger, data) {
 		if (GeeTypes.isEarthEngineType(ee, data, false)) {
 			return data;
 		}
@@ -80,7 +77,7 @@ const GeeTypes = {
 			return null;
 		}
 
-		const eeData = GeeTypes.jsToEE(node, data);
+		const eeData = GeeTypes.jsToEE(ee, logger, data);
 		if (eeData !== null) {
 			return eeData;
 		}

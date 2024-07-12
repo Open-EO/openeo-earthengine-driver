@@ -136,7 +136,7 @@ export default class GeeProcessGraphNode extends ProcessGraphNode {
 	}
 
 	convertToEE(name, data) {
-		const eeData = GeeTypes.toEE(this, data);
+		const eeData = GeeTypes.toEE(this.ee, this.getLogger(), data);
 		if (typeof eeData === 'undefined') {
 			throw this.invalidArgument(name, 'Datatype not supported by Google Earth Engine');
 		}

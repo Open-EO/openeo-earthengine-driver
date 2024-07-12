@@ -113,7 +113,7 @@ export default class DataCatalog {
 			const name = path.basename(file.name);
 			if (file.isFile() && name.endsWith('.json')) {
 				try {
-					const obj = await fse.readJson(this.dataFolder + name);
+					const obj = await fse.readJSON(this.dataFolder + name);
 					if (obj.type !== 'Collection') {
 						return;
 					}

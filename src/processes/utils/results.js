@@ -1,12 +1,10 @@
 import GeeTypes from './types.js';
-import Errors from '../../utils/errors.js';
 import HttpUtils from '../../utils/http.js';
 
 const GeeResults = {
 
-	toImageOrCollection(node, data, allowMultiple = false) {
-		const ee = node.ee;
-		const eeData = GeeTypes.toEE(node, data);
+	toImageOrCollection(ee, logger, data, allowMultiple = false) {
+		const eeData = GeeTypes.toEE(ee, logger, data);
 		if (eeData instanceof ee.Image) {
 			return eeData;
 		}
@@ -15,7 +13,7 @@ const GeeResults = {
 				return eeData;
 			}
 			else {
-				node.getLogger().warn("Compositing the image collection to a single image using `ee.Image.mosaic()`.");
+				logger.warn("Compositing the image collection to a single image using `ee.Image.mosaic()`.");
 				return data.mosaic();
 			}
 		}
@@ -28,9 +26,7 @@ const GeeResults = {
 		}
 	},
 
-	getFileExtension(node) {
-		const config = node.getServerContext();
-		const dc = node.getResult();
+	getFileExtension(dc, config) {
 		const format = dc.getOutputFormat();
 		const parameters = dc.getOutputFormatParameters();
 		const formatSpec = config.outputFormats[format];
@@ -42,23 +38,14 @@ const GeeResults = {
 	},
 
 	// Returns AxiosResponse (object) or URL (string)
-	async retrieve(node) {
-		const logger = node.getLogger();
-		let dc = node.getResult();
-		const config = node.getServerContext();
+	async retrieve(context, dc, logger) {
+		const ee = context.ee;
+		const config = context.server();
 
-		const formatName = dc.getOutputFormat();
-		const format = config.getOutputFormat(formatName);
-		if (!format) {
-			throw new Errors.FileTypeInvalid({
-				type: formatName,
-				types: Object.keys(config.outputFormats)
-			});
-		}
+		const format = config.getOutputFormat(dc.getOutputFormat());
+		dc = format.preprocess(context, dc, logger);
 
-		dc = format.preprocess(node);
-
-		let response = await format.retrieve(node.ee, dc);
+		let response = await format.retrieve(ee, dc);
 		if (typeof response === 'string') {
 			logger.debug("Downloading data from Google: " + response);
 			response = await HttpUtils.stream(response);

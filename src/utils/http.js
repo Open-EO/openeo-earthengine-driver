@@ -24,11 +24,11 @@ const HttpUtils = {
 		return response.data;
 	},
 
-	async isFile(filepath) {
+	async getFile(filepath) {
 		try {
 			const stat = await fse.stat(filepath);
 			if (stat.isFile()) {
-				return true;
+				return stat;
 			}
 			else {
 				throw new Errors.FileOperationUnsupported();
@@ -97,10 +97,18 @@ const HttpUtils = {
 		});
 	},
 
-	sendFile(filepath, res) {
+	sendFile(filepath, res, range = null) {
 		res.header('Content-Type', Utils.extensionToMediaType(filepath));
+		const options = {};
+		if (!range !== null) {
+			options.start = range.start;
+			options.end = range.end;
+			res.status(206);
+			res.header('Content-Range', `bytes ${range.start}-${range.end}/${range.maxLength}`);
+			res.header('Content-Length', range.length);
+		}
 		return new Promise((resolve, reject) => {
-			const stream = fse.createReadStream(filepath);
+			const stream = fse.createReadStream(filepath, options);
 			stream.pipe(res);
 			stream.on('error', reject);
 			stream.on('close', () => {
@@ -108,6 +116,42 @@ const HttpUtils = {
 				resolve();
 			});
 		});
+	},
+
+	parseRangeHeader(header, maxLength) {
+		if (typeof header !== 'string') {
+				return null;
+		}
+
+		const match = header.match(/^bytes=(\d*)-(\d*)$/);
+		if (!match) {
+			throw new Errors.RangeNotSatisfiableError();
+		}
+
+		let [start, end] = match.slice(1).map(x => parseInt(x, 10));
+		const lastByte = maxLength - 1;
+		if (end > lastByte) {
+			end = lastByte;
+		}
+		const result = {
+				start: isNaN(start) ? 0 : start,
+				end: isNaN(end) ? lastByte : end,
+				maxLength
+		};
+		if (!isNaN(start) && isNaN(end)) {
+			result.end = lastByte;
+		}
+		else if (isNaN(start) && !isNaN(end)) {
+			result.start = maxLength - end;
+			result.end = lastByte;
+		}
+		result.length = result.end - result.start + 1;
+
+		if (result.start > result.end || result.start >= maxLength) {
+			throw new Errors.RangeNotSatisfiableError();
+		}
+
+		return result;
 	}
 
 };

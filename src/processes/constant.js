@@ -5,7 +5,7 @@ export default class constant extends GeeProcess {
 
   executeSync(node) {
     const jsValue = node.getArgument('x');
-    const eeValue = GeeTypes.jsToEE(node, jsValue);
+    const eeValue = GeeTypes.jsToEE(node.ee, node.getLogger(), jsValue);
     if (eeValue !== null) {
       return eeValue;
     }

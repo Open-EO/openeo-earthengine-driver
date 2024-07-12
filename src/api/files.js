@@ -115,14 +115,14 @@ export default class FilesAPI {
 
 	async deleteFileByPath(req, res) {
 		const p = this.init(req);
-		await HttpUtils.isFile(p);
+		await HttpUtils.getFile(p);
 		await fse.unlink(p);
 		res.send(204);
 	}
 
 	async getFileByPath(req, res) {
 		const p = this.init(req);
-		await HttpUtils.isFile(p);
+		await HttpUtils.getFile(p);
 		await new Promise((resolve, reject) => {
 			const stream = fse.createReadStream(p);
 			res.setHeader('Content-Type', 'application/octet-stream');

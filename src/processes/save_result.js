@@ -27,6 +27,7 @@ export default class save_result extends GeeProcess {
 			node.getArgument("format"),
 			node.getArgument("options", {})
 		);
+		node.getProcessGraph().addResult(data);
 		return data;
 	}
 

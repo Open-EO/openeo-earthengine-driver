@@ -44,7 +44,7 @@ export default class FileWorkspace {
 			throw new Errors.FilePathInvalid();
 		}
 
-		await HttpUtils.isFile(filepath);
+		await HttpUtils.getFile(filepath);
 		return await fse.readFile(filepath);
 	}
 
