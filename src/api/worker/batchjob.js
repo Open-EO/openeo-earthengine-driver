@@ -92,13 +92,14 @@ async function createSTAC(storage, job, results) {
 
     if (datacube.hasT()) {
       const t = datacube.dimT();
-      const extent = t.getExtent();
-      if (extent) {
-        if (extent[0] < startTime || startTime === null) {
-          startTime = extent[0];
+      const min = t.min();
+      const max = t.max();
+      if (min !== null && max !== null) {
+        if (min < startTime || startTime === null) {
+          startTime = min;
         }
-        if (extent[1] > endTime || endTime === null) {
-          endTime = extent[1];
+        if (max > endTime || endTime === null) {
+          endTime = max;
         }
       }
     }
