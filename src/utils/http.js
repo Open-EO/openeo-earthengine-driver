@@ -100,7 +100,7 @@ const HttpUtils = {
 	sendFile(filepath, res, range = null) {
 		res.header('Content-Type', Utils.extensionToMediaType(filepath));
 		const options = {};
-		if (!range !== null) {
+		if (Utils.isObject(range)) {
 			options.start = range.start;
 			options.end = range.end;
 			res.status(206);
