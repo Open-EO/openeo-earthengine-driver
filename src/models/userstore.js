@@ -117,51 +117,56 @@ export default class UserStore {
 
 	async remove(name) {
 		let user = await this.get(name);
+		let user_id;
 		if (user !== null) {
-			await this.db.removeAsync({ _id: user._id});
+			user_id = user._id;
+			await this.db.removeAsync({ _id: user_id});
 			console.log('- Removed user from database');
+		}
+		else {
+			user_id = name;
+		}
 
-			try {
-				const pgDb = this.serverContext.storedProcessGraphs().database();
-				await pgDb.removeAsync({user_id: user._id});
-				console.log('- Removed process graphs from database');
-			} catch (err) {
-				console.error('- Error removing process graphs:', err);
-			}
+		try {
+			const pgDb = this.serverContext.storedProcessGraphs().database();
+			await pgDb.removeAsync({user_id});
+			console.log('- Removed process graphs from database');
+		} catch (err) {
+			console.error('- Error removing process graphs:', err);
+		}
 
-			try {
-				const serviceModel = this.serverContext.webServices();
-				const serviceDb = serviceModel.database();
-				const services = await serviceDb.findAsync({user_id: user._id});
-				await serviceDb.removeAsync({user_id: user._id});
-				console.log('- Removed web services from database');
+		try {
+			const serviceModel = this.serverContext.webServices();
+			const serviceDb = serviceModel.database();
+			const services = await serviceDb.findAsync({user_id});
+			await serviceDb.removeAsync({user_id});
+			console.log('- Removed web services from database');
 
-				await Promise.all(services.map(service => serviceModel.removeLogsById(service._id)));
-				console.log('- Removed web services logs from file system');
-			} catch (err) {
-				console.error('- Error removing web services:', err);
-			}
+			await Promise.all(services.map(service => serviceModel.removeLogsById(service._id)));
+			console.log('- Removed web services logs from file system');
+		} catch (err) {
+			console.error('- Error removing web services:', err);
+		}
 
-			try {
-				const jobModel = this.serverContext.jobs();
-				const jobDb = jobModel.database();
-				const jobs = await jobDb.findAsync({user_id: user._id});
-				await jobDb.removeAsync({user_id: user._id});
-				console.log('- Removed batch jobs from database');
+		try {
+			const jobModel = this.serverContext.jobs();
+			const jobDb = jobModel.database();
+			const jobs = await jobDb.findAsync({user_id});
+			await jobDb.removeAsync({user_id});
+			console.log('- Removed batch jobs from database');
 
-				await Promise.all(jobs.map(job => job.removeResults(job._id)));
-				console.log('- Removed batch job results and logs from file system');
-			} catch (err) {
-				console.error('- Error removing jobs:', err);
-			}
+			await Promise.all(jobs.map(job => job.removeResults(job._id)));
+			console.log('- Removed batch job results and logs from file system');
+		} catch (err) {
+			console.error('- Error removing jobs:', err);
+		}
 
-			try {
-				const fileFolder = this.serverContext.files().getUserFolder(user._id);
-				await fse.remove(fileFolder);
-				console.log('- Removed user files from file system');
-			} catch (err) {
-				console.error('- Error removing user files:', err);
-			}
+		try {
+			const fileFolder = this.serverContext.files().getUserFolder(user_id);
+			await fse.remove(fileFolder);
+			console.log('- Removed user files from file system');
+		} catch (err) {
+			console.error('- Error removing user files:', err);
 		}
 	}
 

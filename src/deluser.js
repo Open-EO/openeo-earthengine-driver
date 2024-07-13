@@ -17,13 +17,12 @@ const stop = (code) => {
 const username = await rl.question('Enter a username: ');
 const exists = await users.exists(username);
 if (!exists) {
-	console.error("User with the given name does not exist.");
-	stop(1);
+	console.warn('User might be a Google User, trying to delete the corresponding data');
 }
 
 try {
 	await users.remove(username);
-	console.log('User deleted!');
+	console.log('User (data) deleted!');
 	stop(0);
 } catch (err) {
 	console.error(err);

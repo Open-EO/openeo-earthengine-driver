@@ -13,6 +13,7 @@
 		"adduser": "node src/adduser.js",
 		"deluser": "node src/deluser.js",
 		"users": "node src/users.js",
+		"stats": "node src/stats.js",
 		"test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles",
 		"debug": "node --nolazy --inspect src/server.js",
 		"lint": "eslint src/"
