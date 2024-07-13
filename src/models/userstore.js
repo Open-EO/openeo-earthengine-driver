@@ -121,8 +121,8 @@ export default class UserStore {
 		if (user !== null) {
 			user_id = user._id;
 			if (!onlyData) {
-				await this.db.removeAsync({ _id: user_id});
-				console.log('- Removed user from database');
+				const count = await this.db.removeAsync({ _id: user_id});
+				console.log(`- Removed ${count} user from database`);
 			}
 		}
 		else {
@@ -131,8 +131,8 @@ export default class UserStore {
 
 		try {
 			const pgDb = this.serverContext.storedProcessGraphs().database();
-			await pgDb.removeAsync({user_id});
-			console.log('- Removed process graphs from database');
+			const pgCount = await pgDb.removeAsync({user_id});
+			console.log(`- Removed ${pgCount} process graphs from database`);
 		} catch (err) {
 			console.error('- Error removing process graphs:', err);
 		}
@@ -141,8 +141,8 @@ export default class UserStore {
 			const serviceModel = this.serverContext.webServices();
 			const serviceDb = serviceModel.database();
 			const services = await serviceDb.findAsync({user_id});
-			await serviceDb.removeAsync({user_id});
-			console.log('- Removed web services from database');
+			const serviceCount = await serviceDb.removeAsync({user_id});
+			console.log(`- Removed ${serviceCount} web services from database`);
 
 			await Promise.all(services.map(service => serviceModel.removeLogsById(service._id)));
 			console.log('- Removed web services logs from file system');
@@ -154,8 +154,8 @@ export default class UserStore {
 			const jobModel = this.serverContext.jobs();
 			const jobDb = jobModel.database();
 			const jobs = await jobDb.findAsync({user_id});
-			await jobDb.removeAsync({user_id});
-			console.log('- Removed batch jobs from database');
+			const jobCount = await jobDb.removeAsync({user_id});
+			console.log(`- Removed ${jobCount} batch jobs from database`);
 
 			await Promise.all(jobs.map(job => jobModel.removeResults(job._id)));
 			console.log('- Removed batch job results and logs from file system');
