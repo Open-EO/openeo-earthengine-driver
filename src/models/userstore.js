@@ -115,13 +115,15 @@ export default class UserStore {
 		return await this.db.findAsync({}).sort({ name: 1 });
 	}
 
-	async remove(name) {
+	async remove(name, onlyData = false) {
 		let user = await this.get(name);
 		let user_id;
 		if (user !== null) {
 			user_id = user._id;
-			await this.db.removeAsync({ _id: user_id});
-			console.log('- Removed user from database');
+			if (!onlyData) {
+				await this.db.removeAsync({ _id: user_id});
+				console.log('- Removed user from database');
+			}
 		}
 		else {
 			user_id = name;
@@ -155,7 +157,7 @@ export default class UserStore {
 			await jobDb.removeAsync({user_id});
 			console.log('- Removed batch jobs from database');
 
-			await Promise.all(jobs.map(job => job.removeResults(job._id)));
+			await Promise.all(jobs.map(job => jobModel.removeResults(job._id)));
 			console.log('- Removed batch job results and logs from file system');
 		} catch (err) {
 			console.error('- Error removing jobs:', err);
