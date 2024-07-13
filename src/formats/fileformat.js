@@ -27,6 +27,12 @@ export const NAME_PARAMETER = {
   default: null
 };
 
+export const METADATA_PARAMETER = {
+  type: 'object',
+  description: 'Additional STAC metadata to be added to the exported asset(s).',
+  default: {}
+};
+
 export default class FileFormat {
 
   constructor(title, parameters = {}, description = '') {
@@ -34,6 +40,7 @@ export default class FileFormat {
     this.description = description;
     this.parameters = parameters;
     this.addParameter('name', NAME_PARAMETER);
+    this.addParameter('metadata', METADATA_PARAMETER);
   }
 
   getParameters() {

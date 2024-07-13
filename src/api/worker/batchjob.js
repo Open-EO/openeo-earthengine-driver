@@ -80,7 +80,7 @@ async function createSTAC(storage, job, results) {
   for(const { filepath, datacube } of results) {
     const filename = path.basename(filepath);
     const stat = await fse.stat(filepath);
-    const asset = {
+    let asset = {
       href: path.relative(folder, filepath),
       roles: ["data"],
       type: Utils.extensionToMediaType(filepath),
@@ -119,7 +119,8 @@ async function createSTAC(storage, job, results) {
       }
     }
 
-    assets[filename] = asset;
+    const params = datacube.getOutputFormatParameters();
+    assets[filename] = Object.assign(asset, params.metadata);
   }
   const item = {
     stac_version: packageInfo.stac_version,
