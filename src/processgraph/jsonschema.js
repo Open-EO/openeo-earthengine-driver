@@ -18,7 +18,7 @@ export default class GeeJsonSchemaValidator extends JsonSchemaValidator {
 	}
 
 	async validateJobId(data) {
-		const job = await this.context.getJob(data);
+		const job = await this.context.server().jobs().getById(data);
 		if (job === null) {
 			throw new ajv.ValidationError([{
 				message: "Job doesn't exist."
@@ -46,7 +46,7 @@ export default class GeeJsonSchemaValidator extends JsonSchemaValidator {
 	}
 
 	async validateProcessGraphId(data) {
-		const pg = await this.context.getStoredProcessGraph(data);
+		const pg = await this.context.server().storedProcessGraphs().getById(data);
 		if (pg === null) {
 			throw new ajv.ValidationError([{
 				message: "Stored process graph doesn't exist."

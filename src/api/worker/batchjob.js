@@ -19,33 +19,64 @@ export default async function run(config, storage, user, query) {
     await Promise.all(cleanupTasks);
 
     logger.info("Starting batch job");
+
     await storage.updateJobStatus(query, 'running');
 
-    const context = config.processingContext(user);
+    const jobfolder = storage.getJobFolder(job._id);
+    await fse.ensureDir(path.dirname(jobfolder));
+
+    const context = config.processingContext(user, job);
     const pg = new ProcessGraph(job.process, context, logger);
     await pg.execute();
 
-    const computeTasks = pg.getResults().map(async (datacube) => {
-      const response = await GeeResults.retrieve(context, datacube, logger);
-      const params = datacube.getOutputFormatParameters();
-      const filename = (params.name || String(Utils.generateHash())) + GeeResults.getFileExtension(datacube, config);
-      const filepath = storage.getJobFile(job._id, filename);
-      logger.debug("Storing result to: " + filepath);
-      await fse.ensureDir(path.dirname(filepath));
-      await new Promise((resolve, reject) => {
-        const writer = fse.createWriteStream(filepath);
-        response.data.pipe(writer);
-        writer.on('error', reject);
-        writer.on('close', resolve);
-      });
-      return { filepath, datacube };
+    const computeTasks = pg.getResults().map(async (dc) => {
+      const format = config.getOutputFormat(dc.getOutputFormat());
+      const datacube = format.preprocess(GeeResults.BATCH, context, dc, logger);
+
+      if (format.canExport()) {
+        const tasks = await format.export(context.ee, dc, context.getResource());
+        storage.addTasks(job, tasks);
+        context.startTaskMonitor();
+        const filepath = await new Promise((resolve, reject) => {
+          setInterval(async () => {
+            const updatedJob = await storage.getById(job._id, job.user_id);
+            if (!updatedJob) {
+              reject(new Error("Job was deleted"));
+            }
+            if (['canceled', 'error', 'finished'].includes(updatedJob.status)) {
+              // todo: resolve google drive URLs
+              resolve(job.googleDriveResults);
+            }
+          }, 10000);
+        });
+        return { filepath, datacube };
+      }
+      else {
+        const response = await format.retrieve(context.ee, dc);
+        const params = datacube.getOutputFormatParameters();
+        const filename = (params.name || String(Utils.generateHash())) + GeeResults.getFileExtension(datacube, config);
+        const filepath = storage.getJobFile(job._id, filename);
+        await new Promise((resolve, reject) => {
+          const writer = fse.createWriteStream(filepath);
+          response.data.pipe(writer);
+          writer.on('error', reject);
+          writer.on('close', resolve);
+        });
+        return { filepath, datacube };
+      }
     });
 
     await Promise.all(computeTasks);
 
     const results = [];
     for (const task of computeTasks) {
-      results.push(await task);
+      const { filepath, datacube } = await task;
+      if (Array.isArray(filepath)) {
+        filepath.forEach(fp => results.push({ filepath: fp, datacube }));
+      }
+      else {
+        results.push({ filepath, datacube });
+      }
     }
 
     const item = await createSTAC(storage, job, results);
@@ -53,6 +84,7 @@ export default async function run(config, storage, user, query) {
     await fse.writeJSON(stacpath, item, {spaces: 2});
 
     logger.info("Finished");
+    // todo: set to error is any task failed
     storage.updateJobStatus(query, 'finished');
   } catch(e) {
     logger.error(e);
@@ -78,17 +110,36 @@ async function createSTAC(storage, job, results) {
   let endTime = null;
   const extents = [];
   for(const { filepath, datacube } of results) {
-    const filename = path.basename(filepath);
-    const stat = await fse.stat(filepath);
-    let asset = {
-      href: path.relative(folder, filepath),
-      roles: ["data"],
-      type: Utils.extensionToMediaType(filepath),
-      title: filename,
-      "file:size": stat.size,
-      created: stat.birthtime,
-      updated: stat.mtime
-    };
+    if (!filepath) {
+      continue;
+    }
+
+    let asset;
+    let filename;
+    if (Utils.isUrl(filepath)) {
+      let url = new URL(filepath);
+      console.log(url);
+      filename = path.basename(url.pathname || url.hash.substring(1));
+      asset = {
+        href: filepath,
+        roles: ["data"],
+//      type: Utils.extensionToMediaType(filepath),
+        title: filename
+      };
+    }
+    else {
+      filename = path.basename(filepath);
+      const stat = await fse.stat(filepath);
+      asset = {
+        href: path.relative(folder, filepath),
+        roles: ["data"],
+        type: Utils.extensionToMediaType(filepath),
+        title: filename,
+        "file:size": stat.size,
+        created: stat.birthtime,
+        updated: stat.mtime
+      };
+    }
 
     if (datacube.hasT()) {
       const t = datacube.dimT();

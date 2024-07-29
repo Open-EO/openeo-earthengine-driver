@@ -1,3 +1,4 @@
+import HttpUtils from "../utils/http.js";
 import Utils from "../utils/utils.js";
 import BitmapLike from "./bitmap.js";
 
@@ -53,7 +54,7 @@ export default class GifFormat extends BitmapLike {
           reject('Download URL provided by Google Earth Engine is empty.');
         }
         else {
-          resolve(url);
+          resolve(HttpUtils.stream(url));
         }
       });
     });

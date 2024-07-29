@@ -10,6 +10,8 @@ import JobStore from '../models/jobstore.js';
 import UserStore from '../models/userstore.js';
 import ServiceStore from '../models/servicestore.js';
 
+import fse from 'fs-extra';
+
 export default class ServerContext extends Config {
 
 	constructor() {
@@ -21,6 +23,23 @@ export default class ServerContext extends Config {
 		this.jobStore = new JobStore();
 		this.userStore = new UserStore(this);
 		this.serviceStore = new ServiceStore();
+		this.taskMonitors = {};
+		this.eePrivateKey = null;
+		this.loadPrivateKey();
+	}
+
+	loadPrivateKey() {
+		if (!this.serviceAccountCredentialsFile || this.eePrivateKey) {
+			return;
+		}
+		try {
+			this.eePrivateKey = fse.readJSONSync(this.serviceAccountCredentialsFile);
+			if (!Utils.isObject(this.eePrivateKey)) {
+				console.error("ERROR: GEE private key invalid.");
+			}
+		} catch (error) {
+			console.error("ERROR: GEE private key not provided. " + error.message);
+		}
 	}
 
 	jobs() {
@@ -74,8 +93,19 @@ export default class ServerContext extends Config {
 		return (typeof service_type === 'string' && Utils.isObject(this.services[service_type.toLowerCase()]));
 	}
 
-	processingContext(user) {
-		return new ProcessingContext(this, user);
+	processingContext(user, parentResource = null) {
+		return new ProcessingContext(this, user, parentResource);
+	}
+
+	addTaskMonitor(userId, monitorId) {
+		this.taskMonitors[userId] = monitorId;
+	}
+
+	removeTaskMonitor(userId) {
+		if (userId in this.taskMonitors) {
+			clearTimeout(this.taskMonitors[userId]);
+			delete this.taskMonitors[userId];
+		}
 	}
 
 }

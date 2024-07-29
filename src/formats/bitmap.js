@@ -3,6 +3,7 @@ import GeeResults from "../processes/utils/results.js";
 import DataCube from "../datacube/datacube.js";
 import Utils from "../utils/utils.js";
 import FileFormat, { EPSGCODE_PARAMETER, SIZE_PARAMETER } from "./fileformat.js";
+import HttpUtils from "../utils/http.js";
 
 export const EPSGCODE_PARAMETER_BITMAP = Object.assign({}, EPSGCODE_PARAMETER);
 EPSGCODE_PARAMETER_BITMAP.default = 4326;
@@ -96,7 +97,7 @@ export default class BitmapLike extends FileFormat {
     return renderer === 'filmstrip';
   }
 
-  preprocess(context, dc, logger) {
+  preprocess(mode, context, dc, logger) {
     const ee = context.ee;
 		const parameters = dc.getOutputFormatParameters();
 
@@ -175,7 +176,7 @@ export default class BitmapLike extends FileFormat {
           reject('Download URL provided by Google Earth Engine is empty.');
         }
         else {
-          resolve(url);
+          resolve(HttpUtils.stream(url));
         }
       });
     });

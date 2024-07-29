@@ -54,6 +54,9 @@ export default class JobsAPI {
 		if (!req.user._id) {
 			throw new Errors.AuthenticationRequired();
 		}
+
+		// Update the task status
+		this.context.processingContext(req.user).startTaskMonitor();
 	}
 
 	async getJobs(req, res) {
@@ -200,6 +203,9 @@ export default class JobsAPI {
 		}
 
 		const makeStorageUrl = obj => {
+			if (Utils.isUrl(obj.href)) {
+				return obj;
+			}
 			obj.href = API.getUrl("/storage/" + job.token + "/" + obj.href);
 			return obj;
 		};
@@ -246,7 +252,7 @@ export default class JobsAPI {
 			if (this.storage.isFieldEditable(key)) {
 				switch(key) {
 					case 'process': {
-						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user));
+						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user, job));
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());
 						break;
