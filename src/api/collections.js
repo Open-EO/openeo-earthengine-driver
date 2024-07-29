@@ -151,6 +151,7 @@ export default class Data {
 		const limit = parseInt(req.query.limit, 10) || 10;
 		const offset = parseInt(req.query.offset, 10) || 0;
 
+		// todo: migrate to ee.data.listImages?
 		// Load the collection
 		let ic = this.ee.ImageCollection(id);
 
@@ -219,7 +220,7 @@ export default class Data {
 		}
 
 		// Limit
-		const icList = ic.toList(limit + 1, offset)
+		const icList = ic.toList(limit + 1, offset);
 
 		// Retrieve the items
 		let items;

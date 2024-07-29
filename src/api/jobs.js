@@ -143,7 +143,7 @@ export default class JobsAPI {
 			token: req.params.token
 		};
 
-		await this.getJobRultsByQuery(query, true, req, res);
+		await this.getJobResultsByQuery(query, true, req, res);
 	}
 
 	async getJobResults(req, res) {
@@ -153,7 +153,7 @@ export default class JobsAPI {
 			_id: req.params.job_id,
 			user_id: req.user._id
 		};
-		await this.getJobRultsByQuery(query, false, req, res);
+		await this.getJobResultsByQuery(query, false, req, res);
 	}
 
 	async deleteJobResults(req, res) {
@@ -175,7 +175,7 @@ export default class JobsAPI {
 		res.send(204);
 	}
 
-	async getJobRultsByQuery(query, publish, req, res) {
+	async getJobResultsByQuery(query, publish, req, res) {
 		const job = await this.storage.findJob(query);
 		const partial = typeof req.query.partial !== 'undefined';
 		if (job.status === 'error') {
