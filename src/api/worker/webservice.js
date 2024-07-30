@@ -9,7 +9,7 @@ export default async function run(config, storage, user, query, xyz) {
 
   try {
     const rect = storage.calculateXYZRect(...xyz);
-    const context = config.processingContext(user);
+    const context = config.processingContext(user, service);
     // Update user id to the user id, which stored the job.
     // See https://github.com/Open-EO/openeo-earthengine-driver/issues/19
     context.setUserId(service.user_id);
@@ -29,7 +29,9 @@ export default async function run(config, storage, user, query, xyz) {
       dc.setOutputFormat('png');
     }
 
-    return await GeeResults.retrieve(context, dc, logger);
+    const format = config.getOutputFormat(dc.getOutputFormat());
+    const dc2 = format.preprocess(GeeResults.SERVICE, context, dc, logger);
+    return await format.retrieve(context.ee, dc2);
   } catch(e) {
     logger.error(e);
     throw e;

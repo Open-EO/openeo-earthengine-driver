@@ -1,36 +1,37 @@
 import Utils from './utils.js';
-import fse from 'fs-extra';
 
 export default class ProcessingContext {
 
-	constructor(serverContext, user = null) {
+	constructor(serverContext, user = null, parentResource = null) {
 		this.serverContext = serverContext;
 		this.user = user;
 		this.userId = user ? user._id : null;
+		this.googleUserId = '';
+		this.parentResource = parentResource;
 		this.ee = Utils.require('@google/earthengine');
-		this.eePrivateKey = null;
+		this.taskMonitorId = null;
+		this.connected = false;
 	}
 
-	async connectGee(forcePrivateKey = false) {
+	async connect(forcePrivateKey = false) {
+		if (this.connected) {
+			return this.ee;
+		}
+
 		const user = this.getUser();
 		const ee = this.ee;
-		if (!forcePrivateKey && typeof this.userId === 'string' && this.userId.startsWith("google-")) {
+		if (!forcePrivateKey && Utils.isGoogleUser(this.userId)) {
 			console.log("Authenticate via user token");
 			const expires = 59 * 60;
 			// todo auth: get expiration from token and set more parameters #82
 			ee.apiclient.setAuthToken(null, 'Bearer', user.token, expires, [], null, false, false);
+			this.googleUserId = this.userId;
 		}
-		else if (this.serverContext.serviceAccountCredentialsFile) {
+		else if (this.serverContext.eePrivateKey) {
 			console.log("Authenticate via private key");
-			if (!this.eePrivateKey) {
-				this.eePrivateKey = await fse.readJSON(this.serverContext.serviceAccountCredentialsFile);
-			}
-			if (!Utils.isObject(this.eePrivateKey)) {
-				console.error("ERROR: GEE private key not found.");
-			}
 			await new Promise((resolve, reject) => {
 				ee.data.authenticateViaPrivateKey(
-					this.eePrivateKey,
+					this.serverContext.eePrivateKey,
 					() => resolve(),
 					error => reject("ERROR: GEE Authentication failed: " + error.message)
 				);
@@ -41,6 +42,7 @@ export default class ProcessingContext {
 		}
 
 		await ee.initialize();
+		this.connected = true;
 		return ee;
 	}
 
@@ -52,12 +54,8 @@ export default class ProcessingContext {
 		return this.serverContext.collections().getData(id);
 	}
 
-	getStoredProcessGraph(id) { // returns promise
-		return this.serverContext.storedProcessGraphs().getById(id);
-	}
-
-	getJob(jobId) { // returns promise
-		return this.serverContext.jobs().getById(jobId);
+	getResource() {
+		return this.parentResource;
 	}
 
 	getVariable(id) {
@@ -74,6 +72,34 @@ export default class ProcessingContext {
 
 	getUser() {
 		return this.user;
+	}
+
+	getGoogleUserId() {
+		return Utils.isGoogleUser(this.userId) ? this.userId : '';
+	}
+
+	startTaskMonitor() {
+		const googleUserId = this.getGoogleUserId();
+		this.serverContext.removeTaskMonitor(googleUserId);
+		this.taskMonitorId = setTimeout(this.monitorTasks.bind(this), 60 * 1000);
+		this.serverContext.addTaskMonitor(googleUserId, this.taskMonitorId);
+		this.monitorTasks();
+	}
+
+	async monitorTasks() {
+		const jobModel = this.serverContext.jobs();
+		const taskCount = await this.serverContext.jobs().getTaskCount(this.getGoogleUserId());
+		if (taskCount === 0) {
+			// Nothing to monitor
+			return;
+		}
+		try {
+			await this.connect();
+			this.ee.data.listOperations(null, ops => jobModel.updateTasks(ops));
+		} catch (e) {
+			this.serverContext.removeTaskMonitor(this.googleUserId);
+			console.error(e);
+		}
 	}
 
 }

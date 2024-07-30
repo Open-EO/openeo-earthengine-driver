@@ -94,8 +94,7 @@ export default class FilesAPI {
 						size: newFileStat.size,
 						modified: Utils.getISODateTime(newFileStat.mtime)
 					});
-				}
-				catch (e) {
+				} catch (e) {
 					if (this.context.debug) {
 						console.error(e);
 					}

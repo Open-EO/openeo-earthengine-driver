@@ -16,7 +16,7 @@ export const SIZE_PARAMETER = {
 
 export const SCALE_PARAMETER = {
   type: 'number',
-  description: 'Scale of the image in meters per pixel.',
+  description: 'Scale of the image in meters per pixel. Defaults to native resolution in batch jobs, and 100 otherwise.',
   default: 100,
   minimum: 1
 };
@@ -81,15 +81,19 @@ export default class FileFormat {
     };
   }
 
-  preprocess(context, dc/*, logger*/) {
+  preprocess(mode, context, dc/*, logger*/) {
     return dc;
   }
 
-  async retrieve(/*ee, dc*/) {
+  async retrieve(/*ee, dc */) {
     throw new Error('Not implemented');
   }
 
-  async export(/*ee, dc*/) {
+  canExport() {
+    return false;
+  }
+
+  async export(/*ee, dc */) {
     throw new Error('Not implemented');
   }
 

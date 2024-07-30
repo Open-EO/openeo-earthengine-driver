@@ -9,6 +9,16 @@ const Utils = {
 
 	crsBboxes: {},
 
+	GOOGLE_USER_PREFIX: "google_",
+
+	isGoogleUser(userId) {
+		return typeof userId === 'string' && userId.startsWith(Utils.GOOGLE_USER_PREFIX);
+	},
+
+	isUrl(url) {
+		return typeof url === 'string' && url.includes('://');
+	},
+
 	require(file) {
 		const require = createRequire(import.meta.url);
 		return require(file);

@@ -48,7 +48,7 @@ export default class Data {
 
 		const b = Date.now();
 		const pContext = this.context.processingContext();
-		this.ee = await pContext.connectGee(true);
+		this.ee = await pContext.connect(true);
 		console.log(`Established connection to GEE for STAC (${Date.now()-b} ms)`);
 
 		return num;

@@ -25,7 +25,11 @@ export default async function run(config, user, id, process, log_level) {
   if (pg.getResults().length > 1) {
     logger.warn("Multiple results can't be processed in synchronous mode. Only the result from the result node will be returned.");
   }
-  return await GeeResults.retrieve(context, resultNode.getResult(), logger);
+
+  const dc = resultNode.getResult();
+  const format = config.getOutputFormat(dc.getOutputFormat());
+  const dc2 = format.preprocess(GeeResults.SYNC, context, dc, logger);
+  return await format.retrieve(context.ee, dc2);
 }
 
 export async function getResultLogs(user_id, id, log_level) {

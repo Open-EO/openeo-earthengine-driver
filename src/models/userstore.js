@@ -4,6 +4,7 @@ import Errors from '../utils/errors.js';
 import crypto from "crypto";
 import HttpUtils from '../utils/http.js';
 import fse from 'fs-extra';
+import GDrive from '../utils/gdrive.js';
 
 export default class UserStore {
 
@@ -21,9 +22,7 @@ export default class UserStore {
 			"openid",
 			"email",
 			"https://www.googleapis.com/auth/earthengine",
-			// "https://www.googleapis.com/auth/cloud-platform",
-			// "https://www.googleapis.com/auth/devstorage.full_control"
-		];
+		].concat(GDrive.SCOPES);
 	}
 
 	database() {
@@ -157,6 +156,10 @@ export default class UserStore {
 			const jobCount = await jobDb.removeAsync({user_id}, {multi: true});
 			console.log(`- Removed ${jobCount} batch jobs from database`);
 
+			// note: doesn't cancel tasks, just removes them from the database
+			const taskCount = jobModel.removeTasksForUser(user_id);
+			console.log(`- Removed ${taskCount} GEE tasks from database`);
+
 			await Promise.all(jobs.map(job => jobModel.removeResults(job._id)));
 			console.log('- Removed batch job results and logs from file system');
 		} catch (err) {
@@ -207,7 +210,7 @@ export default class UserStore {
 	async authenticateGoogle(token) {
 		const userInfo = await this.getOidcUserInfo(token);
 		const userData = this.emptyUser(false);
-		userData._id = "google_" + userInfo.sub;
+		userData._id = Utils.GOOGLE_USER_PREFIX + userInfo.sub;
 		userData.name = userInfo.name || userInfo.email || null;
 		userData.email = userInfo.email || null;
 		userData.token = token;

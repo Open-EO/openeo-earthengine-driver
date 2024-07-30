@@ -1,7 +1,13 @@
+import GDrive from '../../utils/gdrive.js';
+import Utils from '../../utils/utils.js';
+import GeeProcessing from './processing.js';
 import GeeTypes from './types.js';
-import HttpUtils from '../../utils/http.js';
 
 const GeeResults = {
+
+	BATCH: 1,
+	SYNC: 2,
+	SERVICE: 3,
 
 	toImageOrCollection(ee, logger, data, allowMultiple = false) {
 		const eeData = GeeTypes.toEE(ee, logger, data);
@@ -37,21 +43,67 @@ const GeeResults = {
 		return ext || '';
 	},
 
-	// Returns AxiosResponse (object) or URL (string)
-	async retrieve(context, dc, logger) {
-		const ee = context.ee;
-		const config = context.server();
+	async exportToDrive(ee, dc, job, fileFormat, formatOptions) {
+		const parameters = dc.getOutputFormatParameters();
 
-		const format = config.getOutputFormat(dc.getOutputFormat());
-		dc = format.preprocess(context, dc, logger);
-
-		let response = await format.retrieve(ee, dc);
-		if (typeof response === 'string') {
-			logger.debug("Downloading data from Google: " + response);
-			response = await HttpUtils.stream(response);
+		let region = null;
+		let crs = null;
+		if (dc.hasXY()) {
+			region = Utils.bboxToGeoJson(dc.getSpatialExtent());
+			crs = Utils.crsToString(dc.getCrs());
 		}
 
-		return response;
+    const data = ee.ImageCollection(dc.getData());
+    const imageList = data.toList(data.size());
+    const imgCount = await GeeProcessing.evaluate(imageList.size());
+    const tasks = [];
+    for (let i = 0; i < imgCount; i++) {
+      let taskId = null;
+      let error = null;
+      let imageId;
+      try {
+        const image = ee.Image(imageList.get(i));
+        imageId = await GeeProcessing.evaluate(image.id());
+
+        let crsTransform, scale;
+        if (parameters.scale > 0) {
+          scale = parameters.scale;
+        }
+        else {
+          const projection = await GeeProcessing.evaluate(image.projection());
+          crsTransform = projection.transform;
+        }
+
+        const task = ee.batch.Export.image.toDrive({
+          image,
+          description: job.title,
+          folder: GDrive.getFolderName(job),
+          fileNamePrefix: imageId,
+          skipEmptyTiles: true,
+          crs,
+          crsTransform,
+          region,
+          scale,
+          fileFormat,
+          formatOptions
+        });
+        taskId = await new Promise((resolve, reject) => {
+          task.start(
+            () => resolve(task.id),
+            (message) => reject(new Error(message))
+          )
+        });
+      } catch (e) {
+        error = e.message;
+      } finally {
+        tasks.push({
+          taskId,
+          imageId,
+          error
+        });
+      }
+    }
+		return tasks;
 	}
 
 };

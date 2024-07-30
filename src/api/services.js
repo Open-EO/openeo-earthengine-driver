@@ -118,7 +118,7 @@ export default class ServicesAPI {
 			if (this.storage.isFieldEditable(key)) {
 				switch(key) {
 					case 'process': {
-						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user));
+						const pg = new ProcessGraph(req.body.process, this.context.processingContext(req.user, service));
 						// ToDo 1.0: Correctly handle service paramaters #79
 						pg.allowUndefinedParameters(false);
 						promises.push(pg.validate());

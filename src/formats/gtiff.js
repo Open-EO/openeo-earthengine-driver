@@ -2,28 +2,24 @@ import GeeResults from "../processes/utils/results.js";
 import DataCube from "../datacube/datacube.js";
 import Utils from "../utils/utils.js";
 import FileFormat, { EPSGCODE_PARAMETER, SCALE_PARAMETER } from "./fileformat.js";
+import HttpUtils from "../utils/http.js";
 
 export default class GTiffFormat extends FileFormat {
   constructor(title = 'GeoTiff', parameters = {}) {
-    super(title, parameters);
+    super(title, parameters, "Cloud-optimized in batch jobs, not cloud-optimized otherwise.");
     this.addParameter('scale', SCALE_PARAMETER);
     this.addParameter('epsgCode', EPSGCODE_PARAMETER);
-    this.addParameter('zipped', {
-      type: 'boolean',
-      description: 'Pack the GeoTiff files into ZIP files, one file per band.',
-      default: false
-    });
   }
 
   getGisDataTypes() {
     return ['raster'];
   }
 
-  getFileExtension(parameters) {
-    return parameters.zipped ? '.zip' : '.tiff';
+  getFileExtension(/*parameters*/) {
+    return '.tiff';
   }
 
-  preprocess(context, dc, logger) {
+  preprocess(mode, context, dc, logger) {
     const ee = context.ee;
 		const parameters = dc.getOutputFormatParameters();
     const dc2 = new DataCube(ee, dc);
@@ -33,7 +29,8 @@ export default class GTiffFormat extends FileFormat {
     if (dc2.hasT()) {
       dc2.dimT().drop();
     }
-    return dc2.setData(GeeResults.toImageOrCollection(ee, logger, dc.getData()));
+    const allowMultiple = (mode === GeeResults.BATCH);
+    return dc2.setData(GeeResults.toImageOrCollection(ee, logger, dc.getData(), allowMultiple));
   }
 
   async retrieve(ee, dc) {
@@ -46,18 +43,13 @@ export default class GTiffFormat extends FileFormat {
 			crs = Utils.crsToString(dc.getCrs());
 		}
 
-    const format = parameters.zipped ? 'ZIPPED_GEO_TIFF' : 'GEO_TIFF';
-
     const data = dc.getData();
-    if (data instanceof ee.ImageCollection) {
-      // todo: implement
-    }
-    else if (data instanceof ee.Image) {
+    if (data instanceof ee.Image) {
       const eeOpts = {
         scale: parameters.scale || 100,
         region,
         crs,
-        format
+        format: 'GEO_TIFF'
       };
       return await new Promise((resolve, reject) => {
         data.getDownloadURL(eeOpts, (url, err) => {
@@ -68,12 +60,25 @@ export default class GTiffFormat extends FileFormat {
             reject('Download URL provided by Google Earth Engine is empty.');
           }
           else {
-            resolve(url);
+            resolve(HttpUtils.stream(url));
           }
         });
       });
     }
+    else {
+      throw new Error('Only single images are supported in this processing mode for GeoTIFF.');
+    }
+  }
 
+  canExport() {
+    return true;
+  }
+
+  async export(ee, dc, job) {
+    return await GeeResults.exportToDrive(ee, dc, job, 'GeoTIFF', {
+      cloudOptimized: true,
+      // noData: NaN
+    });
   }
 
 }
