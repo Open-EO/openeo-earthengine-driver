@@ -4,6 +4,7 @@ import Errors from '../utils/errors.js';
 import crypto from "crypto";
 import HttpUtils from '../utils/http.js';
 import fse from 'fs-extra';
+import GDrive from '../utils/gdrive.js';
 
 export default class UserStore {
 
@@ -21,11 +22,7 @@ export default class UserStore {
 			"openid",
 			"email",
 			"https://www.googleapis.com/auth/earthengine",
-			"https://www.googleapis.com/auth/drive.file",
-			// "https://www.googleapis.com/auth/drive",
-			// "https://www.googleapis.com/auth/cloud-platform",
-			// "https://www.googleapis.com/auth/devstorage.full_control"
-		];
+		].concat(GDrive.SCOPES);
 	}
 
 	database() {

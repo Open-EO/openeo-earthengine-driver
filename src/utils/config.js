@@ -29,6 +29,8 @@ export default class Config {
 			certificate: null
 		};
 
+		// We need access to GEE + Drive
+		this.apiKey = null;
 		this.serviceAccountCredentialsFile = null;
 		this.googleAuthClients = [];
 

@@ -1,3 +1,4 @@
+import GDrive from '../../utils/gdrive.js';
 import Utils from '../../utils/utils.js';
 import GeeProcessing from './processing.js';
 import GeeTypes from './types.js';
@@ -76,7 +77,7 @@ const GeeResults = {
         const task = ee.batch.Export.image.toDrive({
           image,
           description: job.title,
-          folder: 'gee-' + job._id,
+          folder: GDrive.getFolderName(job),
           fileNamePrefix: imageId,
           skipEmptyTiles: true,
           crs,
