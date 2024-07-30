@@ -135,7 +135,7 @@ export default class JobsAPI {
 
 		res.send(202);
 
-		await runBatchJob(this.context, this.storage, this.user, query);
+		await runBatchJob(this.context, this.storage, req.user, query);
 	}
 
 	async getJobResultsByToken(req, res) {
