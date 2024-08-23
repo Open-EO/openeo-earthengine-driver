@@ -1,0 +1,358 @@
+{
+  "process_graph": {
+    "load1": {
+      "process_id": "load_collection",
+      "arguments": {
+        "id": "COPERNICUS/S2_SR_HARMONIZED",
+        "spatial_extent": {
+          "type": "Polygon",
+          "coordinates": [
+            [
+              [
+                -7.664532,
+                38.543869
+              ],
+              [
+                -7.689248,
+                38.141037
+              ],
+              [
+                -7.159228,
+                38.151837
+              ],
+              [
+                -7.115289,
+                38.554609
+              ],
+              [
+                -7.664532,
+                38.543869
+              ]
+            ]
+          ]
+        },
+        "temporal_extent": [
+          "2019-06-27T00:00:00Z",
+          "2019-07-04T00:00:00Z"
+        ],
+        "bands": [
+          "B1",
+          "B2",
+          "B3",
+          "B4"
+        ]
+      }
+    },
+    "reduce2": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "load1"
+        },
+        "reducer": {
+          "process_graph": {
+            "divide1": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "mean1"
+                },
+                "y": 10000
+              },
+              "result": true
+            },
+            "mean1": {
+              "process_id": "mean",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                }
+              }
+            }
+          }
+        },
+        "dimension": "t"
+      }
+    },
+    "reduce1": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "reduce2"
+        },
+        "dimension": "bands",
+        "reducer": {
+          "process_graph": {
+            "il4c7j4lr": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B2"
+              }
+            },
+            "qj6u3oylh": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B3"
+              }
+            },
+            "ud7qocqmh": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B4"
+              }
+            },
+            "xidmp3qla": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": {
+                  "from_node": "qj6u3oylh"
+                },
+                "y": {
+                  "from_node": "ud7qocqmh"
+                }
+              }
+            },
+            "2du071v7s": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "xidmp3qla"
+                },
+                "y": {
+                  "from_node": "il4c7j4lr"
+                }
+              }
+            },
+            "4ckks9uzi": {
+              "process_id": "power",
+              "arguments": {
+                "base": {
+                  "from_node": "2du071v7s"
+                },
+                "p": 2.38
+              }
+            },
+            "nnxuedpgo": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": 115530,
+                "y": {
+                  "from_node": "4ckks9uzi"
+                }
+              },
+              "result": true
+            }
+          }
+        }
+      },
+      "description": "Density of cyanobacteria"
+    },
+    "reduce4": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "reduce2"
+        },
+        "dimension": "bands",
+        "reducer": {
+          "process_graph": {
+            "wkvqxkkbz": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B3"
+              }
+            },
+            "y2t8gkl32": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B1"
+              }
+            },
+            "k5qpt74bj": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "wkvqxkkbz"
+                },
+                "y": {
+                  "from_node": "y2t8gkl32"
+                }
+              }
+            },
+            "kvjizj4da": {
+              "process_id": "power",
+              "arguments": {
+                "base": {
+                  "from_node": "k5qpt74bj"
+                },
+                "p": 3.94
+              }
+            },
+            "6w3dqkcrd": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": 4.26,
+                "y": {
+                  "from_node": "kvjizj4da"
+                }
+              },
+              "result": true
+            }
+          }
+        }
+      },
+      "description": "Concentration of Chlorophyll a"
+    },
+    "reduce6": {
+      "process_id": "reduce_dimension",
+      "arguments": {
+        "data": {
+          "from_node": "reduce2"
+        },
+        "dimension": "bands",
+        "reducer": {
+          "process_graph": {
+            "crvn2egum": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B3"
+              }
+            },
+            "v9pckltcm": {
+              "process_id": "array_element",
+              "arguments": {
+                "data": {
+                  "from_parameter": "data"
+                },
+                "label": "B1"
+              }
+            },
+            "zm849zdxq": {
+              "process_id": "divide",
+              "arguments": {
+                "x": {
+                  "from_node": "crvn2egum"
+                },
+                "y": {
+                  "from_node": "v9pckltcm"
+                }
+              }
+            },
+            "lq08asl75": {
+              "process_id": "multiply",
+              "arguments": {
+                "x": 8.93,
+                "y": {
+                  "from_node": "zm849zdxq"
+                }
+              }
+            },
+            "otg5lfkdw": {
+              "process_id": "subtract",
+              "arguments": {
+                "x": {
+                  "from_node": "lq08asl75"
+                },
+                "y": 6.39
+              },
+              "result": true
+            }
+          }
+        }
+      },
+      "description": "Turbidity"
+    },
+    "save3": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "reduce1"
+        },
+        "format": "GTIFF",
+        "options": {
+          "name": "cyanobacteria",
+          "metadata": {
+            "raster:bands": [
+              {
+                "statistics": {
+                  "minimum": 0,
+                  "maximum": 100
+                }
+              }
+            ]
+          },
+          "epsgCode": 32629
+        }
+      },
+      "description": "Density of cyanobacteria",
+      "result": true
+    },
+    "save5": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "reduce4"
+        },
+        "format": "GTIFF",
+        "options": {
+          "name": "chlorophyll_a",
+          "metadata": {
+            "raster:bands": [
+              {
+                "statistics": {
+                  "minimum": 0,
+                  "maximum": 200
+                }
+              }
+            ]
+          },
+          "epsgCode": 32629
+        }
+      },
+      "description": "Concentration of Chlorophyll a"
+    },
+    "save7": {
+      "process_id": "save_result",
+      "arguments": {
+        "data": {
+          "from_node": "reduce6"
+        },
+        "format": "GTIFF",
+        "options": {
+          "name": "turbidity",
+          "metadata": {
+            "raster:bands": [
+              {
+                "statistics": {
+                  "minimum": 0,
+                  "maximum": 30
+                }
+              }
+            ]
+          },
+          "epsgCode": 32629
+        }
+      },
+      "description": "Turbidity"
+    }
+  },
+  "parameters": []
+}
