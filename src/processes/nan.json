@@ -5,7 +5,6 @@
     "categories": [
         "math > constants"
     ],
-    "experimental": true,
     "parameters": [],
     "returns": {
         "description": "Returns `NaN`.",

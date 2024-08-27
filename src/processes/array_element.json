@@ -6,7 +6,6 @@
         "arrays",
         "reducer"
     ],
-    "experimental": true,
     "parameters": [
         {
             "name": "data",
