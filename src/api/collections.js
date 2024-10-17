@@ -170,14 +170,14 @@ export default class Data {
 				);
 			}
 			else {
-				throw new Errors.ParameterValueInvalid({parameter: "datetime", message: "Invalid number of timestamps."});
+				throw new Errors.ParameterValueInvalid({parameter: "datetime", reason: "Invalid number of timestamps."});
 			}
 		}
 
 		// Filter by bbox
 		const bboxCrs = req.query['bbox-crs'] || null;
 		if (bboxCrs) {
-			throw new Errors.ParameterValueUnsupported({parameter: "bbox-crs", message: "Bounding Box with CRS is not supported."});
+			throw new Errors.ParameterValueUnsupported({parameter: "bbox-crs", reason: "Bounding Box with CRS is not supported."});
 		}
 		const bbox = req.query.bbox || null;
 		if (Utils.hasText(bbox)) {
@@ -190,13 +190,13 @@ export default class Data {
 			if (c.length === 4) {
 				c = c.map(dt => parseFloat(dt));
 				if (c.some(coord => isNaN(coord))) {
-					throw new Errors.ParameterValueInvalid({parameter: "bbox", message: "Invalid coordinate value(s)."});
+					throw new Errors.ParameterValueInvalid({parameter: "bbox", reason: "Invalid coordinate value(s)."});
 				}
 				let geom = this.ee.Geometry(Utils.bboxToGeoJson(c));
 				ic = ic.filterBounds(geom);
 			}
 			else {
-				throw new Errors.ParameterValueInvalid({parameter: "bbox", message: "Invalid number of coordinates."});
+				throw new Errors.ParameterValueInvalid({parameter: "bbox", reason: "Invalid number of coordinates."});
 			}
 		}
 
@@ -205,7 +205,7 @@ export default class Data {
 		if (Utils.hasText(sortby)) {
 			const fields = sortby.split(',');
 			if (fields.length > 1) {
-				throw new Errors.ParameterValueUnsupported({parameter: "sortby", message: "Can only sort by one field."});
+				throw new Errors.ParameterValueUnsupported({parameter: "sortby", reason: "Can only sort by one field."});
 			}
 			let field = fields[0];
 			let order = !field.startsWith('-');
@@ -214,7 +214,7 @@ export default class Data {
 			}
 			const prop = sortPropertyMap[field];
 			if (!prop) {
-				throw new Errors.ParameterValueUnsupported({parameter: "sortby", message: "Selected field can't be sorted by."});
+				throw new Errors.ParameterValueUnsupported({parameter: "sortby", reason: "Selected field can't be sorted by."});
 			}
 			ic = ic.sort(prop, order);
 		}
