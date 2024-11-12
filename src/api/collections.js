@@ -3,6 +3,7 @@ import Utils from '../utils/utils.js';
 import Errors from '../utils/errors.js';
 import GeeProcessing from '../processes/utils/processing.js';
 import HttpUtils from '../utils/http.js';
+import Coverages from './coverages.js';
 
 const sortPropertyMap = {
 	'properties.datetime': 'system:time_start',
@@ -36,6 +37,8 @@ export default class Data {
 		server.addEndpoint('get', ['/collections/{collection_id}', '/collections/*'], this.getCollectionById.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/queryables', this.getCollectionQueryables.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/items', this.getCollectionItems.bind(this));
+		server.addEndpoint('get', '/collections/{collection_id}/schema', this.getCollectionSchema.bind(this));
+		server.addEndpoint('get', '/collections/{collection_id}/coverage', this.getCoverage.bind(this));
 		server.addEndpoint('get', '/collections/{collection_id}/items/{item_id}', this.getCollectionItemById.bind(this));
 		if (this.context.stacAssetDownloadSize > 0) {
 			server.addEndpoint('get', ['/assets/{asset_id}', '/assets/*'], this.getAssetById.bind(this));
@@ -106,6 +109,12 @@ export default class Data {
 		else if (id.endsWith('/queryables')) {
 			return await this.getCollectionQueryables(req, res);
 		}
+		else if (id.endsWith('/schema')) {
+			return await this.getCollectionSchema(req, res);
+		}
+		else if (id.endsWith('/coverage')) {
+			return await this.getCoverage(req, res);
+		}
 		else if (id.endsWith('/items')) {
 			return await this.getCollectionItems(req, res);
 		}
@@ -121,28 +130,113 @@ export default class Data {
 		res.json(collection);
 	}
 
-	async getCollectionQueryables(req, res) {
+	getCollectionId(req, endpoint) {
 		let id = req.params.collection_id;
-		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
+		// Get the ID if this was a redirect from another endpoint
 		if (req.params['*'] && !id) {
-			id = req.params['*'].replace(/\/queryables$/, '');
+			endpoint = '/' + endpoint;
+			id = req.params['*'];
+			if (id.endsWith(endpoint)) {
+				id = id.substring(0, req.params['*'].length - endpoint.length);
+			}
 		}
+		return id;
+	}
 
-		const queryables = this.catalog.getSchema(id);
+	async getCollectionQueryables(req, res) {
+		const id = this.getCollectionId(req, 'queryables');
+		const queryables = this.catalog.getQueryables(id);
 		if (queryables === null) {
 			throw new Errors.CollectionNotFound();
 		}
-
 		res.json(queryables);
 	}
 
-	async getCollectionItems(req, res) {
-		let id = req.params.collection_id;
-		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params['*'] && !id) {
-			id = req.params['*'].replace(/\/items$/, '');
+	async getCollectionSchema(req, res) {
+		const id = this.getCollectionId(req, 'schema');
+		const schema = this.catalog.getSchema(id);
+		if (schema === null) {
+			throw new Errors.CollectionNotFound();
+		}
+		res.json(schema);
+	}
+
+	async getCoverage(req, res) {
+		if (!req.user._id) {
+			throw new Errors.AuthenticationRequired();
 		}
 
+		const id = this.getCollectionId(req, 'coverage');
+		const collection = this.catalog.getData(id);
+		if (collection === null) {
+			throw new Errors.CollectionNotFound();
+		}
+
+		const coverage = new Coverages(collection);
+		// Subsetting
+		try {
+			coverage.setDatetime(req.query.datetime);
+		} catch (e) {
+			throw new Errors.ParameterValueInvalid({parameter: 'datetime', reason: e.message});
+		}
+		try {
+			coverage.setBoundingBox(req.query.bbox, req.query['bbox-crs']);
+		} catch (e) {
+			throw new Errors.ParameterValueInvalid({parameter: 'bbox', reason: e.message});
+		}
+		try {
+			coverage.setSubset(req.query.subset, req.query['subset-crs']);
+		} catch (e) {
+			throw new Errors.ParameterValueInvalid({parameter: 'subset', reason: e.message});
+		}
+		// Field selection
+		try {
+			coverage.setFields(req.query.properties);
+		} catch (e) {
+			throw new Errors.ParameterValueInvalid({parameter: 'properties', reason: e.message});
+		}
+		// CRS
+		try {
+			coverage.setCrs(req.query.crs);
+		} catch (e) {
+			throw new Errors.ParameterValueInvalid({parameter: 'crs', reason: e.message});
+		}
+
+		const pngMedia = ['image/png'];
+		const gtiffMedia = ['image/tiff', 'image/tiff; application=geotiff'];
+		if (req.query.f) {
+			if (pngMedia.includes(req.query.f)) {
+				coverage.setFileFormat('PNG');
+			}
+			else if (gtiffMedia.includes(req.query.f)) {
+				coverage.setFileFormat('GTIFF');
+			}
+			else {
+				throw new Errors.NotAcceptableError();
+			}
+		}
+		else {
+			const isPNG = req.accepts(pngMedia);
+			const isGTIFF = req.accepts(gtiffMedia);
+			if (isGTIFF) {
+				coverage.setFileFormat('GTIFF');
+			}
+			else if (isPNG) {
+				coverage.setFileFormat('PNG');
+			}
+			else {
+				throw new Errors.NotAcceptableError();
+			}
+		}
+
+		const response = await coverage.execute(this.context, req);
+
+		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
+		response.data.pipe(res);
+	}
+
+	async getCollectionItems(req, res) {
+		const id = this.getCollectionId(req, 'items');
 		const collection = this.catalog.getData(id, true);
 		if (collection === null) {
 			throw new Errors.CollectionNotFound();
