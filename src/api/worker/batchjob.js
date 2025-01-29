@@ -126,10 +126,10 @@ async function createSTAC(storage, job, results) {
       const extent = datacube.getSpatialExtent();
       let wgs84Extent = extent;
       asset["proj:epsg"] = crs;
+      asset["proj:bbox"] = [
+        extent.west, extent.south, extent.east, extent.north
+      ];
       if (crs !== 4326) {
-        asset["proj:bbox"] = [
-          extent.west, extent.south, extent.east, extent.north
-        ];
         wgs84Extent = Utils.projExtent(extent, 4326);
       }
       // Check the coordinates with a delta of 0.0001 or so
