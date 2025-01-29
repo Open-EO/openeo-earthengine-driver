@@ -3,6 +3,7 @@ import path from 'path';
 import ProcessGraph from '../../processgraph/processgraph.js';
 import GeeResults from '../../processes/utils/results.js';
 import Utils from '../../utils/utils.js';
+import sizeOf from "image-size";
 const packageInfo = Utils.require('../../package.json');
 
 export default async function run(config, storage, user, query) {
@@ -77,7 +78,12 @@ async function createSTAC(storage, job, results) {
   let startTime = null;
   let endTime = null;
   const extents = [];
+  const datetimes = [];
+  const stac_extensions = [
+    "https://stac-extensions.github.io/file/v2.0.0/schema.json",
+  ];
   for(const { filepath, datacube } of results) {
+    const params = datacube.getOutputFormatParameters();
     const filename = path.basename(filepath);
     const stat = await fse.stat(filepath);
     let asset = {
@@ -89,6 +95,16 @@ async function createSTAC(storage, job, results) {
       created: stat.birthtime,
       updated: stat.mtime
     };
+    if (params.datetime !== null) {
+      datetimes.push(params.datetime);
+      asset.datetime = params.datetime;
+    }
+    try {
+      const dim = await sizeOf(filepath);
+      asset["proj:shape"] = [dim.height, dim.width];
+    } catch(e) {
+      console.error(e);
+    }
 
     if (datacube.hasT()) {
       const t = datacube.dimT();
@@ -105,12 +121,15 @@ async function createSTAC(storage, job, results) {
     }
 
     if (datacube.hasXY()) {
+      stac_extensions.push("https://stac-extensions.github.io/projection/v1.1.0/schema.json");
       const crs = datacube.getCrs();
       const extent = datacube.getSpatialExtent();
       let wgs84Extent = extent;
+      asset["proj:epsg"] = crs;
       if (crs !== 4326) {
-        asset["proj:epsg"] = crs;
-        asset["proj:geometry"] = extent;
+        asset["proj:bbox"] = [
+          extent.west, extent.south, extent.east, extent.north
+        ];
         wgs84Extent = Utils.projExtent(extent, 4326);
       }
       // Check the coordinates with a delta of 0.0001 or so
@@ -120,14 +139,20 @@ async function createSTAC(storage, job, results) {
       }
     }
 
-    const params = datacube.getOutputFormatParameters();
+    if (datacube.hasBands()) {
+      const bands = datacube.getBands();
+      asset["eo:bands"] = bands.map(band => {
+        return {
+          name: band
+        };
+      });
+    }
+
     assets[filename] = Object.assign(asset, params.metadata);
   }
   const item = {
     stac_version: packageInfo.stac_version,
-    stac_extensions: [
-      "https://stac-extensions.github.io/file/v2.0.0/schema.json",
-    ],
+    stac_extensions,
     id: job._id,
     type: "Feature",
     geometry: null,
@@ -140,6 +165,7 @@ async function createSTAC(storage, job, results) {
     links: links
   };
 
+  datetimes.sort();
   if (startTime ? !endTime : endTime) {
     item.properties.datetime = startTime || endTime;
   }
@@ -147,14 +173,29 @@ async function createSTAC(storage, job, results) {
     if (startTime) {
       item.properties.start_datetime = startTime;
     }
+    else {
+      item.properties.start_datetime = datetimes[0];
+    }
     if (endTime) {
       item.properties.end_datetime = endTime;
     }
+    else {
+      item.properties.end_datetime = datetimes[datetimes.length - 1];
+    }
+  }
+  if (!item.properties.datetime) {
+    item.properties.datetime = item.properties.start_datetime || item.properties.end_datetime;
+  }
+  if (item.properties.start_datetime === item.properties.end_datetime) {
+    delete item.properties.start_datetime;
+    delete item.properties.end_datetime;
   }
 
   if (extents.length > 0) {
     if (extents.length === 1) {
       item.geometry = Utils.bboxToGeoJson(extents[0]);
+      delete item.geometry.geodesic;
+      delete item.geometry.crs;
     }
     else {
       item.geometry = {

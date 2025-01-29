@@ -33,6 +33,14 @@ export const METADATA_PARAMETER = {
   default: {}
 };
 
+export const DATETIME_PARAMETER = {
+  type: 'string',
+  format: 'date-time',
+  subtype: 'date-time',
+  description: 'A date and time for the asset.',
+  default: null
+};
+
 export default class FileFormat {
 
   constructor(title, parameters = {}, description = '') {
@@ -41,6 +49,7 @@ export default class FileFormat {
     this.parameters = parameters;
     this.addParameter('name', NAME_PARAMETER);
     this.addParameter('metadata', METADATA_PARAMETER);
+    this.addParameter('datetime', DATETIME_PARAMETER);
   }
 
   getParameters() {
