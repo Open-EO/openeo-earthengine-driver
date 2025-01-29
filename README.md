@@ -103,11 +103,11 @@ There are various clients for the openEO API, e.g.
 There are various process graph examples in the following folder: [examples](./examples/)
 
 > [!WARNING]
-> Google Earth Engine internally works quite different compared to openEO.
-> The process implementations may slightly differ from the openEO process descriptions in some cases.
+> Internally, Google Earth Engine works quite differently from openEO.
+> In some cases, the process implementations may differ slightly from the openEO process descriptions.
 > For example, the handling of no-data, NaN and infinity values works differently.
 > Be aware that in some cases the results may slightly differ when compared to other openEO implementations.
 
 Other known issues:
-- Ideally, all comutations - including the datacube management - run on GEE's side.
+- Ideally, all computations - including the datacube management - run on GEE's side.
   Currently, some smaller checks still run in the proxy implementation due to the issue that we can't easily abort execution on GEE in case we identify anomalies or other issues.
