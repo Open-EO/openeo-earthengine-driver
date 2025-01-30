@@ -201,6 +201,53 @@ const Utils = {
 		}
 	},
 
+	async getBands(image, names = []) {
+		// Get the number of bands
+		const numBands = image.getSamplesPerPixel();
+
+		let minValues = new Array(numBands).fill(Infinity);
+		let maxValues = new Array(numBands).fill(-Infinity);
+
+		// Read raster data for all bands
+		for (let band = 0; band < numBands; band++) {
+				const raster = await image.readRasters({ samples: [band] });
+				const data = raster[0]; // Extract data for this band
+
+				// Compute min and max
+				for (let i = 0; i < data.length; i++) {
+						if (data[i] < minValues[band]) minValues[band] = data[i];
+						if (data[i] > maxValues[band]) maxValues[band] = data[i];
+				}
+		}
+
+		let bands = [];
+		for (let i = 0; i < numBands; i++) {
+				bands.push({
+						name: names[i] || String(i),
+						statistics: {
+							min: minValues[i],
+							max: maxValues[i]
+						}
+				});
+		}
+
+		return bands;
+	},
+
+	getGeoTransform(image) {
+		const fd = image.fileDirectory;
+		if (fd.ModelTransformation) {
+			const t = fd.ModelTransformation;
+			return [t[0], t[1], t[3], t[4], t[5], t[7]];
+		}
+		else if (fd.ModelTiepoint && fd.ModelPixelScale) {
+			const s = fd.ModelPixelScale;
+			const t = fd.ModelTiepoint;
+			return [t[3], s[0], 0, t[4], 0, -s[1]];
+		}
+		return null;
+	},
+
 	getFileExtension(file) {
 		return file.split('.').pop();
 	},

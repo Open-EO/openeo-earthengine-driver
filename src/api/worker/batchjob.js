@@ -4,6 +4,7 @@ import ProcessGraph from '../../processgraph/processgraph.js';
 import GeeResults from '../../processes/utils/results.js';
 import Utils from '../../utils/utils.js';
 import sizeOf from "image-size";
+import { fromFile } from 'geotiff';
 const packageInfo = Utils.require('../../package.json');
 
 export default async function run(config, storage, user, query) {
@@ -86,10 +87,16 @@ async function createSTAC(storage, job, results) {
     const params = datacube.getOutputFormatParameters();
     const filename = path.basename(filepath);
     const stat = await fse.stat(filepath);
+    const mediaType = Utils.extensionToMediaType(filepath);
+    let geotiffImage = null;
+    if (mediaType.startsWith("image/tiff; application=geotiff")) {
+      const geotiffFile = await fromFile(filepath);
+      geotiffImage = await geotiffFile.getImage();
+    }
     let asset = {
       href: path.relative(folder, filepath),
       roles: ["data"],
-      type: Utils.extensionToMediaType(filepath),
+      type: mediaType,
       title: filename,
       "file:size": stat.size,
       created: stat.birthtime,
@@ -99,11 +106,13 @@ async function createSTAC(storage, job, results) {
       datetimes.push(params.datetime);
       asset.datetime = params.datetime;
     }
-    try {
-      const dim = await sizeOf(filepath);
-      asset["proj:shape"] = [dim.height, dim.width];
-    } catch(e) {
-      console.error(e);
+    if (mediaType.startsWith("image/")) {
+      try {
+        const dim = await sizeOf(filepath);
+        asset["proj:shape"] = [dim.height, dim.width];
+      } catch(e) {
+        console.error(e);
+      }
     }
 
     if (datacube.hasT()) {
@@ -126,10 +135,16 @@ async function createSTAC(storage, job, results) {
       const extent = datacube.getSpatialExtent();
       let wgs84Extent = extent;
       asset["proj:epsg"] = crs;
-      asset["proj:bbox"] = [
-        extent.west, extent.south, extent.east, extent.north
-      ];
+      if (mediaType.startsWith("image/tiff; application=geotiff")) {
+        const transform = Utils.getGeoTransform(geotiffImage);
+        if (transform) {
+          asset["proj:transform"] = transform;
+        }
+      }
       if (crs !== 4326) {
+        asset["proj:bbox"] = [
+          extent.west, extent.south, extent.east, extent.north
+        ];
         wgs84Extent = Utils.projExtent(extent, 4326);
       }
       // Check the coordinates with a delta of 0.0001 or so
@@ -141,6 +156,9 @@ async function createSTAC(storage, job, results) {
 
     if (datacube.hasBands()) {
       const bands = datacube.getBands();
+      if (geotiffImage) {
+        asset["raster:bands"] = await Utils.getBands(geotiffImage, bands);
+      }
       asset["eo:bands"] = bands.map(band => {
         return {
           name: band
