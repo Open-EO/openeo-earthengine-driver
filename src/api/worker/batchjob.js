@@ -86,7 +86,7 @@ async function createSTAC(storage, job, results) {
   ];
   for(const { filepath, datacube } of results) {
     const params = datacube.getOutputFormatParameters();
-    const filename = path.basename(filepath);
+    const { name: key } = path.parse(filepath);
     const stat = await fse.stat(filepath);
     const mediaType = Utils.extensionToMediaType(filepath);
     let geotiffImage = null;
@@ -97,7 +97,7 @@ async function createSTAC(storage, job, results) {
       href: path.relative(folder, filepath),
       roles: ["data"],
       type: mediaType,
-      title: filename,
+      title: key,
       "file:size": stat.size,
       created: stat.birthtime,
       updated: stat.mtime
@@ -168,7 +168,7 @@ async function createSTAC(storage, job, results) {
     }
 
     const cube = datacube.toJSON();
-    assets[filename] = Object.assign(asset, cube, params.metadata);
+    assets[key] = Object.assign(asset, cube, params.metadata);
   }
   const item = {
     stac_version: packageInfo.stac_version,
