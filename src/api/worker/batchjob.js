@@ -3,8 +3,8 @@ import path from 'path';
 import ProcessGraph from '../../processgraph/processgraph.js';
 import GeeResults from '../../processes/utils/results.js';
 import Utils from '../../utils/utils.js';
+import GTiff from '../../utils/gtiff.js';
 import sizeOf from "image-size";
-import { fromFile } from 'geotiff';
 const packageInfo = Utils.require('../../package.json');
 
 export default async function run(config, storage, user, query) {
@@ -82,6 +82,7 @@ async function createSTAC(storage, job, results) {
   const datetimes = [];
   const stac_extensions = [
     "https://stac-extensions.github.io/file/v2.0.0/schema.json",
+    "https://stac-extensions.github.io/datacube/v2.1.0/schema.json"
   ];
   for(const { filepath, datacube } of results) {
     const params = datacube.getOutputFormatParameters();
@@ -90,8 +91,7 @@ async function createSTAC(storage, job, results) {
     const mediaType = Utils.extensionToMediaType(filepath);
     let geotiffImage = null;
     if (mediaType.startsWith("image/tiff; application=geotiff")) {
-      const geotiffFile = await fromFile(filepath);
-      geotiffImage = await geotiffFile.getImage();
+      geotiffImage = await GTiff.load(filepath);
     }
     let asset = {
       href: path.relative(folder, filepath),
@@ -135,8 +135,8 @@ async function createSTAC(storage, job, results) {
       const extent = datacube.getSpatialExtent();
       let wgs84Extent = extent;
       asset["proj:epsg"] = crs;
-      if (mediaType.startsWith("image/tiff; application=geotiff")) {
-        const transform = Utils.getGeoTransform(geotiffImage);
+      if (geotiffImage) {
+        const transform = GTiff.getGeoTransform(geotiffImage);
         if (transform) {
           asset["proj:transform"] = transform;
         }
@@ -157,7 +157,8 @@ async function createSTAC(storage, job, results) {
     if (datacube.hasBands()) {
       const bands = datacube.getBands();
       if (geotiffImage) {
-        asset["raster:bands"] = await Utils.getBands(geotiffImage, bands);
+        stac_extensions.push("https://stac-extensions.github.io/raster/v1.1.0/schema.json");
+        asset["raster:bands"] = await GTiff.getBands(geotiffImage, bands);
       }
       asset["eo:bands"] = bands.map(band => {
         return {
@@ -166,7 +167,8 @@ async function createSTAC(storage, job, results) {
       });
     }
 
-    assets[filename] = Object.assign(asset, params.metadata);
+    const cube = datacube.toJSON();
+    assets[filename] = Object.assign(asset, cube, params.metadata);
   }
   const item = {
     stac_version: packageInfo.stac_version,
@@ -177,7 +179,7 @@ async function createSTAC(storage, job, results) {
     properties: {
       datetime: null,
       created: job.created,
-      updated: job.updated
+      updated: job.updated,
     },
     assets: assets,
     links: links
