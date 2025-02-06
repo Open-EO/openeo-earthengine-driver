@@ -13,7 +13,7 @@ export default class aggregate_temporal_period extends GeeProcess {
 		const dimensionName = node.getArgument('dimension', null);
 		const context = node.getArgument("context", null);
 
-		const data = node.getData();
+		const data = dc.getData();
 		if (!(data instanceof ee.ImageCollection)) {
 			throw node.invalidArgument('data', 'Data must have a temporal dimension and/or more than one timestamp.');
 		}

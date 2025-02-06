@@ -3,9 +3,9 @@ import GeeProcessing from './utils/processing.js';
 
 export default class mask extends GeeProcess {
 
-  static process(node, data, maskImageFn, masks = null) {
+  static process(node, data, maskImageFn, masks) {
     const ee = node.ee;
-    if (data instanceof ee.imageCollection) {
+    if (data instanceof ee.ImageCollection) {
       if (masks instanceof ee.ImageCollection) {
         data = GeeProcessing.iterateInParallel(ee, data, masks, maskImageFn);
       }
@@ -31,8 +31,8 @@ export default class mask extends GeeProcess {
   }
 
   executeSync(node) {
-    let dc = node.getDataCubeWithEE("data");
-    let masks = node.getArgumentAsEE("mask");
+    const dc = node.getDataCubeWithEE("data");
+    const masks = node.getDataCubeWithEE("mask");
     const replacement = node.getArgumentAsEE("replacement", null);
 
     // todo: resample if needed
@@ -50,7 +50,7 @@ export default class mask extends GeeProcess {
     };
 
     try {
-      const data = mask.process(node, dc.getData(), maskImageFn, masks);
+      const data = mask.process(node, dc.getData(), maskImageFn, masks.getData());
       return dc.setData(data);
     } catch (error) {
       throw node.invalidArgument("mask", error.message);

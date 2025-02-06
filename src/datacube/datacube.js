@@ -1,6 +1,7 @@
 import Dimension from './dimension.js';
 import Utils from '../utils/utils.js';
 import GeeProcessing from '../processes/utils/processing.js';
+import Errors from '../utils/errors.js';
 
 export default class DataCube {
 
@@ -206,6 +207,11 @@ export default class DataCube {
 		this.setSpatialExtent(this.limitExtentToCrs(extent, refSys)); // Update the extent based on the new CRS
 	}
 
+	setResolution(res) {
+		this.dimX().setResolution(res);
+		this.dimY().setResolution(res);
+	}
+
 	setDimensionsFromSTAC(dimensions) {
 		this.dimensions = {};
 		for (const name in dimensions) {
@@ -226,6 +232,10 @@ export default class DataCube {
 		}
 	}
 
+	getDimensions() {
+		return this.dimensions.slice(0);
+	}
+
 	renameDimension(oldName, newName) {
 		this.dimensions[newName] = this.dimensions[oldName];
 		delete this.dimensions[oldName];
@@ -237,17 +247,17 @@ export default class DataCube {
 		delete this.dimensions[name];
 	}
 
-	// addDimension(name, type, axis = null) {
-	// 	if (this.dimensions[name] instanceof Dimension) {
-	// 		throw new Error("Dimension '" + name + "' already exists.");
-	// 	}
-	// 	const dimension = new Dimension(this, {
-	// 		type: type,
-	// 		axis: axis
-	// 	});
-	// 	this.dimensions[name] = dimension;
-	// 	return dimension;
-	// }
+	addDimension(name, type, axis = null) {
+		if (this.dimensions[name] instanceof Dimension) {
+			throw new Errors.DimensionExists();
+		}
+		const dimension = new Dimension(this, {
+			type: type,
+			axis: axis
+		});
+		this.dimensions[name] = dimension;
+		return dimension;
+	}
 
 	// renameLabels(dimension, target, source) {
 	// 	let oldLabels; // array for storing the old label names given by the user

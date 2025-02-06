@@ -32,6 +32,9 @@
   "DimensionExists": {
     "message": "A dimension with the specified name already exists."
   },
+  "DimensionTypeExists": {
+    "message": "A dimension with the specified type already exists."
+  },
   "ArrayElementNotAvailable": {
     "message": "The array has no element with the specified index or label '{x}'."
   },
