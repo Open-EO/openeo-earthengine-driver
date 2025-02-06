@@ -32,6 +32,7 @@ export default class JobsAPI {
 
 		server.addEndpoint('get', '/results/{token}', this.getJobResultsByToken.bind(this), false);
 		server.addEndpoint('get', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
+		server.addEndpoint('head', '/storage/{token}/{file}', this.getStorageFile.bind(this), false);
 	}
 
 	async getStorageFile(req, res) {
@@ -46,8 +47,15 @@ export default class JobsAPI {
 		const stat = await HttpUtils.getFile(p);
 		const bytes = stat.size;
 
-		const range = HttpUtils.parseRangeHeader(req.headers.range, bytes);
-		await HttpUtils.sendFile(p, res, range);
+		if (req.method === 'HEAD') {
+			res.header('Content-Length', bytes);
+			res.header('Accept-Ranges', 'bytes');
+			res.send(200);
+		}
+		else {
+			const range = HttpUtils.parseRangeHeader(req.headers.range, bytes);
+			await HttpUtils.sendFile(p, res, range);
+		}
 	}
 
 	init(req) {
