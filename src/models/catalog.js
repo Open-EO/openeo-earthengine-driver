@@ -4,6 +4,7 @@ import path from 'path';
 import ItemStore from './itemstore.js';
 import { Storage } from '@google-cloud/storage';
 import API from '../utils/API.js';
+import Coverages from '../api/coverages.js';
 
 const STAC_EXTENSIONS = {
 	cube: "https://stac-extensions.github.io/datacube/v2.2.0/schema.json",
@@ -181,7 +182,7 @@ export default class DataCatalog {
 		return await this.readLocalCatalog();
 	}
 
-	getSchema(id) {
+	getQueryables(id) {
 		const collection = this.getData(id, true);
 		if (!collection) {
 			return null;
@@ -209,6 +210,15 @@ export default class DataCatalog {
 		}
 
 		return jsonSchema;
+	}
+
+	getSchema(id) {
+		const collection = this.getData(id, true);
+		if (!collection) {
+			return null;
+		}
+
+		return Coverages.getSchema(collection);
 	}
 
 	getData(id = null, withSchema = false) {
@@ -254,22 +264,16 @@ export default class DataCatalog {
 				case 'root':
 					l.href = API.getUrl("/");
 					break;
+				case 'http://www.opengis.net/def/rel/ogc/1.0/queryables':
+					l.href = API.getUrl(`/collections/${c.id}/queryables`);
+					break;
+				case 'items':
+					l.href = API.getUrl(`/collections/${c.id}/items`);
+					break;
 			}
+			l = Coverages.updateCollectionLink(l, c.id);
 			return l;
 		});
-		c.links.push({
-			rel: 'http://www.opengis.net/def/rel/ogc/1.0/queryables',
-			href: API.getUrl(`/collections/${c.id}/queryables`),
-			title: "Queryables",
-			type: "application/schema+json"
-		});
-		if (c["gee:type"] === 'image_collection') {
-			c.links.push({
-				rel: 'items',
-				href: API.getUrl(`/collections/${c.id}/items`),
-				type: "application/geo+json"
-			});
-		}
 		return c;
 	}
 
@@ -595,6 +599,22 @@ export default class DataCatalog {
 					break;
 			}
 		});
+
+		c.links.push({
+			rel: 'http://www.opengis.net/def/rel/ogc/1.0/queryables',
+			href: `/collections/${c.id}/queryables`,
+			title: "Queryables",
+			type: "application/schema+json"
+		});
+		if (c["gee:type"] === 'image_collection') {
+			c.links.push({
+				rel: 'items',
+				href: `/collections/${c.id}/items`,
+				type: "application/geo+json"
+			});
+		}
+
+		c = Coverages.fixCollectionOnce(c);
 
 		return c;
 	}

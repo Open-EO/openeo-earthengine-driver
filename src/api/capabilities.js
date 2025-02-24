@@ -1,5 +1,6 @@
 import API from '../utils/API.js';
 import Utils from '../utils/utils.js';
+import Coverages from './coverages.js';
 const packageInfo = Utils.require('../../package.json');
 
 export default class CapabilitiesAPI {
@@ -112,14 +113,30 @@ export default class CapabilitiesAPI {
 					type: 'application/json',
 					title: 'Supported API versions'
 				},
+				// STAC
 				{
 					rel: "data",
 					href: API.getUrl("/collections"),
 					type: "application/json",
 					title: "Datasets"
 				},
+				// OGC API - Coverages
+				{
+					rel: "http://www.opengis.net/def/rel/ogc/1.0/data",
+					href: API.getUrl("/collections"),
+					type: "application/json",
+					title: "Datasets"
+				},
+				// STAC and older OGC APIs
 				{
 					rel: "conformance",
+					href: API.getUrl("/conformance"),
+					type: "application/json",
+					title: "OGC Conformance classes"
+				},
+				// Some newer OGC APIs (including Coverages)
+				{
+					rel: "http://www.opengis.net/def/rel/ogc/1.0/conformance",
 					href: API.getUrl("/conformance"),
 					type: "application/json",
 					title: "OGC Conformance classes"
@@ -129,29 +146,29 @@ export default class CapabilitiesAPI {
 	}
 
 	async getConformance(req, res) {
-		res.json({
-			"conformsTo": [
-				"https://api.openeo.org/1.2.0",
-				"https://api.stacspec.org/v1.0.0/core",
-				"https://api.stacspec.org/v1.0.0/collections",
-				"https://api.stacspec.org/v1.0.0/ogcapi-features",
-				"https://api.stacspec.org/v1.0.0/ogcapi-features#sort",
+		let conformsTo = [
+			"https://api.openeo.org/1.2.0",
+			"https://api.stacspec.org/v1.0.0/core",
+			"https://api.stacspec.org/v1.0.0/collections",
+			"https://api.stacspec.org/v1.0.0/ogcapi-features",
+			"https://api.stacspec.org/v1.0.0/ogcapi-features#sort",
 // Item Filter
-// 			"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
+// 		"http://www.opengis.net/spec/ogcapi-features-3/1.0/conf/features-filter",
 // Collection Search
-//			"https://api.stacspec.org/v1.0.0-rc.1/collection-search",
-//			"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
+//		"https://api.stacspec.org/v1.0.0-rc.1/collection-search",
+//		"http://www.opengis.net/spec/ogcapi-common-2/1.0/conf/simple-query",
 // Collection Filter
-//			"https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter",
+//		"https://api.stacspec.org/v1.0.0-rc.1/collection-search#filter",
 // Collection Sorting
-//			"https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort",
-				"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
-				"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
+//		"https://api.stacspec.org/v1.0.0-rc.1/collection-search#sort",
+			"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/core",
+			"http://www.opengis.net/spec/ogcapi-features-1/1.0/conf/geojson",
 // CQL2 (for Item and Collection Filter)
-// 			"http://www.opengis.net/spec/cql2/1.0/conf/cql2-text",
-// 			"http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2",
-			]
-		});
+// 		"http://www.opengis.net/spec/cql2/1.0/conf/cql2-text",
+// 		"http://www.opengis.net/spec/cql2/1.0/conf/basic-cql2",
+		];
+		conformsTo = Coverages.addConformanceClasses(conformsTo);
+		res.json({ conformsTo });
 	}
 
 	async getServices(req, res) {
