@@ -26,7 +26,7 @@ export default class UsersAPI {
 		}
 
 		try {
-			req.user = await this.storage.checkAuthToken(token);
+			req.user = await this.storage.checkToken(token);
 		} catch(err) {
 			res.send(Errors.wrap(err));
 		}

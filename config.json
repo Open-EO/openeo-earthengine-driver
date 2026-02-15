@@ -25,6 +25,7 @@
 	},
 	"otherVersions": [],
 	"authClients": [],
+	"secret": "supersecretkey",
 	"legacyTokens": false,
 	"batchJobsEndpoint": true,
 	"webServicesEndpoint": true,

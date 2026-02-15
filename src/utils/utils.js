@@ -304,8 +304,33 @@ const Utils = {
 		}
 	},
 
-	parseJwt (token) {
-		return JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+	parseJwt(token) {
+		const parts = token.split('.');
+		if (parts.length !== 3) {
+			return null;
+		}
+		try {
+			return {
+				header: JSON.parse(Buffer.from(parts[0], 'base64').toString()),
+				payload: JSON.parse(Buffer.from(parts[1], 'base64').toString()),
+				signature: parts[2]
+			};
+		} catch (error) {
+			return null;
+		}
+	},
+
+	createJwt(secret, issuer, user_id, payload = {}) {
+		const header = {
+			iss: issuer,
+			sub: user_id,
+			alg: 'HS256',
+			typ: 'JWT'
+		};
+		const encodedHeader = Buffer.from(JSON.stringify(header)).toString('base64url');
+		const encodedPayload = Buffer.from(JSON.stringify(payload)).toString('base64url');
+		const signature = crypto.createHmac('sha256', secret).update(encodedHeader + '.' + encodedPayload).digest('base64url');
+		return `${encodedHeader}.${encodedPayload}.${signature}`;
 	}
 };
 
