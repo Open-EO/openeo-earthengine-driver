@@ -89,6 +89,24 @@ To manage the user accounts that are not authenticting through their Google Acco
 - Delete a user: `npm run deluser`
 - List all users: `npm run users`
 
+#### Thumbnail cache cleanup
+
+The server caches STAC item thumbnails in `storage/item_thumb_cache/`. Over time this can grow large. To remove cached files older than 30 days:
+
+```bash
+npm run cleancache
+```
+
+To automate this, add a cron job (e.g. weekly on Sundays at 3 AM):
+
+```bash
+crontab -e
+```
+
+```
+0 3 * * 0 cd /path/to/openeo-earthengine-driver && npm run cleancache >> /var/log/cleancache.log 2>&1
+```
+
 ## Usage
 
 For both the demo servers or your own instance you can use the [openEO API](https://open-eo.github.io/openeo-api/apireference/index.html) to communicate with Google Earth Engine.
