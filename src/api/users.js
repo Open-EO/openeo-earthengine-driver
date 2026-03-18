@@ -20,19 +20,21 @@ export default class UsersAPI {
 		return Promise.resolve();
 	}
 
-	async checkRequestAuthToken(req, res) {
+	async checkRequestAuthToken(req, res, next) {
 		let token = null;
 		if (req.authorization.scheme === 'Bearer') {
 			token = req.authorization.credentials;
 		}
 		else {
-			return;
+			return next();
 		}
 
 		try {
 			req.user = await this.storage.checkAuthToken(token);
+			next();
 		} catch(err) {
-			res.send(Errors.wrap(err));
+			const wrapped = Errors.wrap(err);
+			res.status(wrapped.statusCode || 500).json(wrapped.toJSON ? wrapped.toJSON() : wrapped);
 		}
 	}
 
@@ -41,7 +43,7 @@ export default class UsersAPI {
 			throw new Errors.FeatureUnsupported();
 		}
 
-		res.send({
+		res.json({
 			"providers": [
 				{
 					id: "google",

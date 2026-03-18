@@ -84,7 +84,7 @@ const HttpUtils = {
 				.then(response => {
 					response.data.pipe(fileStream);
 					if (res) {
-						res.header('Content-Type', Utils.extensionToMediaType(filepath));
+						res.set('Content-Type', Utils.extensionToMediaType(filepath));
 						response.data.pipe(res);
 					}
 					fileStream.on('close', () => resolve());
@@ -98,18 +98,18 @@ const HttpUtils = {
 	},
 
 	async sendFile(filepath, res, range = null) {
-		res.header('Content-Type', Utils.extensionToMediaType(filepath));
+		res.set('Content-Type', Utils.extensionToMediaType(filepath));
 		const options = {};
 		if (Utils.isObject(range)) {
 			options.start = range.start;
 			options.end = range.end;
 			res.status(206);
-			res.header('Content-Range', `bytes ${range.start}-${range.end}/${range.maxLength}`);
-			res.header('Content-Length', range.length);
+			res.set('Content-Range', `bytes ${range.start}-${range.end}/${range.maxLength}`);
+			res.set('Content-Length', range.length);
 		}
 		else {
 			const stat = await fse.stat(filepath);
-			res.header('Content-Length', stat.size);
+			res.set('Content-Length', stat.size);
 		}
 		return await new Promise((resolve, reject) => {
 			const stream = fse.createReadStream(filepath, options);

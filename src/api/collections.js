@@ -97,7 +97,7 @@ export default class Data {
 	}
 
 	async getCollectionById(req, res) {
-		const id = req.params['*'];
+		const id = req.params.wildcard;
 		if (id.length === 0) {
 			// Redirect to correct route
 			return await this.getCollections(req, res);
@@ -124,8 +124,8 @@ export default class Data {
 	async getCollectionQueryables(req, res) {
 		let id = req.params.collection_id;
 		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params['*'] && !id) {
-			id = req.params['*'].replace(/\/queryables$/, '');
+		if (req.params.wildcard && !id) {
+			id = req.params.wildcard.replace(/\/queryables$/, '');
 		}
 
 		const queryables = this.catalog.getSchema(id);
@@ -139,8 +139,8 @@ export default class Data {
 	async getCollectionItems(req, res) {
 		let id = req.params.collection_id;
 		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params['*'] && !id) {
-			id = req.params['*'].replace(/\/items$/, '');
+		if (req.params.wildcard && !id) {
+			id = req.params.wildcard.replace(/\/items$/, '');
 		}
 
 		const collection = this.catalog.getData(id, true);
@@ -294,8 +294,8 @@ export default class Data {
 		let cid = req.params.collection_id;
 		let id = req.params.item_id;
 		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params['*'] && (!cid || !id)) {
-			let match = req.params['*'].match(/(.+)\/items\/([^/]+)$/);
+		if (req.params.wildcard && (!cid || !id)) {
+			let match = req.params.wildcard.match(/(.+)\/items\/([^/]+)$/);
 			cid = match[1];
 			id = match[2];
 		}
@@ -321,7 +321,7 @@ export default class Data {
 	}
 
 	async getThumbnailById(req, res) {
-		const id = req.params['*'];
+		const id = req.params.wildcard;
 		const filepath = this.catalog.itemCache.getThumbPath(id);
 
 		if (await this.catalog.itemCache.hasThumb(id)) {
@@ -361,7 +361,7 @@ export default class Data {
 	}
 
 	async getAssetById(req, res) {
-		const id = req.params['*'];
+		const id = req.params.wildcard;
 		const band = req.query.band || null;
 
 		let img = this.ee.Image(id);
@@ -389,10 +389,10 @@ export default class Data {
 		const filename = id.replace(/\//g, '_') + (band ? '_' + band: '') + '.tiff';
 		const response = await HttpUtils.stream(geeURL, 'download_stac_asset');
 		if (response?.headers?.['content-length']) {
-			res.header('Content-Length', response?.headers?.['content-length']);
+			res.set('Content-Length', response?.headers?.['content-length']);
 		}
-		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
-		res.header('Content-Disposition', `attachment; filename="${filename}"`);
+		res.set('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
+		res.set('Content-Disposition', `attachment; filename="${filename}"`);
 		response.data.pipe(res);
 
 	}

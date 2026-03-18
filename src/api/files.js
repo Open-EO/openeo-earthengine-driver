@@ -64,7 +64,7 @@ export default class FilesAPI {
 		}
 
 		const octetStream = 'application/octet-stream';
-		if (req.contentType() !== octetStream) {
+		if (req.get('content-type') !== octetStream) {
 			throw new Errors.ContentTypeInvalid({types: octetStream});
 		}
 
@@ -110,14 +110,14 @@ export default class FilesAPI {
 		});
 
 		const response = await promise;
-		res.send(200, response);
+		res.status(200).json(response);
 	}
 
 	async deleteFileByPath(req, res) {
 		const p = this.init(req);
 		await HttpUtils.getFile(p);
 		await fse.unlink(p);
-		res.send(204);
+		res.status(204).end();
 	}
 
 	async getFileByPath(req, res) {
@@ -125,7 +125,7 @@ export default class FilesAPI {
 		await HttpUtils.getFile(p);
 		await new Promise((resolve, reject) => {
 			const stream = fse.createReadStream(p);
-			res.setHeader('Content-Type', 'application/octet-stream');
+			res.set('Content-Type', 'application/octet-stream');
 			stream.pipe(res);
 			stream.on('error', reject);
 			stream.on('close', () => {

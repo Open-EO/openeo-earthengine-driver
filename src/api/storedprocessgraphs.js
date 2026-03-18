@@ -31,7 +31,7 @@ export default class StoredProcessGraphs {
 		}
 		const pg = new ProcessGraph(req.body, this.context.processingContext(req.user));
 		const errors = await pg.validate(false);
-		res.send(200, {
+		res.status(200).json({
 			errors: errors.toJSON()
 		});
 	}
@@ -82,7 +82,7 @@ export default class StoredProcessGraphs {
 			throw new Errors.Internal({message: 'Number of changed processes was zero.'});
 		}
 
-		res.send(200);
+		res.status(200).end();
 	}
 
 	async deleteProcessGraph(req, res) {
@@ -98,7 +98,7 @@ export default class StoredProcessGraphs {
 			throw new Errors.ProcessGraphNotFound();
 		}
 		else {
-			res.send(204);
+			res.status(204).end();
 		}
 	}
 

@@ -18,7 +18,7 @@ export default class FileWorkspace {
 	}
 
 	getPathFromRequest(req, p) {
-		return this.getPath(req.user._id, (p ? p : req.params['*']));
+		return this.getPath(req.user._id, (p ? p : req.params.wildcard));
 	}
 
 	getPath(user_id, p) {

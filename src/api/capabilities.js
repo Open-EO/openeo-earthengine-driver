@@ -33,7 +33,7 @@ export default class CapabilitiesAPI {
 	}
 
 	async getRoot(req, res) {
-		return res.redirect('/.well-known/openeo', Utils.noop);
+		return res.redirect('/.well-known/openeo');
 	}
 
 	async getVersions(req, res) {

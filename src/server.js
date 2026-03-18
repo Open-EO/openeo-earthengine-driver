@@ -12,7 +12,8 @@ import API from './utils/API.js';
 import ServerContext from './utils/servercontext.js';
 
 import fse from 'fs-extra';
-import restify from 'restify';
+import express from 'express';
+import https from 'https';
 
 class Server {
 
@@ -22,10 +23,6 @@ class Server {
 		this.http_server = null;
 		this.https_server = null;
 
-		this.serverOptions = {
-			handleUpgrades: true,
-			ignoreTrailingSlash: true
-		};
 		this.corsExposeHeaders = 'Location, OpenEO-Identifier, OpenEO-Costs, Link, Range';
 
 		this.serverContext = new ServerContext();
@@ -53,13 +50,16 @@ class Server {
 		}
 		const apiPath = root ? '' : this.serverContext.apiPath;
 
-		if (method === 'delete') {
-			method = 'del';
-		}
+		// Express 5 requires named wildcards
+		const routePath = (apiPath + path[1]).replace(/(?<![:\w])\*(?!\w)/g, '*wildcard');
 
-		this.http_server[method](apiPath + path[1], callback);
+		const wrappedCallback = (req, res, next) => {
+			Promise.resolve(callback(req, res, next)).catch(next);
+		};
+
+		this.http_server[method](routePath, wrappedCallback);
 		if (this.isHttpsEnabled()) {
-			this.https_server[method](apiPath + path[1], callback);
+			this.https_server[method](routePath, wrappedCallback);
 		}
 	}
 
@@ -76,43 +76,72 @@ class Server {
 	}
 
 	initHttpServer() {
-		this.http_server = restify.createServer(this.serverOptions);
+		this.http_server = express();
 		this.initServer(this.http_server);
 	}
 
 	initHttpsServer() {
 		if (this.isHttpsEnabled()) {
-			const https_options = Object.assign({}, this.serverOptions, {
-				key: fse.readFileSync(this.serverContext.ssl.key),
-				certificate: fse.readFileSync(this.serverContext.ssl.certificate)
-			});
-			this.https_server = restify.createServer(https_options);
+			this.https_server = express();
 			this.initServer(this.https_server);
 		}
 	}
 
-	initServer(server) {
-		server.on('restifyError', this.errorHandler.bind(this));
-		server.pre(this.preflight.bind(this));
-		server.use(this.populateGlobals.bind(this));
-		server.use(restify.plugins.queryParser());
-		server.use(restify.plugins.bodyParser());
-		server.use(restify.plugins.authorizationParser());
-		server.use(this.injectCorsHeader.bind(this));
-		server.use(this.api.users.checkRequestAuthToken.bind(this.api.users));
+	initServer(app) {
+		app.use(this.preflight.bind(this));
+		app.use(this.populateGlobals.bind(this));
+		app.use(express.json());
+		app.use(express.urlencoded({ extended: true }));
+		app.use(this.authorizationParser.bind(this));
+		app.use(this.injectCorsHeader.bind(this));
+		app.use(this.api.users.checkRequestAuthToken.bind(this.api.users));
 		if (this.serverContext.debug) {
-			server.use(this.logRequest.bind(this));
+			app.use(this.logRequest.bind(this));
 		}
 	}
 
-	errorHandler(req, res, e, next) {
+	addErrorHandler(app) {
+		app.use(this.errorHandler.bind(this));
+	}
+
+	errorHandler(err, req, res, next) {
 		if (global.server.serverContext.debug) {
-			if (e.originalError) {
-				console.error(e.originalError);
+			if (err.originalError) {
+				console.error(err.originalError);
 			}
 			else {
-				console.error(e);
+				console.error(err);
 			}
+		}
+		const statusCode = err.statusCode || 500;
+		if (typeof err.toJSON === 'function') {
+			res.status(statusCode).json(err.toJSON());
+		}
+		else {
+			res.status(statusCode).json({
+				id: Date.now().toString(),
+				code: 'Internal',
+				message: err.message || 'Internal Server Error'
+			});
+		}
+	}
+
+	authorizationParser(req, res, next) {
+		req.authorization = {};
+		const auth = req.headers.authorization;
+		if (!auth) {
+			return next();
+		}
+		const parts = auth.split(' ');
+		req.authorization.scheme = parts[0];
+		req.authorization.credentials = parts.slice(1).join(' ');
+		if (req.authorization.scheme === 'Basic') {
+			const decoded = Buffer.from(req.authorization.credentials, 'base64').toString('utf-8');
+			const idx = decoded.indexOf(':');
+			req.authorization.basic = {
+				username: idx >= 0 ? decoded.substring(0, idx) : decoded,
+				password: idx >= 0 ? decoded.substring(idx + 1) : ''
+			};
 		}
 		return next();
 	}
@@ -128,6 +157,12 @@ class Server {
 		this.initHttpsServer();
 
 		this.beforeServerStart()
+		.then(() => {
+			this.addErrorHandler(this.http_server);
+			if (this.isHttpsEnabled()) {
+				this.addErrorHandler(this.https_server);
+			}
+		})
 		.then(() => this.startServerHttp())
 		.then(() => this.startServerHttps())
 		.catch(e => {
@@ -155,7 +190,11 @@ class Server {
 		return new Promise((resolve) => {
 			if (this.isHttpsEnabled()) {
 				const sslport = process.env.SSL_PORT || this.serverContext.ssl.port;
-				this.https_server.listen(sslport, () => {
+				const httpsServer = https.createServer({
+					key: fse.readFileSync(this.serverContext.ssl.key),
+					cert: fse.readFileSync(this.serverContext.ssl.certificate)
+				}, this.https_server);
+				httpsServer.listen(sslport, () => {
 					const exposePortStr = this.serverContext.ssl.exposePort !== 443 ? ":" + this.serverContext.ssl.exposePort : "";
 					API.origin = "https://" + this.serverContext.hostname + exposePortStr;
 					API.path = this.serverContext.apiPath;
@@ -171,7 +210,7 @@ class Server {
 	}
 
 	logRequest(req, res, next) {
-		console.log("Requested: " + req.getRoute().method + " " + req.href());
+		console.log("Requested: " + req.method + " " + req.originalUrl);
 		next();
 	}
 
@@ -180,8 +219,8 @@ class Server {
 			return next();
 		}
 
-		res.setHeader('access-control-allow-origin', '*');
-		res.setHeader('access-control-expose-headers', this.corsExposeHeaders);
+		res.set('access-control-allow-origin', '*');
+		res.set('access-control-expose-headers', this.corsExposeHeaders);
 		return next();
 	}
 
@@ -190,14 +229,11 @@ class Server {
 			return next();
 		}
 
-		res.once('header', () => {
-			res.header('access-control-allow-origin', '*');
-			res.header('access-control-expose-headers', this.corsExposeHeaders);
-			res.header('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
-			res.header('access-control-allow-headers', 'Authorization, Content-Type, Range');
-		});
-
-		res.send(204);
+		res.set('access-control-allow-origin', '*');
+		res.set('access-control-expose-headers', this.corsExposeHeaders);
+		res.set('access-control-allow-methods', 'OPTIONS, GET, POST, PATCH, PUT, DELETE');
+		res.set('access-control-allow-headers', 'Authorization, Content-Type, Range');
+		res.status(204).end();
 		// Don't call next, this ends execution, nothing more to send.
 	}
 

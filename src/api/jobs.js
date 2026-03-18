@@ -48,9 +48,9 @@ export default class JobsAPI {
 		const bytes = stat.size;
 
 		if (req.method === 'HEAD') {
-			res.header('Content-Length', bytes);
-			res.header('Accept-Ranges', 'bytes');
-			res.send(200);
+			res.set('Content-Length', bytes);
+			res.set('Accept-Ranges', 'bytes');
+			res.status(200).end();
 		}
 		else {
 			const range = HttpUtils.parseRangeHeader(req.headers.range, bytes);
@@ -120,7 +120,7 @@ export default class JobsAPI {
 		}
 		else {
 			await this.storage.removeResults(req.params.job_id);
-			res.send(204);
+			res.status(204).end();
 		}
 	}
 
@@ -141,7 +141,7 @@ export default class JobsAPI {
 		logger.info("Queueing batch job");
 		await this.storage.updateJobStatus(query, 'queued');
 
-		res.send(202);
+		res.status(202).end();
 
 		await runBatchJob(this.context, this.storage, req.user, query);
 	}
@@ -180,7 +180,7 @@ export default class JobsAPI {
 
 		// todo: actually stop the processing
 
-		res.send(204);
+		res.status(204).end();
 	}
 
 	async getJobResultsByQuery(query, publish, req, res) {
@@ -193,7 +193,7 @@ export default class JobsAPI {
 			if (Array.isArray(logs.logs) && logs.logs.length > 0) {
 				error = logs.logs[0];
 			}
-			return res.send(424, error);
+			return res.status(424).json(error);
 		}
 		else if (job.status === 'queued' || job.status === 'running') {
 			if (partial) {
@@ -229,7 +229,7 @@ export default class JobsAPI {
 			item.assets[key] = makeStorageUrl(item.assets[key]);
 		}
 
-		res.send(item);
+		res.json(item);
 	}
 
 	async patchJob(req, res) {
@@ -281,7 +281,7 @@ export default class JobsAPI {
 		if (numAffected === 0) {
 			throw new Errors.Internal({message: 'Number of changed elements was 0.'});
 		}
-		res.send(204);
+		res.status(204).end();
 
 		const logger = await this.storage.getLogsById(req.params.job_id, data.log_level || job.log_level);
 		logger.info('Job updated', data);
@@ -319,8 +319,8 @@ export default class JobsAPI {
 		// Create logs at creation time to avoid issues described in #51
 		await this.storage.getLogsById(job._id, job.log_level);
 
-		res.header('OpenEO-Identifier', job._id);
-		res.redirect(201, API.getUrl('/jobs/' + job._id), Utils.noop);
+		res.set('OpenEO-Identifier', job._id);
+		res.redirect(201, API.getUrl('/jobs/' + job._id));
 	}
 
 	async postSyncResult(req, res) {
@@ -338,10 +338,10 @@ export default class JobsAPI {
 
 		const response = await runSync(this.context, req.user, id, req.body.process, log_level);
 
-		res.header('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
-		res.header('OpenEO-Costs', 0);
+		res.set('Content-Type', response?.headers?.['content-type'] || 'application/octet-stream');
+		res.set('OpenEO-Costs', 0);
 		const monitorUrl = API.getUrl('/result/logs/' + id) + '?log_level=' + log_level;
-		res.header('Link', `<${monitorUrl}>; rel="monitor"`);
+		res.set('Link', `<${monitorUrl}>; rel="monitor"`);
 		response.data.pipe(res);
 	}
 

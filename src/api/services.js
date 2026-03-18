@@ -49,7 +49,7 @@ export default class ServicesAPI {
 			if (typeof response.headers['content-type'] !== 'undefined') {
 				contentType = response.headers['content-type'];
 			}
-			res.header('Content-Type', contentType);
+			res.set('Content-Type', contentType);
 			response.data.pipe(res);
 		} catch(e) {
 			logger.error(e);
@@ -92,7 +92,7 @@ export default class ServicesAPI {
 			}
 		}
 
-		res.send(204);
+		res.status(204).end();
 	}
 
 	async patchService(req, res) {
@@ -153,7 +153,7 @@ export default class ServicesAPI {
 			throw new Errors.Internal({message: 'Number of changed services was zero.'});
 		}
 
-		res.send(204);
+		res.status(204).end();
 
 		const logger = await this.storage.getLogsById(req.params.service_id, data.log_level || service.log_level);
 		logger.info('Service updated', data);
@@ -215,8 +215,8 @@ export default class ServicesAPI {
 		// Create logs at creation time to avoid issues described in #51
 		await this.storage.getLogsById(service._id, service.log_level);
 
-		res.header('OpenEO-Identifier', service._id);
-		res.redirect(201, API.getUrl('/services/' + service._id), Utils.noop);
+		res.set('OpenEO-Identifier', service._id);
+		res.redirect(201, API.getUrl('/services/' + service._id));
 	}
 
 	async getServiceLogs(req, res) {
