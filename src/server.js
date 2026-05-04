@@ -104,7 +104,7 @@ class Server {
 		app.use(this.errorHandler.bind(this));
 	}
 
-	errorHandler(err, req, res) {
+	errorHandler(err, req, res, next) {
 		if (global.server.serverContext.debug) {
 			if (err.originalError) {
 				console.error(err.originalError);

@@ -97,7 +97,11 @@ export default class Data {
 	}
 
 	async getCollectionById(req, res) {
-		const id = req.params.wildcard;
+		let id = req.params.collection_id;
+		if (Array.isArray(req.params.wildcard)) {
+			id = req.params.wildcard.join('/');
+		}
+
 		if (id.length === 0) {
 			// Redirect to correct route
 			return await this.getCollections(req, res);
@@ -123,9 +127,12 @@ export default class Data {
 
 	async getCollectionQueryables(req, res) {
 		let id = req.params.collection_id;
-		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params.wildcard && !id) {
-			id = req.params.wildcard.replace(/\/queryables$/, '');
+		if (Array.isArray(req.params.wildcard)) {
+			id = req.params.wildcard.join('/');
+			// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
+			if (!id) {
+				id = id.replace(/\/queryables$/, '');
+			}
 		}
 
 		const queryables = this.catalog.getSchema(id);
@@ -138,9 +145,12 @@ export default class Data {
 
 	async getCollectionItems(req, res) {
 		let id = req.params.collection_id;
-		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params.wildcard && !id) {
-			id = req.params.wildcard.replace(/\/items$/, '');
+		if (Array.isArray(req.params.wildcard)) {
+			id = req.params.wildcard.join('/');
+			// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
+			if (!id) {
+				id = id.replace(/\/items$/, '');
+			}
 		}
 
 		const collection = this.catalog.getData(id, true);
@@ -294,10 +304,13 @@ export default class Data {
 		let cid = req.params.collection_id;
 		let id = req.params.item_id;
 		// Get the ID if this was a redirect from the /collections/{collection_id} endpoint
-		if (req.params.wildcard && (!cid || !id)) {
-			let match = req.params.wildcard.match(/(.+)\/items\/([^/]+)$/);
-			cid = match[1];
-			id = match[2];
+		if (Array.isArray(req.params.wildcard)) {
+			const wildcard = req.params.wildcard.join('/');
+			if (!cid || !id) {
+				const match = wildcard.match(/(.+)\/items\/([^/]+)$/);
+				cid = match[1];
+				id = match[2];
+			}
 		}
 
 		const collection = this.catalog.getData(cid, true);
@@ -321,7 +334,7 @@ export default class Data {
 	}
 
 	async getThumbnailById(req, res) {
-		const id = req.params.wildcard;
+		const id = req.params.wildcard.join('/');
 		const filepath = this.catalog.itemCache.getThumbPath(id);
 
 		if (await this.catalog.itemCache.hasThumb(id)) {
@@ -361,7 +374,7 @@ export default class Data {
 	}
 
 	async getAssetById(req, res) {
-		const id = req.params.wildcard;
+		const id = req.params.wildcard.join('/');
 		const band = req.query.band || null;
 
 		let img = this.ee.Image(id);
