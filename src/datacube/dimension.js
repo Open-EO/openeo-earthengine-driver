@@ -78,6 +78,13 @@ export default class Dimension {
 		this.datacube.renameDimension(this.name, newName);
 	}
 
+	isCompatible(other) {
+		return this.name === other.name
+			&& this.type === other.type
+			&& this.referenceSystem === other.referenceSystem
+			&& this.unit === other.unit;
+	}
+
 	getType() {
 		return this.type;
 	}
@@ -116,6 +123,9 @@ export default class Dimension {
 	}
 
 	setValues(values) {
+		if (values instanceof Set) {
+			values = Array.from(values);
+		}
 		this.values = values;
 		this.extent = null;
 	}
@@ -126,6 +136,37 @@ export default class Dimension {
 
 	addValue(value) {
 		this.values.push(value);
+	}
+
+	mergeDimensions(other) {
+		const values = this.getValues();
+		const otherValues = other.getValues();
+		if (values && otherValues) {
+			this.setValues(new Set(values.concat(otherValues)));
+			return;
+		}
+
+		let extent = this.getExtent();
+		const minMaxFromValues = (v) => {
+			const sorted = v.slice(0).sort();
+			return [sorted[0], sorted[sorted.length - 1]];
+		};
+		if (!extent) {
+			extent = minMaxFromValues(values);
+		}
+		let otherExtent = other.getExtent();
+		if (!otherExtent) {
+			otherExtent = minMaxFromValues(otherValues);
+		}
+		if (extent && otherExtent) {
+			this.setExtent(
+				Math.min(extent[0], otherExtent[0]),
+				Math.max(extent[1], otherExtent[1])
+			);
+		}
+		else {
+			throw new Error('Cannot merge dimensions without extent or values');
+		}
 	}
 
 	min() {
