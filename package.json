@@ -7,8 +7,9 @@
 	"type": "module",
 	"scripts": {
 		"dev": "nodemon src/server.js --trace-warnings",
-		"up": "npm run sync && pm2 start src/server.js",
-		"down": "pm2 stop src/server.js",
+		"up": "npm run sync && pm2 start ecosystem.config.cjs",
+		"down": "pm2 stop openeo-earthengine-server",
+		"undeploy": "pm2 delete openeo-earthengine-server",
 		"sync": "node src/sync.js",
 		"adduser": "node src/adduser.js",
 		"deluser": "node src/deluser.js",
