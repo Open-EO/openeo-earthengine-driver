@@ -1,67 +1,67 @@
 {
-	"name": "@openeo/earthengine-driver",
-	"version": "1.1.1-dev20260318",
-	"stac_version": "1.0.0",
-	"description": "An openEO driver for Google Earth Engine.",
-	"main": "src/server.js",
-	"type": "module",
-	"scripts": {
-		"dev": "nodemon src/server.js --trace-warnings",
-		"up": "npm run sync && pm2 start ecosystem.config.cjs",
-		"down": "pm2 stop openeo-earthengine-server",
-		"undeploy": "pm2 delete openeo-earthengine-server",
-		"sync": "node src/sync.js",
-		"adduser": "node src/adduser.js",
-		"deluser": "node src/deluser.js",
-		"users": "node src/users.js",
-		"stats": "node src/stats.js",
-		"cleancache": "node src/cleancache.js",
-		"test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles",
-		"debug": "node --nolazy --inspect src/server.js",
-		"lint": "eslint src/"
-	},
-	"author": "Matthias Mohr",
-	"license": "Apache-2.0",
-	"homepage": "http://openeo.org",
-	"bugs": {
-		"url": "https://github.com/Open-EO/openeo-earthengine-editor/issues"
-	},
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
-	},
-	"devDependencies": {
-		"eslint": "^8.56.0",
-		"eslint-plugin-n": "^16.6.2",
-		"jest": "^30.3.0",
-		"jest-html-reporter": "^4.3.0",
-		"nodemon": "^3.1.14",
-		"pm2": "^6.0.14"
-	},
-	"dependencies": {
-		"@google-cloud/storage": "^7.7.0",
-		"@google/earthengine": "^0.1.385",
-		"@openeo/js-commons": "^1.5.0",
-		"@openeo/js-processgraphs": "^1.4.1",
-		"@seald-io/nedb": "^4.1.2",
-		"ajv": "^6.12.6",
-		"axios": "^1.6.5",
-		"check-disk-space": "^3.4.0",
-		"epsg-index": "^2.0.0",
-		"fs-extra": "^11.2.0",
-		"geotiff": "^2.1.3",
-		"image-size": "^1.2.0",
-		"luxon": "^3.4.4",
-		"proj4": "^2.10.0",
-		"express": "^5.1.0"
-	},
-	"engines": {
-		"node": ">=22.0.0"
-	},
-	"nodemonConfig": {
-		"watch": [
-			"src/",
-			"server.js"
-		]
-	}
+  "name": "@openeo/earthengine-driver",
+  "version": "1.1.1-dev20260318",
+  "stac_version": "1.0.0",
+  "description": "An openEO driver for Google Earth Engine.",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon src/server.js --trace-warnings",
+    "up": "pm2 startOrRestart ecosystem.config.cjs",
+    "down": "pm2 stop openeo-earthengine-server",
+    "undeploy": "pm2 delete openeo-earthengine-server",
+    "sync": "node src/sync.js",
+    "adduser": "node src/adduser.js",
+    "deluser": "node src/deluser.js",
+    "users": "node src/users.js",
+    "stats": "node src/stats.js",
+    "cleancache": "node src/cleancache.js",
+    "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --detectOpenHandles",
+    "debug": "node --nolazy --inspect src/server.js",
+    "lint": "eslint src/"
+  },
+  "author": "Matthias Mohr",
+  "license": "Apache-2.0",
+  "homepage": "http://openeo.org",
+  "bugs": {
+    "url": "https://github.com/Open-EO/openeo-earthengine-editor/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Open-EO/openeo-earthengine-editor.git"
+  },
+  "devDependencies": {
+    "eslint": "^8.56.0",
+    "eslint-plugin-n": "^16.6.2",
+    "jest": "^30.3.0",
+    "jest-html-reporter": "^4.3.0",
+    "nodemon": "^3.1.14",
+    "pm2": "^6.0.14"
+  },
+  "dependencies": {
+    "@google-cloud/storage": "^7.7.0",
+    "@google/earthengine": "^0.1.385",
+    "@openeo/js-commons": "^1.5.0",
+    "@openeo/js-processgraphs": "^1.4.1",
+    "@seald-io/nedb": "^4.1.2",
+    "ajv": "^6.12.6",
+    "axios": "^1.6.5",
+    "check-disk-space": "^3.4.0",
+    "epsg-index": "^2.0.0",
+    "fs-extra": "^11.2.0",
+    "geotiff": "^2.1.3",
+    "image-size": "^1.2.0",
+    "luxon": "^3.4.4",
+    "proj4": "^2.10.0",
+    "express": "^5.1.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "nodemonConfig": {
+    "watch": [
+      "src/",
+      "server.js"
+    ]
+  }
 }

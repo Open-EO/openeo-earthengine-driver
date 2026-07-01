@@ -83,7 +83,7 @@ Add to your cron job, e.g.
 # Clean the thumbnail cache in the GEE service
 0 2 * * * cd ~/openeo-earthengine-driver && npm run cleancache
 # Redownload GEE collections
-0 3 * * 6 cd ~/openeo-earthengine-driver && npm run sync
+0 3 * * 6 cd ~/openeo-earthengine-driver && npm run sync && npm run up
 
 ```
 
