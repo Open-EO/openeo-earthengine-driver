@@ -71,7 +71,9 @@ export default class Config {
 			this[c] = config[c];
 		}
 
-		this.ssl.exposePort = this.ssl.exposePort || this.ssl.port;
+		if (this.ssl) {
+			this.ssl.exposePort = this.ssl.exposePort || this.ssl.port;
+		}
 		this.exposePort = this.exposePort || this.port;
 	}
 
