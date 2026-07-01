@@ -75,6 +75,18 @@ For example:
 ]
 ```
 
+### Setting up cron jobs
+
+Add to your cron job, e.g.
+
+```crontab
+# Clean the thumbnail cache in the GEE service
+0 2 * * * cd ~/openeo-earthengine-driver && npm run cleancache
+# Redownload GEE collections
+0 3 * * 6 cd ~/openeo-earthengine-driver && npm run sync
+
+```
+
 ### Starting up the server
 
 After configuration, the server can be started. Run `npm run up` to start the server.
