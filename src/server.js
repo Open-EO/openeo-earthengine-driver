@@ -177,10 +177,18 @@ class Server {
 		return new Promise((resolve) => {
 			const port = process.env.PORT || this.serverContext.port;
 			this.http_server.listen(port, () => {
-				const exposePortStr = this.serverContext.exposePort !== 80 ? ":" + this.serverContext.exposePort : "";
-				API.origin = "http://" + this.serverContext.hostname + exposePortStr;
+				let portStr = `:${this.serverContext.exposePort}`;
+				let protocol = 'http';
+				if (this.serverContext.exposePort === 80) {
+					portStr = '';
+				}
+				else if (this.serverContext.exposePort === 443) {
+					portStr = '';
+					protocol = 'https';
+				}
+				API.origin = protocol + "://" + this.serverContext.hostname + portStr;
 				API.path = this.serverContext.apiPath;
-				console.info('HTTP-Server listening at %s', API.getUrl());
+				console.info('HTTP-Server enabled', API.getUrl());
 				resolve();
 			});
 		});
@@ -198,7 +206,7 @@ class Server {
 					const exposePortStr = this.serverContext.ssl.exposePort !== 443 ? ":" + this.serverContext.ssl.exposePort : "";
 					API.origin = "https://" + this.serverContext.hostname + exposePortStr;
 					API.path = this.serverContext.apiPath;
-					console.info('HTTPS-Server listening at %s', API.getUrl());
+					console.info('HTTPS-Server enabled', API.getUrl());
 					resolve();
 				});
 			}
