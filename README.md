@@ -21,7 +21,7 @@ Please contact [openeo.psc@uni-muenster.de](mailto:openeo.psc@uni-muenster.de).
 
 ## Setting up an instance
 
-The driver is written in [node.js](https://nodejs.org/) and requires at least version 20.0.0.
+The driver is written in [node.js](https://nodejs.org/) and requires at least version 22.12.0, the current LTS version (24) is recommended.
 Install node.js and npm according to the official documentation of each software package.
 
 Afterwards either download the files in this repository or clone it. Run `npm install` to install the dependencies
