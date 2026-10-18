@@ -6,7 +6,7 @@
   "main": "src/server.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/server.js --trace-warnings",
+    "dev": "node --watch-path=src --trace-warnings src/server.js",
     "up": "pm2 startOrRestart ecosystem.config.cjs",
     "down": "pm2 stop openeo-earthengine-server",
     "undeploy": "pm2 delete openeo-earthengine-server",
@@ -33,14 +33,13 @@
   "devDependencies": {
     "eslint": "^8.56.0",
     "eslint-plugin-n": "^16.6.2",
-    "jest": "^30.3.0",
-    "jest-html-reporter": "^4.3.0",
-    "nodemon": "^3.1.14",
-    "pm2": "^6.0.14"
+    "jest": "^30.5.2",
+    "jest-html-reporter": "^4.4.2",
+    "pm2": "^7.0.4"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.7.0",
-    "@google/earthengine": "^0.1.385",
+    "@google-cloud/storage": "^8.4.0",
+    "@google/earthengine": "^1.7.48",
     "@openeo/js-commons": "^1.5.0",
     "@openeo/js-processgraphs": "^1.4.1",
     "@seald-io/nedb": "^4.1.2",
@@ -48,20 +47,25 @@
     "axios": "^1.6.5",
     "check-disk-space": "^3.4.0",
     "epsg-index": "^2.0.0",
+    "express": "^5.1.0",
     "fs-extra": "^11.2.0",
     "geotiff": "^2.1.3",
-    "image-size": "^1.2.0",
+    "image-size": "^2.0.4",
     "luxon": "^3.4.4",
-    "proj4": "^2.10.0",
-    "express": "^5.1.0"
+    "proj4": "^2.10.0"
   },
   "engines": {
     "node": ">=22.0.0"
   },
-  "nodemonConfig": {
-    "watch": [
-      "src/",
-      "server.js"
-    ]
+  "overrides": {
+    "@google/earthengine": {
+      "googleapis": "^149.0.0"
+    },
+    "pm2": {
+      "chokidar": "^4.0.3"
+    },
+    "basic-ftp": "^6.2.3",
+    "js-yaml": "^4.3.2",
+    "uuid": "^11.1.1"
   }
 }

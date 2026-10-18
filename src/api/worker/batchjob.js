@@ -4,7 +4,7 @@ import ProcessGraph from '../../processgraph/processgraph.js';
 import GeeResults from '../../processes/utils/results.js';
 import Utils from '../../utils/utils.js';
 import GTiff from '../../utils/gtiff.js';
-import sizeOf from "image-size";
+import { imageSizeFromFile } from "image-size/fromFile";
 const packageInfo = Utils.require('../../package.json');
 
 export default async function run(config, storage, user, query) {
@@ -108,7 +108,7 @@ async function createSTAC(storage, job, results) {
     }
     if (mediaType.startsWith("image/")) {
       try {
-        const dim = await sizeOf(filepath);
+        const dim = await imageSizeFromFile(filepath);
         asset["proj:shape"] = [dim.height, dim.width];
       } catch(e) {
         console.error(e);
