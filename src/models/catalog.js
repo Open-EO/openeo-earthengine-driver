@@ -1,9 +1,15 @@
 import Utils from '../utils/utils.js';
 import fse from 'fs-extra';
 import path from 'path';
+import events from 'events';
 import ItemStore from './itemstore.js';
 import { Storage } from '@google-cloud/storage';
 import API from '../utils/API.js';
+
+// Number of collection files downloaded in parallel during a catalog sync
+const MAX_PARALLEL_DOWNLOADS = 20;
+// Share of collection files that may fail to download before a catalog sync is aborted
+const MAX_FAILED_DOWNLOADS = 0.05;
 
 const STAC_EXTENSIONS = {
 	cube: "https://stac-extensions.github.io/datacube/v2.2.0/schema.json",
@@ -133,11 +139,11 @@ export default class DataCatalog {
 	async updateCatalog(force = false) {
 		await fse.ensureDir(this.dataFolder);
 
-		const syncTimeFile = this.dataFolder + 'sync.txt';
+		const syncTimeFile = 'sync.txt';
 		if (!force) {
 			let syncTime;
 			try {
-				syncTime = parseInt(await fse.readFile(syncTimeFile, 'utf8'), 10);
+				syncTime = parseInt(await fse.readFile(this.dataFolder + syncTimeFile, 'utf8'), 10);
 			} catch (e) {
 				syncTime = 0;
 			}
@@ -147,38 +153,86 @@ export default class DataCatalog {
 			}
 		}
 
-		await this.itemCache.clear();
-
 		const storage = new Storage({
-			keyFile: this.serverContext.serviceAccountCredentialsFile || null
+			keyFilename: this.serverContext.serviceAccountCredentialsFile || undefined
 		});
 		const bucket = storage.bucket('earthengine-stac');
-		const prefix = 'catalog/';
-		const data = await bucket.getFiles({ prefix });
+		const [files] = await bucket.getFiles({ prefix: 'catalog/' });
+		const collectionFiles = files.filter(file => file.name.endsWith('.json') && !file.name.endsWith('catalog.json'));
+		if (collectionFiles.length === 0) {
+			throw new Error("No collections found in the GEE catalog");
+		}
 
-		await fse.emptyDir(this.dataFolder);
-		const promises = data[0].map(async file => {
-			if (file.name.endsWith('catalog.json') || !file.name.endsWith('.json')) {
-				return;
+		// Download into a separate folder so that the current catalog stays intact if the sync fails
+		const baseFolder = this.dataFolder.replace(/\/+$/, '');
+		const syncFolder = baseFolder + '.sync/';
+		const oldFolder = baseFolder + '.old/';
+		await fse.emptyDir(syncFolder);
+		try {
+			const failed = await this.downloadCatalogFiles(collectionFiles, syncFolder);
+			if (failed > collectionFiles.length * MAX_FAILED_DOWNLOADS) {
+				throw new Error(`Failed to download ${failed} of ${collectionFiles.length} collections`);
 			}
-			const destination = this.dataFolder + path.basename(path.dirname(file.name)) + '_' + path.basename(file.name);
-			await file.download({ destination, validation: 'md5' });
-			try {
-				await fse.readJSON(destination);
-			} catch (e) {
-				if (await fse.exists(destination)) {
-					fse.unlink(destination);
+			else if (failed > 0) {
+				console.warn(`Failed to download ${failed} of ${collectionFiles.length} collections, continuing without them`);
+			}
+			await fse.writeFile(syncFolder + syncTimeFile, Date.now().toString());
+
+			// Replace the current catalog with the new one
+			await fse.remove(oldFolder);
+			await fse.move(baseFolder, oldFolder);
+			await fse.move(syncFolder, baseFolder);
+			await fse.remove(oldFolder);
+		} finally {
+			await fse.remove(syncFolder);
+		}
+
+		await this.itemCache.clear();
+	}
+
+	async downloadCatalogFiles(files, folder) {
+		// Each download in @google-cloud/storage attaches 11 error/close listeners to the response stream,
+		// which exceeds Node's default limit of 10 and floods the log with MaxListenersExceededWarnings.
+		// The listeners are removed after each download, so it's not a leak.
+		const defaultMaxListeners = events.defaultMaxListeners;
+		events.setMaxListeners(Math.max(defaultMaxListeners, 20));
+
+		let failed = 0;
+		const queue = files.slice();
+		const worker = async () => {
+			while (queue.length > 0) {
+				const file = queue.shift();
+				const destination = folder + path.basename(path.dirname(file.name)) + '_' + path.basename(file.name);
+				try {
+					await file.download({ destination, validation: 'md5' });
+					await fse.readJSON(destination);
+				} catch (error) {
+					failed++;
+					await fse.remove(destination);
+					console.error(`Failed to download ${file.name}: ${error.message}`);
 				}
-				console.error("Received invalid JSON file: " + destination);
 			}
-		});
-		await Promise.all(promises);
-		await fse.writeFile(syncTimeFile, Date.now().toString());
+		};
+		try {
+			await Promise.all(Array.from({ length: MAX_PARALLEL_DOWNLOADS }, worker));
+		} finally {
+			events.setMaxListeners(defaultMaxListeners);
+		}
+		return failed;
 	}
 
 	async loadCatalog() {
-		await this.updateCatalog();
-		return await this.readLocalCatalog();
+		try {
+			await this.updateCatalog();
+		} catch (error) {
+			// Keep serving the last successfully synced catalog
+			console.error(`Failed to update the GEE catalog: ${error.message}`);
+		}
+		const num = await this.readLocalCatalog();
+		if (num === 0) {
+			throw new Error("No collections available, the GEE catalog could not be loaded");
+		}
+		return num;
 	}
 
 	getSchema(id) {
